@@ -1,0 +1,63 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[      1434,         54]
+NotebookOptionsPosition[      1151,         40]
+NotebookOutlinePosition[      1491,         55]
+CellTagsIndexPosition[      1448,         52]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"Derivative", "[", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"ArcCos", "[", 
+     RowBox[{
+      RowBox[{"a", "*", "x"}], "+", 
+      RowBox[{"b", "*", "y"}]}], "]"}], "/", 
+    RowBox[{"Sin", "[", 
+     RowBox[{"ArcCos", "[", 
+      RowBox[{
+       RowBox[{"a", "*", "x"}], "+", 
+       RowBox[{"b", "*", "y"}]}], "]"}], "]"}]}], ",", "x"}], "]"}]], "Input",\
+
+ CellChangeTimes->{{3.608380161778493*^9, 3.6083802208515253`*^9}, {
+  3.608380333407675*^9, 3.608380355802525*^9}}],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.608380338747663*^9, 3.608380341780439*^9}}]
+},
+WindowSize->{740, 867},
+WindowMargins->{{Automatic, -2235}, {53, Automatic}},
+FrontEndVersion->"8.0 for Linux x86 (64-bit) (February 23, 2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[557, 20, 495, 15, 30, "Input"],
+Cell[1055, 37, 92, 1, 30, InheritFromParent]
+}
+]
+*)
+
+(* End of internal cache information *)

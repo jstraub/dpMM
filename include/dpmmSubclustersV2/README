@@ -1,0 +1,7 @@
+
+
+use sample_labels_2, propose_splits2, propose_merges2
+these are newer split merge moves that should be stand alone and are improved over the ones described in NIPS 2013
+the theory for these is described in Jasons thesis for DPs and for HDPs in the (not yet published ICML).
+
+
