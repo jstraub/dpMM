@@ -50,9 +50,9 @@ public:
   void sampleParameters();
 
   double logJoint();
-  const VectorXu& z(){return *(cld_->z());};
-  const VectorXu& labels(){return *(cld_->z());};
-  const VectorXu& getLabels(){return *(cld_->z());};
+  const VectorXu& z(){return (cld_->z());};
+  const VectorXu& labels(){return (cld_->z());};
+  const VectorXu& getLabels(){return (cld_->z());};
   const Matrix<T,Dynamic,1>& counts(){return cld_->counts();};
   const Matrix<T,Dynamic,Dynamic>& means(){return cld_->means();};
 
@@ -118,7 +118,7 @@ void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
   pdfs_.setZero(cld_->N(),K_);
   for(uint32_t i=0; i<cld_->N(); ++i)
     pdfs_.row(i) = pi_.pdf();
-  sampler_->sampleDiscPdf(pdfs_,*(cld_->z()));
+  sampler_->sampleDiscPdf(pdfs_,(cld_->z()));
 //  cout<<z->transpose()<<endl;
   assert((cld->z()->array() < K_).all());
 
@@ -229,7 +229,7 @@ double DirMMcld<H,T>::logJoint()
   for (uint32_t k=0; k<K_; ++k)
     logJoint += thetas_[k]->logPdfUnderPrior();
   for (uint32_t i=0; i<cld_->N(); ++i)
-    logJoint += thetas_[(*cld_->z())(i)]->logLikelihood(*(cld_->x()),i);
+    logJoint += thetas_[(cld_->z())(i)]->logLikelihood(*(cld_->x()),i);
   return logJoint;
 };
 
