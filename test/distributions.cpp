@@ -174,8 +174,7 @@ BOOST_AUTO_TEST_CASE( niw_test)
   for(uint32_t t=0; t<10; ++t)
   {
     Normal<double> Norm = niw.sample();
-    cout<<"mean="<<Norm.mu_.transpose()<<endl;
-    cout<<"Sigma=\n"<<Norm.Sigma_<<endl;
+	Norm.print(); 
     cout<<"logPdf="<<niw.logPdf(Norm)<<endl;
   }
   cout<<" comparing NIW against Jasons implementation ------"<<endl;
@@ -292,7 +291,9 @@ BOOST_AUTO_TEST_CASE( niw_test)
     cout<<jasonCov<<endl;
     cout<<"Julian:"<<endl;
     Normal<double> normB = niwB.posterior().sample();
-    cout<<normB.mu_.transpose()<<endl;
-    cout<<normB.Sigma_<<endl;
+    normB.print();
+
+    //cout<<normB.mu_.transpose()<<endl;
+    //cout<<normB.Sigma_<<endl;
   }
 }
