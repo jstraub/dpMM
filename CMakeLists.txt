@@ -20,17 +20,20 @@ find_package (OpenMP REQUIRED)
 find_package (CUDA REQUIRED)
 
 message(${EIGEN3_INCLUDE_DIR})
+message(${CUDA_TOOLKIT_ROOT_DIR})
 
 include_directories(
   ./include
   ./cuda
   ${EIGEN3_INCLUDE_DIR}
+  ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include
   /usr/include
   #/usr/include/eigen3
   $ENV{WORKSPACE_HOME}/3rdparty/include
 )
 link_directories(
   $ENV{WORKSPACE_HOME}/3rdparty/lib
+  ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
 )
 
 cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
