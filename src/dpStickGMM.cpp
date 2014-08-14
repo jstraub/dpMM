@@ -340,7 +340,7 @@ int main(int argc, char **argv)
     double kappa = .01;
     cout<<"theta = "<<mu.transpose()<<endl;
     cout<<"kappa = "<<kappa<<endl;
-    NIWd niw(Delta, mu, nu, kappa, &rndGen);
+    WNIWd niw(Delta, mu, nu, kappa, &rndGen);
     shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
     shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
       LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));

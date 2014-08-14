@@ -9,11 +9,12 @@
 
 #include "distribution.hpp"
 #include "cat.hpp"
+#include "mult.hpp"
 
 using namespace Eigen;
 using namespace std;
 
-template<typename T>
+template<class Disc, typename T>
 class Dir : public Distribution<T>
 {
 public:
@@ -24,21 +25,53 @@ public:
   Dir(const Dir& other);
   ~Dir();
 
-  Cat<T> sample();
-  Dir<T> posterior(const VectorXu& z);
-  Dir<T> posteriorFromCounts(const Matrix<T,Dynamic,1>& counts);
-  Dir<T> posteriorFromCounts(const VectorXu& counts);
+  Dir<Disc,T>* copy();
 
-  T logPdf(const Cat<T>& cat);
+  Disc sample();
+  Dir<Disc,T> posterior() const;
+  Dir<Disc,T> posterior(const VectorXu& z);
+  Dir<Disc,T> posterior(const Matrix<T,Dynamic,Dynamic>& x, 
+      const VectorXu& z, uint32_t k);
+  Dir<Disc,T> posteriorFromCounts(const Matrix<T,Dynamic,1>& counts);
+  Dir<Disc,T> posteriorFromCounts(const VectorXu& counts);
+
+  T logPdf(const Disc& cat);
 
   uint32_t K(){return K_;}
 
+  T logPdf(const Disc& cat) const;
+  T logPdfMarginalized() const; // log pdf of SS under NIW prior
+  T logPdfUnderPriorMarginalizedMerged(const Dir<Disc,T>& other) const;
+
+  T logLikelihoodMarginalized(const Matrix<T,Dynamic,1>& counts) const;
+  void print() const;
+
+  virtual Dir<Disc,T>* merge(const Dir<Disc,T>& other);
+  void fromMerge(const Dir<Disc,T>& niwA, const Dir<Disc,T>& niwB);
+
+//  const Matrix<T,Dynamic,Dynamic>& scatter() const {return scatter_;};
+//  Matrix<T,Dynamic,Dynamic>& scatter() {return scatter_;};
+//  const Matrix<T,Dynamic,1>& mean() const {return mean_;};
+//  Matrix<T,Dynamic,1>& mean() {return mean_;};
+//  T count() const {return count_;};
+//  T& count() {return count_;};
+//
+  const Matrix<T,Dynamic,1>& counts() const {return counts_;};
+  Matrix<T,Dynamic,1>& counts() {return counts_;};
+  T count() const {return counts_.sum();};
+
+  void computeMergedSS( const Dir<Disc,T>& dirA, 
+      const Dir<Disc,T>& dirB, Matrix<T,Dynamic,1>& NsM) const;
+
 private:
+
+  Matrix<T,Dynamic,1> counts_; // counts for the different classes -> SS
   vector<boost::random::gamma_distribution<> > gammas_;
 
   Matrix<T,Dynamic,1> samplePdf();
 };
 
-typedef Dir<double> Dird;
-typedef Dir<float> Dirf;
-
+typedef Dir<Cat<double>, double> DirCatd;
+typedef Dir<Cat<float>, float> DirCatf;
+typedef Dir<Mult<double>, double> DirMultd;
+typedef Dir<Mult<float>, float> DirMultf;

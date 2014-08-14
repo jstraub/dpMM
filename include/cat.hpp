@@ -23,15 +23,20 @@ public:
   Matrix<T,Dynamic,1> cdf_;
 
   /* constructor from pdf */
-  Cat(Matrix<T,Dynamic,1> pdf, boost::mt19937 *pRndGen);
+  Cat(const Matrix<T,Dynamic,1>& pdf, boost::mt19937 *pRndGen);
   /* constructor from indicators - estimates from counts */
-  Cat(VectorXu z, boost::mt19937 *pRndGen);
+  Cat(const VectorXu& z, boost::mt19937 *pRndGen);
   /* copy constructor */
   Cat(const Cat& other);
-  ~Cat();
+  virtual ~Cat();
 
   uint32_t sample();
   void sample(VectorXu& z);
+
+  T logPdf(const Matrix<T,Dynamic,1>& x) const {
+    assert(false); //TODO
+    return log(pdf_(0));
+  };
 
   const Matrix<T,Dynamic,1>& pdf() const {return pdf_;};
   void pdf(const Matrix<T,Dynamic,1>& pdf){
@@ -39,6 +44,9 @@ public:
     updateCdf();
   };
   const Matrix<T,Dynamic,1>& cdf() const {return cdf_;};
+
+  void print() const;
+
 private:
   boost::uniform_01<T> unif_;
   void updateCdf();

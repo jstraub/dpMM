@@ -16,6 +16,7 @@
 #include "dpMM.hpp"
 #include "lrCluster.hpp"
 #include "dir.hpp"
+#include "dirBaseMeasure.hpp"
 
 
 using namespace Eigen;
@@ -151,14 +152,14 @@ void DpSubclusterMM<B,T>::initialize(
 
   Matrix<T,Dynamic,1> alpha(2); alpha.setOnes(2);
 //  alpha *= alpha_;
-  Dir<T> dirLr(alpha,pRndGen_);
+  Dir<Cat<T>, T> dirLr(alpha,pRndGen_);
   Cat<T> piLr = dirLr.sample(); 
   piLr.sample(lr_);
   if(K_ > 1)
   {
     alpha.setOnes(K_);
 //    alpha *= alpha_;
-    Dir<T> dir(alpha,pRndGen_);
+    Dir<Cat<T>, T> dir(alpha,pRndGen_);
     Cat<T> pi = dir.sample(); 
     cout<<"init pi="<<pi.pdf().transpose()<<endl;
     pi.sample(z_);
@@ -168,7 +169,7 @@ void DpSubclusterMM<B,T>::initialize(
     z_(i) = z_(i)*2 + lr_(i);
 
 //  cout<<z_.transpose()<<" #labels="<<z_.size()<<endl;
-  cout<<"counts = "<<counts(z_,2*K_).transpose()<<endl;
+  cout<<"counts = "<<counts<T,uint32_t>(z_,2*K_).transpose()<<endl;
 
   for(uint32_t k=0; k<K_; ++k)
   {
@@ -184,10 +185,11 @@ void DpSubclusterMM<B,T>::initialize(
     relinearize(k);
     // compute posteriors and sample parameters
     thetas_[k]->posterior(*spx_,z_,2*k);
+    cout<<thetas_[k]->countL()<<" + "<<thetas_[k]->countR()<<" = "<<thetas_[k]->count()<<endl;
     assert(thetas_[k]->countL()+thetas_[k]->countR() == thetas_[k]->count());
-//    cout<<thetas_[k]->countL()<<" + "<<thetas_[k]->countR()<<" = "<<thetas_[k]->count()<<endl;
     totalCount += thetas_[k]->count();
   }
+  cout<<totalCount<<endl;
   assert(totalCount == N_);
 //  sticks_.setOnes(K_);
 //  sticks_ *= 1./K_;
@@ -217,6 +219,38 @@ void DpSubclusterMM<B,T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs
     covs.middleCols((3*k+2)*D,D) = thetas_[k]->getUpper()->Sigma();
   }
   fOutCovs << covs<<endl;
+}
+
+template <>
+void DpSubclusterMM<DirMultSampledd,double>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
+{
+//  const uint32_t Kmax = 500;
+//  Matrix<T,Dynamic,Dynamic> means(D_,Kmax*3); means.setZero();
+//  for(uint32_t k=0; k<K_; ++k)
+//  {
+//    means.col(3*k) = thetas_[k]->getL()->getMean();
+//    means.col(3*k+1) = thetas_[k]->getR()->getMean();
+//    means.col(3*k+2) = thetas_[k]->getUpper()->getMean();
+//  }
+//  fOutMeans << means<<endl;
+//
+  for(uint32_t k=0; k<K_; ++k)
+  {
+    fOutMeans << thetas_[k]->getL()->pdf().transpose()<<endl;
+    fOutMeans << thetas_[k]->getR()->pdf().transpose()<<endl;
+    fOutMeans << thetas_[k]->getUpper()->pdf().transpose()<<endl;
+  }
+}
+
+template <>
+void DpSubclusterMM<DirMultSampledf,float>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
+{
+  for(uint32_t k=0; k<K_; ++k)
+  {
+    fOutMeans << thetas_[k]->getL()->pdf().transpose()<<endl;
+    fOutMeans << thetas_[k]->getR()->pdf().transpose()<<endl;
+    fOutMeans << thetas_[k]->getUpper()->pdf().transpose()<<endl;
+  }
 }
 
 template <class B, typename T>
@@ -691,7 +725,7 @@ void DpSubclusterMM<B,T>::sampleLabels()
   cout<<"after"<<endl<<logLikeZcls_<<endl;
   cout<<" deleted : "<<nDelete<<" -> Knew = "<<K_ - nDelete<< " from "<<K_<<endl;
   cout<<"labelMap: "<<labelMap.transpose()<<endl;
-  cout<<"counts before:   "<<counts(z_,K_).transpose()<<endl;
+  cout<<"counts before:   "<<counts<T,uint32_t>(z_,K_).transpose()<<endl;
   cout<<"sticks before: "<<sticks_.transpose()<<endl;
 #endif
   Matrix<T,Dynamic,1> sticksNew(K_ - nDelete);
@@ -718,7 +752,7 @@ void DpSubclusterMM<B,T>::sampleLabels()
     z_(i) = labelMap(2*z_(i)) + lr_(i);
 //  cout<<"z:  "<<z_.transpose()<<endl;
 #ifndef NDEBUG
-  cout<<"counts after:    "<<counts(z_,2*K_).transpose()<<endl;
+  cout<<"counts after:    "<<counts<T,uint32_t>(z_,2*K_).transpose()<<endl;
 #endif
 
   // relinearize and compute posteriors
@@ -752,6 +786,7 @@ void DpSubclusterMM<B,T>::proposeMerges()
 #ifndef NDEBUG
   cout<<"labelMap before: "<<labelMap.transpose()<<endl;
 #endif
+  for(uint32_t k=0; k<K_; ++k) if(thetas_[k]->splittable()) cout<<" cluster "<<k<<" splittable"<<endl; else cout<<" cluster "<<k<<" NOT splittable"<<endl;
   for(uint32_t k=0; k<K_; ++k) if(thetas_[k]->splittable())
     for(uint32_t j=k+1; j<K_; ++j) if(thetas_[j]->splittable())
       if(labelMap(2*k) != labelMap(2*k+1) && labelMap(2*j) != labelMap(2*j+1))
@@ -927,7 +962,7 @@ void DpSubclusterMM<B,T>::proposeRandomSplits()
   // sample new LR labels for all datapoints completely at random
   Matrix<T,Dynamic,1> alpha(2); alpha.setOnes(2);
   alpha *= alpha_/2.;
-  Dir<T> dirLr(alpha,pRndGen_);
+  Dir<Cat<T>, T> dirLr(alpha,pRndGen_);
   Cat<T> piLr = dirLr.sample(); 
   VectorXu lr(N_);
   piLr.sample(lr);
@@ -942,11 +977,16 @@ void DpSubclusterMM<B,T>::proposeRandomSplits()
 template <class B, typename T>
 void DpSubclusterMM<B,T>::proposeSplits()
 {
+
+  for(uint32_t k=0; k<K_; ++k) if(thetas_[k]->splittable()) cout<<" cluster "<<k<<" splittable"<<endl; else cout<<" cluster "<<k<<" NOT splittable"<<endl;
+
   VectorXi doReset(K_); doReset.setOnes(K_); doReset *= -1;
   VectorXi doSplit(K_); doSplit.setOnes(K_); doSplit *= -1;
   for(uint32_t k=0; k<K_; ++k)
     if(thetas_[k]->splittable())
     {
+      cout<<" testing split for "<<k<<endl;
+
       uint32_t Nk = thetas_[k]->count();
       uint32_t Nk_l = thetas_[k]->countL();
       uint32_t Nk_r = thetas_[k]->countR();
@@ -954,7 +994,7 @@ void DpSubclusterMM<B,T>::proposeSplits()
       if(Nk_l == 0 || Nk_r == 0)
       {
         doReset(k) = 1;
-        break;
+        continue;
       }
 //      double HR = log(alpha_) + boost::math::lgamma(Nk_l);
 //      HR += boost::math::lgamma(Nk_r) - boost::math::lgamma(Nk);
@@ -979,10 +1019,10 @@ void DpSubclusterMM<B,T>::proposeSplits()
 
       T HR = logJointAfter - logJointBefore + qBefore - qAfter;
 #ifndef NDEBUG
-    cout<<"\x1b[32m p after  = "<< logJointAfter <<"\x1b[0m"<<endl;
-    cout<<"\x1b[32m p before = "<< logJointBefore <<"\x1b[0m"<<endl;
-    cout<<"\x1b[32m q before = "<< qBefore <<"\x1b[0m"<<endl;
-    cout<<"\x1b[32m q after  = "<< qAfter <<"\x1b[0m"<<endl;
+      cout<<"\x1b[32m p after  = "<< logJointAfter <<"\x1b[0m"<<endl;
+      cout<<"\x1b[32m p before = "<< logJointBefore <<"\x1b[0m"<<endl;
+      cout<<"\x1b[32m q before = "<< qBefore <<"\x1b[0m"<<endl;
+      cout<<"\x1b[32m q after  = "<< qAfter <<"\x1b[0m"<<endl;
 
       cout<<"\x1b[32m log(alpha) = "<<log(alpha_)<<"\x1b[0m"<<endl;
       cout<<"\x1b[32m log(Gamma(Nkl)) = "<<boost::math::lgamma(Nk_l)<<"\x1b[0m"<<endl;
@@ -1033,6 +1073,7 @@ void DpSubclusterMM<B,T>::proposeSplits()
     for(uint32_t k=0; k<K_; ++k)
       if(doReset(k) > 0)
       {
+        cout<<"\x1b[31m resetting "<<k<<"\x1b[0m"<<endl; 
         // TODO: posterior also samples the stick lengths whereas posteriorLR and posterior Upper do not do that - what is right?
         // TODO: I dont think I need to compute posteriors here, since this is
         // next anyways after splits and merges
@@ -1196,10 +1237,11 @@ double DpSubclusterMM<B,T>::logJoint()
   double logJoint = K_*log(alpha_) + boost::math::lgamma(alpha_) 
     - boost::math::lgamma(alpha_+ z_.size());
   for(uint32_t k=0; k<K_; ++k)
-  {
-    logJoint += boost::math::lgamma(thetas_[k]->getUpper()->count());
-    logJoint += thetas_[k]->getUpper()->logPdfUnderPriorMarginalized();
-  }
+    if (thetas_[k]->getUpper()->count() >0)
+    {
+      logJoint += boost::math::lgamma(thetas_[k]->getUpper()->count());
+      logJoint += thetas_[k]->getUpper()->logPdfUnderPriorMarginalized();
+    }
   return logJoint;
 }
 

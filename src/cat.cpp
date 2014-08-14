@@ -3,17 +3,17 @@
 // ---------------------------------------------------------------------------
 
 template<typename T>
-Cat<T>::Cat(Matrix<T,Dynamic,1> pdf, boost::mt19937 *pRndGen)
+Cat<T>::Cat(const Matrix<T,Dynamic,1>& pdf, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), K_(pdf.size()), pdf_(pdf)
 {
   updateCdf();
 };
 
 template<typename T>
-Cat<T>::Cat(VectorXu z, boost::mt19937 *pRndGen)
+Cat<T>::Cat(const VectorXu& z, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), K_(z.maxCoeff()+1)
 {
-  pdf_ = counts(z,K_).cast<T>();
+  pdf_ = counts<T,uint32_t>(z,K_);
   pdf_ /= pdf_.sum();
 
   updateCdf();
@@ -52,6 +52,12 @@ void Cat<T>::updateCdf()
   cdf_.setZero(pdf_.size()+1);
   for (uint32_t k=0; k<K_; ++k)
     cdf_(k+1) = cdf_(k)+pdf_(k);
+}
+
+template<typename T>
+void Cat<T>::print() const
+{
+  cout<<"pi="<<pdf_.transpose()<<endl;
 }
 
 template class Cat<double>;

@@ -111,6 +111,7 @@ def DirectoryOfThisScript():
 
 # makes the compilation database folder be the folder of this script 
 compilation_database_folder = DirectoryOfThisScript(); 
+#compilation_database_folder = os.path.join(DirectoryOfThisScript(),'/build/'); 
 
 
 if os.path.exists( compilation_database_folder ):

@@ -39,6 +39,7 @@ link_directories(
 cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
   ./src/distribution.cpp
   ./src/cat.cpp
+  ./src/mult.cpp
   ./src/niw.cpp
   ./src/iw.cpp
   ./src/dir.cpp
@@ -53,9 +54,31 @@ cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
   ./cuda/sphereMixturePdf_kernel.cu
   ./cuda/karcherMeans_kernel.cu
   ./cuda/log_p_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
   ./cuda/sufficientStatistics_kernel.cu
 )
 target_link_libraries(dpStickGMM
+  boost_system
+  boost_random
+  boost_program_options
+)
+
+cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
+  ./src/distribution.cpp
+  ./src/niw.cpp
+  ./src/iw.cpp
+  ./src/normal.cpp
+  ./src/cat.cpp
+  ./src/mult.cpp
+  ./src/dir.cpp
+  ./src/niwSphere.cpp
+  ./src/niwSphereFull.cpp
+  ./src/niwTangent.cpp
+  ./src/sphere.cpp
+  ./src/sampler.cpp
+  ./cuda/choiceMult_kernel.cu
+)
+target_link_libraries(dpDirMM
   boost_system
   boost_random
   boost_program_options

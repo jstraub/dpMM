@@ -31,23 +31,24 @@ private:
 };
 
 
-inline VectorXd counts(const VectorXi& z, uint32_t K)
+template<typename T, typename T2>
+inline Matrix<T,Dynamic,1> counts(const Matrix<T2,Dynamic,1> & z, T2 K)
 {
-  VectorXd N(K);
+  Matrix<T,Dynamic,1> N(K);
   N.setZero(K);
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (T2 i=0; i<z.size(); ++i)
     N(z(i))++;
   return N;
 };
 
-inline VectorXd counts(const VectorXu& z, uint32_t K)
-{
-  VectorXd N(K);
-  N.setZero(K);
-  for (uint32_t i=0; i<z.size(); ++i)
-    N(z(i))++;
-  return N;
-};
+//inline VectorXd counts(const VectorXu& z, uint32_t K)
+//{
+//  VectorXd N(K);
+//  N.setZero(K);
+//  for (uint32_t i=0; i<z.size(); ++i)
+//    N(z(i))++;
+//  return N;
+//};
 
 /* multivariate gamma function of dimension p */
 inline double lgamma_mult(double x,uint32_t p)
