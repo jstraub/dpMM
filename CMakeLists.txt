@@ -159,6 +159,7 @@ target_link_libraries(generateSphericalData
 cuda_add_executable(testDirMM ./test/dirMM.cpp
     ./src/dir.cpp
     ./src/cat.cpp
+    ./src/mult.cpp
     ./src/niw.cpp
     ./src/iw.cpp
     ./src/normal.cpp
@@ -170,6 +171,7 @@ cuda_add_executable(testDirMM ./test/dirMM.cpp
   ./cuda/choiceMult_kernel.cu
   ./cuda/log_p_kernel.cu
   ./cuda/karcherMeans_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
   ./cuda/sufficientStatistics_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
 )
