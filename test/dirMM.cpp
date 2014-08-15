@@ -163,13 +163,13 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
   shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
 //  shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
 
-  Dir<myFlt> dir(alpha,&rndGen); 
+  Dir<Cat<myFlt>, myFlt> dir(alpha,&rndGen); 
   DirMMcld<NiwSphere<myFlt>,myFlt> dirGMM_sp(dir,niwSp);
 
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
   shared_ptr<ClSphereGpu<myFlt> > clsp(
-      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
+      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
 
   Matrix<myFlt,Dynamic,1> mu(D);
   mu<<0.0,0.0,1.0;
@@ -178,17 +178,17 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
   dirGMM_sp.initialize(clsp);
 //  dirGMM_cpu.initialize(*sx);
   cout<<"------ sampling -- NIW sphere"<<endl;
-  cout<<counts(dirGMM_sp.labels(),K).transpose()<<endl;
+  cout<<counts<myFlt,uint32_t>(dirGMM_sp.labels(),K).transpose()<<endl;
   Timer t;
   for(uint32_t i=0; i<5; ++i)
   {
 //    t.tic();
-//    dirGMM_cpu.sampleIndicators();
+//    dirGMM_cpu.sampleLabels();
 //    dirGMM_cpu.sampleParameters();
 //    cout<<dirGMM_cpu.labels().transpose()<<endl;
 //    t.toctic(" -----------------CPU------------------- fullIteration");
     t.tic();
-    dirGMM_sp.sampleIndicators();
+    dirGMM_sp.sampleLabels();
     dirGMM_sp.sampleParameters();
     cout<<dirGMM_sp.z().transpose()<<endl;
     cout<<dirGMM_sp.counts().transpose()<<endl;

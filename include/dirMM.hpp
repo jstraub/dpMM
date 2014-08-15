@@ -21,8 +21,8 @@ template<typename T>
 class DirMM : public DpMM<T>
 {
 public:
-  DirMM(const Dir<T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
-  DirMM(const Dir<T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
+  DirMM(const Dir<Cat<T>, T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirMM();
 
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
@@ -44,7 +44,7 @@ public:
 
 protected: 
   uint32_t K_;
-  Dir<T> dir_;
+  Dir<Cat<T>, T> dir_;
   Cat<T> pi_;
 #ifdef CUDA
   SamplerGpu<T>* sampler_;
@@ -64,14 +64,14 @@ protected:
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<T>& alpha, const shared_ptr<BaseMeasure<T> >& theta) :
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   theta0_(theta)
 {};
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<T>& alpha, 
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   thetas_(thetas)
@@ -87,7 +87,7 @@ DirMM<T>::~DirMM()
 template <typename T>
 Matrix<T,Dynamic,1> DirMM<T>::getCounts()
 {
-  return counts(z_,K_);
+  return counts<T,uint32_t>(z_,K_);
 };
 
 

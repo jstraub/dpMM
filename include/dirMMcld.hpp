@@ -23,7 +23,7 @@ template <class H, class T>
 class DirMMcld : public DpMM<T>
 {
   uint32_t K_;
-  Dir<T> dir_;
+  Dir<Cat<T>,T> dir_;
   Cat<T> pi_;
 #ifdef CUDA
   SamplerGpu<T>* sampler_;
@@ -38,8 +38,8 @@ class DirMMcld : public DpMM<T>
   shared_ptr<ClData<T> > cld_;
   
 public:
-  DirMMcld(const Dir<T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
-  DirMMcld(const Dir<T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMMcld(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
+  DirMMcld(const Dir<Cat<T>,T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
   ~DirMMcld();
 
   void initialize(const shared_ptr<ClData<T> >& cld);
@@ -66,13 +66,13 @@ private:
 // --------------------------------------- impl -------------------------------
 
 template <class H, class T>
-DirMMcld<H,T>::DirMMcld(const Dir<T>& alpha, 
+DirMMcld<H,T>::DirMMcld(const Dir<Cat<T>,T>& alpha, 
     const shared_ptr<BaseMeasure<T> >& theta) 
   : K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), theta0_(theta)
 {};
 
 template <class H, class T>
-DirMMcld<H,T>::DirMMcld(const Dir<T>& alpha, 
+DirMMcld<H,T>::DirMMcld(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   thetas_(thetas)
