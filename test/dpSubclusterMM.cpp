@@ -211,7 +211,6 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwSphereFull_split_test)
   uint32_t K0=1;
   double alpha = 1.;
   double nu = D+1.0;
-  double kappa = 1.0;
   VectorXd mu(D); mu.setZero();
   mu(D-1) = 1.0;
   MatrixXd Delta(D-1,D-1);
@@ -220,7 +219,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwSphereFull_split_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphereFulld> theta(new NiwSphereFulld(iw,mu,kappa,&rndGen));
+  shared_ptr<NiwSphereFulld> theta(new NiwSphereFulld(iw,&rndGen));
   shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
     LrCluster<NiwSphereFulld,double>(theta,1.0,&rndGen));
   DpSubclusterMM<NiwSphereFulld,double> dp(alpha, lrTheta, K0, &rndGen);

@@ -42,7 +42,7 @@ template<typename T>
 uint32_t Mult<T>::sample()
 {
   assert(false);// TODO
-  T r=unif_(*this->pRndGen_);
+//  T r=unif_(*this->pRndGen_);
   //cout<<cdf_.transpose()<<" -> "<<r<<endl;
 //  for (uint32_t k=0; k<K_; ++k)
 //    if (r<cdf_(k)){return k-1;}

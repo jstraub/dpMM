@@ -238,22 +238,23 @@ target_link_libraries(testSPKM
   boost_unit_test_framework
 )
 
-#cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
-#    ./src/cat.cpp
-#    ./src/dir.cpp
-#    ./src/niw.cpp
-#    ./src/iw.cpp
-#    ./src/normal.cpp
-#    ./src/niwSphere.cpp
-#    ./src/niwSphereFull.cpp
-#    ./src/niwTangent.cpp
-#    ./src/sphere.cpp
-#  ./src/sampler.cpp
-#  ./src/gpuMatrix.cpp
-#  ./cuda/choiceMult_kernel.cu
-#)
-#target_link_libraries(testDpSubclusterMM
-#  boost_system
-#  boost_random
-#  boost_unit_test_framework
-#)
+cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
+    ./src/cat.cpp
+    ./src/mult.cpp
+    ./src/dir.cpp
+    ./src/niw.cpp
+    ./src/iw.cpp
+    ./src/normal.cpp
+    ./src/niwSphere.cpp
+    ./src/niwSphereFull.cpp
+    ./src/niwTangent.cpp
+    ./src/sphere.cpp
+  ./src/sampler.cpp
+  ./src/gpuMatrix.cpp
+  ./cuda/choiceMult_kernel.cu
+)
+target_link_libraries(testDpSubclusterMM
+  boost_system
+  boost_random
+  boost_unit_test_framework
+)
