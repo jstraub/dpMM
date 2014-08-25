@@ -9,7 +9,9 @@
 
 #include "global.hpp"
 
-#define PI 3.141592653589793
+#ifndef PI
+#  define PI 3.141592653589793
+#endif
 #define LOG_PI 1.1447298858494002
 #define LOG_2 0.69314718055994529
 #define LOG_2PI 1.8378770664093453

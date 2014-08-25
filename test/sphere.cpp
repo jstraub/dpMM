@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE( sphereGpu_test)
   for(uint32_t k=0; k<K; ++k)
   {
     NormalSphere<myFlt> normS(karcherMeans.col(k),Sigmas[k],&rndGen); 
-    logNormalizers(k) = -0.5*normS.normal_.logDetSigma_;
+    logNormalizers(k) = -0.5*normS.logDetSigma();
   }
 
   sphere.sampleGMMpdf(pi, Sigmas , logNormalizers, &sampler);
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( sphereGpu_test)
     for(uint32_t k=0; k<K; ++k)
     {
       NormalSphere<myFlt> normS(karcherMeans.col(k),Sigmas[k],&rndGen);
-      logPdf(k) = 0.5*(LOG_2PI*D+normS.normal_.logDetSigma_) + normS.logPdf(sq->col(i));; 
+      logPdf(k) = 0.5*(LOG_2PI*D+normS.logDetSigma()) + normS.logPdf(sq->col(i));; 
       //log(pi(k)) + normS.logPdf(sq->col(i));
 //      logPdf(k) = normS.normal_.; //log(pi(k)) + normS.logPdf(sq->col(i));
     }

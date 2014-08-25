@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( clSphereGpu_test)
   mu<<0.0,0.0,1.0;
   MatrixXd Sigma = MatrixXd::Identity(D,D);
   Sigma *= 0.1;
-  Normal gauss(mu,Sigma,&rndGen);
+  Normald gauss(mu,Sigma,&rndGen);
   for (uint32_t i=0; i<N; ++i) 
   {
     if(i<N/2){
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( clSphereGpu_test)
 //    cout << x->col(i) <<endl;
   }
 
-  ClSphereGpu data(x,z,&rndGen,K);
+  ClSphereGpu<float> data(x,z,&rndGen,K);
   data.update(K);
 
   cout<<"Ns="<<endl<<data.counts()<<endl;

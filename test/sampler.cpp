@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( sampler_cpu_test)
   BOOST_CHECK((z.array()<=M).all());
   BOOST_CHECK((z.array()>=0).all());
 
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 }
 
 BOOST_AUTO_TEST_CASE( sampler_cpu_double_test)
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE( sampler_cpu_double_test)
   BOOST_CHECK((z.array()<=M).all());
   BOOST_CHECK((z.array()>=0).all());
 
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 }
 
 
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( sampler_gpu_test)
   BOOST_CHECK((z.array()<=M).all());
   BOOST_CHECK((z.array()>=0).all());
   
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 
   pdfs.setZero(N,M);
   pdfs.col(3).setOnes();
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE( sampler_gpu_test)
   t.tic();
   z = s.sampleDiscPdf(pdfs);
   t.toctic("discPdf");
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 }
 
 BOOST_AUTO_TEST_CASE( sampler_gpu_double_test)
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( sampler_gpu_double_test)
   BOOST_CHECK((z.array()<=M).all());
   BOOST_CHECK((z.array()>=0).all());
   
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 
   pdfs.setZero(N,M);
   pdfs.col(3).setOnes();
@@ -155,5 +155,5 @@ BOOST_AUTO_TEST_CASE( sampler_gpu_double_test)
   t.tic();
   z = s.sampleDiscPdf(pdfs);
   t.toctic("discPdf");
-  cout<<counts(z,M).transpose()<<endl;
+  cout<<counts<double,uint32_t>(z,M).transpose()<<endl;
 }

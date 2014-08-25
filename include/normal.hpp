@@ -56,6 +56,9 @@ private:
   boost::random::normal_distribution<> gauss_;
 };
 
+typedef Normal<double> Normald;
+typedef Normal<float> Normalf;
+
 template<class T>
 inline Matrix<T,Dynamic,Dynamic> sampleClusters(
     Matrix<T,Dynamic,Dynamic>& x, VectorXu& z, uint32_t K);

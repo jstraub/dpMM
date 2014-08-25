@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( dir_test)
   alpha << 1.0,100.0,1.0;
 
   boost::mt19937 rndGen(1);
-  Dir<double> dir(alpha,&rndGen);
+  Dir<Cat<double>,double> dir(alpha,&rndGen);
   VectorXd piPdf = dir.sample().pdf();
   
   BOOST_CHECK_EQUAL(piPdf.size(),alpha.size());
@@ -55,16 +55,16 @@ BOOST_AUTO_TEST_CASE( dir_test)
     cout<<"piPdf="<<dir.sample().pdf().transpose()<<endl;
   
   boost::mt19937 rndGen2(1);
-  Dir<double> dir2(alpha,&rndGen2);
+  Dir<Catd,double> dir2(alpha,&rndGen2);
   VectorXd piPdf2 = dir2.sample().pdf();
   BOOST_CHECK_EQUAL(piPdf,piPdf2);
 
-  Dir<double> dir3(dir);
+  Dir<Catd,double> dir3(dir);
   VectorXd piPdf3 = dir3.sample().pdf();
   BOOST_CHECK_EQUAL(piPdf.size(),piPdf3.size());
 
   VectorXf alphaf = alpha.cast<float>();
-  Dir<float> dirf(alphaf,&rndGen);
+  Dir<Catf,float> dirf(alphaf,&rndGen);
 }
 
 BOOST_AUTO_TEST_CASE( cat_test)

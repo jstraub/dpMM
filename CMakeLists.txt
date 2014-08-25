@@ -97,18 +97,18 @@ target_link_libraries(dpSubclusterGMM
   gsl gslcblas m rt
 )
 
-add_executable(dpSubclusterSphereGMM ./src/dpSubclusterSphereGMM.cpp
-  ./src/dpSubclustersSphereMM.cpp
-  ./include/dpmmSubclusters/cluster_sampledT.cpp
-  ./include/dpmmSubclusters/normal.cpp
-  ./src/niwSphere_sampled.cpp
-)
-target_link_libraries(dpSubclusterSphereGMM
-  boost_system
-  boost_random
-  boost_program_options
-  gsl gslcblas m rt
-)
+#add_executable(dpSubclusterSphereGMM ./src/dpSubclusterSphereGMM.cpp
+#  ./src/dpSubclustersSphereMM.cpp
+#  ./include/dpmmSubclusters/cluster_sampledT.cpp
+#  ./include/dpmmSubclusters/normal.cpp
+#  ./src/niwSphere_sampled.cpp
+#)
+#target_link_libraries(dpSubclusterSphereGMM
+#  boost_system
+#  boost_random
+#  boost_program_options
+#  gsl gslcblas m rt
+#)
 
 #cuda_add_executable(realtimeMF_openni
 #  ./src/realtimeMF_openni.cpp
@@ -131,7 +131,8 @@ target_link_libraries(dpSubclusterSphereGMM
 
 add_executable(testDist ./test/distributions.cpp
     ./src/dir.cpp
-    ./src/cat.cpp
+  ./src/cat.cpp
+  ./src/mult.cpp
     ./src/niw.cpp
     ./src/iw.cpp
     ./src/normal.cpp
@@ -189,6 +190,7 @@ cuda_add_executable(testSphere ./test/sphere.cpp
   ./cuda/karcherMeans_kernel.cu
   ./cuda/sufficientStatistics_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
   ./cuda/choiceMult_kernel.cu
 )
 target_link_libraries(testSphere
@@ -211,7 +213,9 @@ target_link_libraries(testSampler
 cuda_add_executable(testClData ./test/clData.cpp
   ./src/gpuMatrix.cpp
   ./src/normal.cpp
+  ./src/sphere.cpp
   ./cuda/log_p_kernel.cu
+  ./cuda/sphereMixturePdf_kernel.cu
   ./cuda/karcherMeans_kernel.cu
   ./cuda/sufficientStatistics_kernel.cu
 )
@@ -222,6 +226,11 @@ target_link_libraries(testClData
 )
 
 cuda_add_executable(testSPKM ./test/spkm.cpp
+  ./src/sphere.cpp
+  ./src/normal.cpp
+  ./src/cat.cpp
+  ./src/mult.cpp
+  ./src/dir.cpp
 )
 target_link_libraries(testSPKM
   boost_system
@@ -229,22 +238,22 @@ target_link_libraries(testSPKM
   boost_unit_test_framework
 )
 
-cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
-    ./src/cat.cpp
-    ./src/dir.cpp
-    ./src/niw.cpp
-    ./src/iw.cpp
-    ./src/normal.cpp
-    ./src/niwSphere.cpp
-    ./src/niwSphereFull.cpp
-    ./src/niwTangent.cpp
-    ./src/sphere.cpp
-  ./src/sampler.cpp
-  ./src/gpuMatrix.cpp
-  ./cuda/choiceMult_kernel.cu
-)
-target_link_libraries(testDpSubclusterMM
-  boost_system
-  boost_random
-  boost_unit_test_framework
-)
+#cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
+#    ./src/cat.cpp
+#    ./src/dir.cpp
+#    ./src/niw.cpp
+#    ./src/iw.cpp
+#    ./src/normal.cpp
+#    ./src/niwSphere.cpp
+#    ./src/niwSphereFull.cpp
+#    ./src/niwTangent.cpp
+#    ./src/sphere.cpp
+#  ./src/sampler.cpp
+#  ./src/gpuMatrix.cpp
+#  ./cuda/choiceMult_kernel.cu
+#)
+#target_link_libraries(testDpSubclusterMM
+#  boost_system
+#  boost_random
+#  boost_unit_test_framework
+#)

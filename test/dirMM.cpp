@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
   cout<<dirGMM_marg.labels().transpose()<<endl;
   for(uint32_t t=0; t<30; ++t)
   {
-    dirGMM_marg.sampleIndicators();
+    dirGMM_marg.sampleLabels();
     dirGMM_marg.sampleParameters();
     cout<<dirGMM_marg.labels().transpose()
       <<" logJoint="<<dirGMM_marg.logJoint()<<endl;
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
   cout<<dirGMM_samp.labels().transpose()<<endl;
   for(uint32_t t=0; t<30; ++t)
   {
-    dirGMM_samp.sampleIndicators();
+    dirGMM_samp.sampleLabels();
     dirGMM_samp.sampleParameters();
     cout<<dirGMM_samp.labels().transpose()
       <<" logJoint="<<dirGMM_samp.logJoint()<<endl;
@@ -122,12 +122,13 @@ BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
   cout<<dirGMM_sp.labels().transpose()<<endl;
   for(uint32_t t=0; t<10; ++t)
   {
-    dirGMM_sp.sampleIndicators();
+    dirGMM_sp.sampleLabels();
     dirGMM_sp.sampleParameters();
     cout<<dirGMM_sp.labels().transpose()
       <<" logJoint="<<dirGMM_sp.logJoint()<<endl;
   }
-  MatrixXu inds = dirGMM_sp.mostLikelyInds(5);
+  MatrixXd logLikes;
+  MatrixXu inds = dirGMM_sp.mostLikelyInds(5,logLikes);
   cout<<"most likely indices"<<endl;
   cout<<inds<<endl;
   cout<<"----------------------------------------"<<endl;
@@ -169,7 +170,7 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
   shared_ptr<ClSphereGpu<myFlt> > clsp(
-      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
+      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
 
   Matrix<myFlt,Dynamic,1> mu(D);
   mu<<0.0,0.0,1.0;
