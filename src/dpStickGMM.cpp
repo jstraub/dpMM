@@ -227,7 +227,7 @@ int main(int argc, char **argv)
     IWd iw(Delta, nu, &rndGen);
     shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
-    Dird dir(alpha,&rndGen); 
+    DirCatd dir(alpha,&rndGen); 
     dpmm = new DirMM<double>(dir, niwSp);
 
   }else if(!base.compare("DpNiwSphere")){
@@ -340,7 +340,7 @@ int main(int argc, char **argv)
     double kappa = .01;
     cout<<"theta = "<<mu.transpose()<<endl;
     cout<<"kappa = "<<kappa<<endl;
-    WNIWd niw(Delta, mu, nu, kappa, &rndGen);
+    NIWd niw(Delta, mu, nu, kappa, &rndGen);
     shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
     shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
       LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
             new NiwSphered(iw, &rndGen)));
     thetas.push_back(shared_ptr<BaseMeasure<double> >(new UnifSphered(D)));
 
-    Dird dir(alpha,&rndGen); 
+    DirCatd dir(alpha,&rndGen); 
     dpmm = new DirMM<double>(dir, thetas);
 
   }else if(!base.compare("NiwSphereCuda")){
@@ -423,7 +423,7 @@ int main(int argc, char **argv)
     IWd iw(Delta, nu, &rndGen);
     shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
-    Dird dir(alpha,&rndGen); 
+    DirCatd dir(alpha,&rndGen); 
     dpmmf = new DirMMcld<NiwSphered,double>(dir, niwSp);
   }else if(!base.compare("spkm")){
     spkm = new SphericalKMeans<double>(spx, K, &rndGen);
@@ -459,7 +459,7 @@ int main(int argc, char **argv)
 
       const VectorXu& z = dpmmf->getLabels().transpose();
       cout<<"   K="<<dpmm->getK();
-      cout<<"  counts=   "<<counts(z,dpmmf->getK()).transpose()<<endl;
+      cout<<"  counts=   "<<counts<double,uint32_t>(z,dpmmf->getK()).transpose()<<endl;
 //      cout<<"  logJoint= "<<dpmmf->logJoint()<<endl;
       for (uint32_t i=0; i<z.size()-1; ++i) 
         fout<<z(i)<<" ";

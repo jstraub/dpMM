@@ -55,7 +55,7 @@ SphericalKMeans<T>::SphericalKMeans(
 {
   Matrix<T,Dynamic,1> alpha(this->K_);
   alpha.setOnes(this->K_);
-  Dir<T> dir(alpha,this->pRndGen_);
+  Dir<Cat<T>,T> dir(alpha,this->pRndGen_);
   Cat<T> pi = dir.sample(); 
   cout<<"init pi="<<pi.pdf().transpose()<<endl;
   pi.sample(this->z_);

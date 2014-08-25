@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
       new NiwMarginalized<double>(niw));
   VectorXd alpha(2);
   alpha << 10.,10.;
-  Dir<double> dir(alpha,&rndGen); 
+  Dir<Catd,double> dir(alpha,&rndGen); 
   DirMM<double> dirGMM_marg(dir,niwMargBase);
   
   uint32_t N=20;
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
 
   VectorXd alpha(2);
   alpha << 10.,10.;
-  Dir<double> dir(alpha,&rndGen); 
+  Dir<Catd,double> dir(alpha,&rndGen); 
   DirMM<double> dirGMM_sp(dir,niwSp);
   
   uint32_t N=20;
