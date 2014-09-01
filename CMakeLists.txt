@@ -13,14 +13,15 @@ option(USE_OPENMP "Uses OpenMP (default true)" ON)
 
 # add flags depending on build type
 #set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -fopenmp -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
-#set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
-#set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-deprecated  -DCUDA")
-set(CMAKE_CXX_FLAGS_RELEASE "-g  -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wno-deprecated  -DCUDA")
+#set(CMAKE_CXX_FLAGS_RELEASE "-g  -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -Wno-deprecated  -DCUDA")
 
 if(USE_OPENMP)
-	set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} -fopenmp)
-	set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} -fopenmp)
+	set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+	set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
+else()
+	set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+	set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-deprecated  -DCUDA")
 endif()
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
