@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(lrCluster_merge_test)
   uint32_t N=80;
   uint32_t D=3;
   uint32_t K=1;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   sampleClustersOnSphere<double>(*spx, K);
   
 //  uint32_t K0=2;
@@ -41,10 +41,10 @@ BOOST_AUTO_TEST_CASE(lrCluster_merge_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
-  shared_ptr<NiwSphered> theta2(new NiwSphered(iw,&rndGen));
+  boost::shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
+  boost::shared_ptr<NiwSphered> theta2(new NiwSphered(iw,&rndGen));
 
-  shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
+  boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
     LrCluster<NiwSphered,double>(theta,1.0,&rndGen));
   VectorXd mean(3);
   mean << 0,0,1;
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(lrCluster_merge_test)
   lrTheta->getUpper()->scatter() = MatrixXd::Identity(D-1,D-1);
   lrTheta->getUpper()->count() = 10;
 
-  shared_ptr<LrCluster<NiwSphered,double> > lrTheta2(new
+  boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta2(new
     LrCluster<NiwSphered,double>(theta2,1.0,&rndGen));
   mean << 0,0,1;
   lrTheta2->getUpper()->normalS_.setMean(mean);
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(lrCluster_merge_test)
 //  cout<<"copy of LR "<<lrTheta2.get()<<endl;
 //  cout<<lrTheta->getUpper()<<endl;
 //  cout<<lrTheta2->getUpper()<<endl;
-  shared_ptr<LrCluster<NiwSphered,double> > lrMerged(lrTheta->merge(lrTheta2));
+  boost::shared_ptr<LrCluster<NiwSphered,double> > lrMerged(lrTheta->merge(lrTheta2));
 
   cout<<" -- -- -- lrCluster merged"<<endl;
   lrMerged->getUpper()->print();
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_merge_test)
   uint32_t N=80;
   uint32_t D=3;
   uint32_t K=1;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   sampleClustersOnSphere<double>(*spx, K);
   
   uint32_t K0=2;
@@ -108,8 +108,8 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_merge_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
-  shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
+  boost::shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
+  boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
     LrCluster<NiwSphered,double>(theta,1.0,&rndGen));
   DpSubclusterMM<NiwSphered,double> dp(alpha, lrTheta, K0, &rndGen);
    
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_split_test)
   uint32_t N=80;
   uint32_t D=3;
   uint32_t K=2;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   cout<<"true mus:"<<endl<<sampleClustersOnSphere<double>(*spx, K)<<endl;
   
   uint32_t K0=1;
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_split_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
-  shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
+  boost::shared_ptr<NiwSphered> theta(new NiwSphered(iw,&rndGen));
+  boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
     LrCluster<NiwSphered,double>(theta,1.0,&rndGen));
   DpSubclusterMM<NiwSphered,double> dp(alpha, lrTheta, K0, &rndGen);
    
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwSphereFull_split_test)
   uint32_t N=80;
   uint32_t D=3;
   uint32_t K=2;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   cout<<"true mus:"<<endl<<sampleClustersOnSphere<double>(*spx, K)<<endl;
   
   uint32_t K0=1;
@@ -219,8 +219,8 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwSphereFull_split_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphereFulld> theta(new NiwSphereFulld(iw,&rndGen));
-  shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
+  boost::shared_ptr<NiwSphereFulld> theta(new NiwSphereFulld(iw,&rndGen));
+  boost::shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
     LrCluster<NiwSphereFulld,double>(theta,1.0,&rndGen));
   DpSubclusterMM<NiwSphereFulld,double> dp(alpha, lrTheta, K0, &rndGen);
    
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
   uint32_t N=80;
   uint32_t D=3;
   uint32_t K=2;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   cout<<"true mus:"<<endl<<sampleClustersOnSphere<double>(*spx, K)<<endl;
   
   uint32_t K0=1;
@@ -276,8 +276,8 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   NIWd niw(Delta,mu,nu,kappa,&rndGen);
-  shared_ptr<NiwTangentd> theta(new NiwTangentd(niw,&rndGen));
-  shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
+  boost::shared_ptr<NiwTangentd> theta(new NiwTangentd(niw,&rndGen));
+  boost::shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
     LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
   DpSubclusterMM<NiwTangentd,double> dp(alpha, lrTheta, K0, &rndGen);
    
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
 //  uint32_t D=3;
 //  uint32_t K=2;
 //  VectorXu z(N);
-//  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+//  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
 //  cout<<"true mus:"<<endl<<sampleClusters<double>(*spx, z, K)<<endl;
 //  
 //  uint32_t K0=1;
@@ -334,8 +334,8 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
 //  cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 //
 //  NIWd niw(Delta,theta,nu,kappa,&rndGen);
-//  shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
-//  shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
+//  boost::shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
+//  boost::shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
 //    LrCluster<NiwSampledd,double>(niwSampl,1.0,&rndGen));
 //  DpSubclusterMM<NiwSampledd,double> dp(alpha, lrTheta, K0, &rndGen);
 //   

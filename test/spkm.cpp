@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(spkm_test)
   uint32_t N=20;
   uint32_t D=3;
   uint32_t K=2;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   sampleClustersOnSphere<double>(*spx, K);
 
 

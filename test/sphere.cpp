@@ -13,7 +13,6 @@
 using std::cout;
 using std::endl;
 
-
 BOOST_AUTO_TEST_CASE( sphere_test)
 {
   cout<<"----------------------- sphere ----------------------"<<endl;
@@ -60,7 +59,7 @@ BOOST_AUTO_TEST_CASE( sphere_test)
   uint32_t D = 3;
   uint32_t K = 5;
   uint32_t N = 20;
-  shared_ptr<Matrix<double,Dynamic,Dynamic> > sq(
+  boost::shared_ptr<Matrix<double,Dynamic,Dynamic> > sq(
       new Matrix<double,Dynamic,Dynamic>(D,N));
   Matrix<double,Dynamic,Dynamic> xMu(D,N);
   Matrix<double,Dynamic,Dynamic> x(D-1,N);
@@ -101,7 +100,7 @@ BOOST_AUTO_TEST_CASE( sphereGpu_test)
   spVectorXu sz(new VectorXu(N));
   sz->topRows(N/2) = VectorXu::Zero(N/2);
   sz->bottomRows(N/2) = VectorXu::Ones(N/2);
-  shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sq(
+  boost::shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sq(
       new Matrix<myFlt,Dynamic,Dynamic>(D,N));
 
   Matrix<myFlt,Dynamic,Dynamic> mus = sampleClustersOnSphere<myFlt>(*sq, 2);

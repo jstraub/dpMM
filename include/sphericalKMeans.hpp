@@ -18,7 +18,7 @@ template<class T>
 class SphericalKMeans : public Clusterer<T>
 {
 public:
-  SphericalKMeans(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
+  SphericalKMeans(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
     boost::mt19937* pRndGen);
   virtual ~SphericalKMeans();
 
@@ -37,7 +37,7 @@ template<class T>
 class SphericalKMeansKarcher : public SphericalKMeans<T>
 {
 public:
-  SphericalKMeansKarcher(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
+  SphericalKMeansKarcher(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
     boost::mt19937* pRndGen);
   ~SphericalKMeansKarcher();
 
@@ -49,7 +49,7 @@ public:
 // --------------------------------- impl -------------------------------------
 template<class T>
 SphericalKMeans<T>::SphericalKMeans(
-    const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
+    const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
     boost::mt19937* pRndGen)
   : Clusterer<T>(spx,K, pRndGen), S_(this->D_)
 {
@@ -176,7 +176,7 @@ T SphericalKMeans<T>::avgIntraClusterDeviation()
 //
 template<class T>
 SphericalKMeansKarcher<T>::SphericalKMeansKarcher(
-    const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
+    const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
     boost::mt19937* pRndGen)
   : SphericalKMeans<T>(spx,K,pRndGen)
 {}

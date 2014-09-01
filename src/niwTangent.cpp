@@ -168,7 +168,7 @@ void NiwTangent<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwTangent<T>::posterior( const shared_ptr<ClData<T> >& cldp, uint32_t k)
+void NiwTangent<T>::posterior( const boost::shared_ptr<ClData<T> >& cldp, uint32_t k)
 {
   assert(false);
 //  normalS_.setMean(cldp->mean(k));
@@ -196,7 +196,7 @@ T NiwTangent<T>::logPdfUnderPriorMarginalized() const
 
 template<typename T>
 T NiwTangent<T>::logPdfUnderPriorMarginalizedMerged(
-    const shared_ptr<NiwTangent<T> >& other) const
+    const boost::shared_ptr<NiwTangent<T> >& other) const
 {
   Matrix<T,Dynamic,Dynamic> scatterMerged(niw0_.D_,niw0_.D_);
   Matrix<T,Dynamic,1> pMerged(niw0_.D_+1);

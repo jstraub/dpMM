@@ -56,7 +56,7 @@ public:
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSampled<T> >& other) const;
+  T logPdfUnderPriorMarginalizedMerged(const boost::shared_ptr<NiwSampled<T> >& other) const;
 
   virtual NiwSampled<T>* merge(const NiwSampled<T>& other);
   void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
@@ -138,7 +138,7 @@ T NiwSampled<T>::logPdfUnderPriorMarginalized() const
 
 template<typename T>
 T NiwSampled<T>::logPdfUnderPriorMarginalizedMerged(
-    const shared_ptr<NiwSampled<T> >& other) const
+    const boost::shared_ptr<NiwSampled<T> >& other) const
 {
   return niw0_.logPdfUnderPriorMarginalizedMerged(other->niw0_);
 };

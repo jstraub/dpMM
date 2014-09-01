@@ -32,17 +32,17 @@ class DirMMcld : public DpMM<T>
 #endif
   Matrix<T,Dynamic,Dynamic> pdfs_;
 //  Cat cat_;
-  shared_ptr<BaseMeasure<T> > theta0_;
-  vector<shared_ptr<BaseMeasure<T> > > thetas_;
+  boost::shared_ptr<BaseMeasure<T> > theta0_;
+  vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
-  shared_ptr<ClData<T> > cld_;
+  boost::shared_ptr<ClData<T> > cld_;
   
 public:
-  DirMMcld(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
-  DirMMcld(const Dir<Cat<T>,T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMMcld(const Dir<Cat<T>,T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta);
+  DirMMcld(const Dir<Cat<T>,T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
   ~DirMMcld();
 
-  void initialize(const shared_ptr<ClData<T> >& cld);
+  void initialize(const boost::shared_ptr<ClData<T> >& cld);
   void initialize(const Matrix<T,Dynamic,Dynamic>& x)
     {cout<<"not supported"<<endl; assert(false);};
 
@@ -67,13 +67,13 @@ private:
 
 template <class H, class T>
 DirMMcld<H,T>::DirMMcld(const Dir<Cat<T>,T>& alpha, 
-    const shared_ptr<BaseMeasure<T> >& theta) 
+    const boost::shared_ptr<BaseMeasure<T> >& theta) 
   : K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), theta0_(theta)
 {};
 
 template <class H, class T>
 DirMMcld<H,T>::DirMMcld(const Dir<Cat<T>,T>& alpha, 
-    const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
+    const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   thetas_(thetas)
 {};
@@ -98,7 +98,7 @@ Matrix<T,Dynamic,1> DirMMcld<H,T>::getCounts()
 //};
 
 template <class H, class T>
-void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
+void DirMMcld<H,T>::initialize(const boost::shared_ptr<ClData<T> >& cld)
 {
   cld_ = cld;
   assert(cld_->K() == K_);
@@ -127,7 +127,7 @@ void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
   {
     cout<<"creating thetas"<<endl;
     for (uint32_t k=0; k<K_; ++k)
-      thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
+      thetas_.push_back(boost::shared_ptr<BaseMeasure<T> >(theta0_->copy()));
   }
   cld_->update(K_);
   for(uint32_t k=0; k<K_; ++k)

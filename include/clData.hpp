@@ -17,7 +17,7 @@ class ClData
 {
 protected:
   spVectorXu z_; // labels
-  shared_ptr<Matrix<T,Dynamic,Dynamic> > x_; // data
+  boost::shared_ptr<Matrix<T,Dynamic,Dynamic> > x_; // data
 
   uint32_t K_; // number of classes
   uint32_t N_;
@@ -28,7 +28,7 @@ protected:
   vector<Matrix<T,Dynamic,Dynamic> > Ss_; //scatter matrices
 
 public:
-  ClData(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+  ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
       const spVectorXu& z, uint32_t K);
   virtual ~ClData();
 
@@ -44,7 +44,7 @@ public:
 //  virtual const spVectorXu& z() const {return z_;};
   virtual VectorXu& z() {return *z_;};
   virtual const spVectorXu& labels() const {return z_;};
-  virtual const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x() const {return x_;};
+  virtual const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x() const {return x_;};
   virtual const Matrix<T,Dynamic,Dynamic>& xMat() const {return (*x_);};
   virtual uint32_t N() const {return N_;};
   virtual uint32_t K() const {return K_;};
@@ -73,7 +73,7 @@ typedef ClData<double> ClDatad;
 
 // -------------------------- impl --------------------------------------------
 template<class T>
-ClData<T>::ClData(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+ClData<T>::ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
     const spVectorXu& z, uint32_t K)
  : z_(z), x_(x), K_(K>0?K:z->maxCoeff()+1), N_(x->cols()), D_(x->rows()),
    Ss_(K_,Matrix<T,Dynamic,Dynamic>::Zero(D_,D_))

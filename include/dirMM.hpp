@@ -14,19 +14,21 @@
 #include "basemeasure.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::cout;
+using std::endl; 
+//using namespace std;
 using boost::shared_ptr;
 
 template<typename T>
 class DirMM : public DpMM<T>
 {
 public:
-  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
-  DirMM(const Dir<Cat<T>, T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const Dir<Cat<T>, T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta);
+  DirMM(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirMM();
 
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
-  virtual void initialize(const shared_ptr<ClData<T> >& cld)
+  virtual void initialize(const boost::shared_ptr<ClData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();
@@ -53,8 +55,8 @@ protected:
 #endif
   Matrix<T,Dynamic,Dynamic> pdfs_;
 //  Cat cat_;
-  shared_ptr<BaseMeasure<T> > theta0_;
-  vector<shared_ptr<BaseMeasure<T> > > thetas_;
+  boost::shared_ptr<BaseMeasure<T> > theta0_;
+  vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
   Matrix<T,Dynamic,Dynamic> x_;
   VectorXu z_;
@@ -64,7 +66,7 @@ protected:
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta) :
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   theta0_(theta)
 {};
@@ -72,7 +74,7 @@ DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& t
 
 template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
-    const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
+    const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   thetas_(thetas)
 {};
@@ -115,7 +117,7 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
   {
     cout<<"creating thetas"<<endl;
     for (uint32_t k=0; k<K_; ++k)
-      thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
+      thetas_.push_back(boost::shared_ptr<BaseMeasure<T> >(theta0_->copy()));
   }
 #pragma omp parallel for
   for(uint32_t k=0; k<K_; ++k)

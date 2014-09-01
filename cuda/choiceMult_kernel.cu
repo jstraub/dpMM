@@ -1,5 +1,5 @@
 #include <stdint.h>
-
+#include "typedef.h"
 #include <cuda_runtime.h>
 #include "helper_cuda.h"
 

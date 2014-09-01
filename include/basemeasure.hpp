@@ -28,7 +28,7 @@ public:
 
   virtual void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
       uint32_t k) =0;
-  virtual void posterior(const shared_ptr<ClData<T> >& cldp, uint32_t k) 
+  virtual void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k) 
   {assert(false);};
 
   virtual T logPdfUnderPrior() const =0;

@@ -62,7 +62,7 @@ protected:
   boost::mt19937 *pRndGen_;
 
 public: 
-  ClSphereGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
+  ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
       const spVectorXu& z, boost::mt19937 *pRndGen, uint32_t K);
   ~ClSphereGpu(){;};
   
@@ -104,7 +104,7 @@ public:
 
   Matrix<T,Dynamic,Dynamic> pdfs(){ return d_pdfs_.get();};
 
-  virtual const shared_ptr<Matrix<T,Dynamic,Dynamic> >& q() const 
+  virtual const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q() const 
   {return this->x_;};
   virtual const Matrix<T,Dynamic,Dynamic>& qMat() const 
   {return (*this->x_);};
@@ -127,7 +127,7 @@ typedef ClSphereGpu<float> ClSphereGpuf;
 
 // ------------------------------------ impl --------------------------------
 template<typename T>
-ClSphereGpu<T>::ClSphereGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
+ClSphereGpu<T>::ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
     const spVectorXu& z, boost::mt19937 *pRndGen, uint32_t K)
   : ClData<T>(q,z,K), d_q_(this->D_,this->N_), d_z_(this->N_,1), 
     d_x_(this->D_-1,this->N_),

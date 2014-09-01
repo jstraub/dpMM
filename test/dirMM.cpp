@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
   boost::mt19937 rndGen(9191);
   NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 
-  shared_ptr<NiwMarginalized<double> > niwMargBase(
+  boost::shared_ptr<NiwMarginalized<double> > niwMargBase(
       new NiwMarginalized<double>(niw));
   VectorXd alpha(2);
   alpha << 10.,10.;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
       <<" logJoint="<<dirGMM_marg.logJoint()<<endl;
   }
 
-  shared_ptr<NiwSampled<double> > niwSampled(
+  boost::shared_ptr<NiwSampled<double> > niwSampled(
       new NiwSampled<double>(niw));
   DirMM<double> dirGMM_samp(dir,niwSampled);
   
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
 
   boost::mt19937 rndGen(9191);
   IW<double> iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphere<double> > niwSp( new NiwSphere<double>(iw,&rndGen));
+  boost::shared_ptr<NiwSphere<double> > niwSp( new NiwSphere<double>(iw,&rndGen));
 
   VectorXd alpha(2);
   alpha << 10.,10.;
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
   uint32_t D=3;
   boost::mt19937 rndGen(9191);
   // sample datapoints
-  shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sx(new 
+  boost::shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sx(new 
       Matrix<myFlt,Dynamic,Dynamic>(D,N));
   Matrix<myFlt,Dynamic,Dynamic> mus =  sampleClustersOnSphere(*sx, 3);
 
@@ -161,15 +161,15 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
   Delta *= nu;
 
   IW<myFlt> iw(Delta,nu,&rndGen);
-  shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
-//  shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
+  boost::shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
+//  boost::shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
 
   Dir<Cat<myFlt>, myFlt> dir(alpha,&rndGen); 
   DirMMcld<NiwSphere<myFlt>,myFlt> dirGMM_sp(dir,niwSp);
 
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
-  shared_ptr<ClSphereGpu<myFlt> > clsp(
+  boost::shared_ptr<ClSphereGpu<myFlt> > clsp(
       new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
 
   Matrix<myFlt,Dynamic,1> mu(D);

@@ -94,7 +94,7 @@ void SamplerGpu<T>::sampleUnif(Matrix<T,Dynamic,1>& r)
 {
   assert(r.size() == r_.rows());
   unifGpu(r_.data(), r_.rows(), 
-    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
   r_.get(r);
 };
 
@@ -102,7 +102,7 @@ template<typename T>
 void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z)
 {
   choiceMultGpu(d_pdfs, z_.data(), pdfs_.rows(), pdfs_.cols(),
-    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 };
 
@@ -115,7 +115,7 @@ void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs,
   if(!z_.isInit()){z_.set(z);}
 //cout<<pdfs<<endl;
   choiceMultGpu(pdfs_.data(), z_.data(), pdfs_.rows(), pdfs_.cols(),
-    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 //cout<<z<<endl;
 };
@@ -129,7 +129,7 @@ void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs,
 //  if(!z_.isInit()){z_.set(z);}
 ////cout<<pdfs<<endl;
 //  choiceMultGpu(pdfs_.data(), z_.data(), pdfs_.rows(), pdfs_.cols(),
-//    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+//    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
 //  z_.get(z);
 ////  VectorXu zz(z_.rows());
 ////  z_.get(zz);
@@ -145,7 +145,7 @@ void SamplerGpu<T>::sampleDiscLogPdfUnNormalized(const
   pdfs_.set(logPdfs);
   if(!z_.isInit()){z_.set(z);}
   choiceMultLogPdfUnNormalizedGpu(pdfs_.data(), z_.data(), pdfs_.rows(), 
-    pdfs_.cols(), static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+    pdfs_.cols(), static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 }
 

@@ -35,7 +35,7 @@ public:
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<DirSampled<Disc,T> >& other) const;
+  T logPdfUnderPriorMarginalizedMerged(const boost::shared_ptr<DirSampled<Disc,T> >& other) const;
 
   virtual DirSampled<Disc,T>* merge(const DirSampled<Disc,T>& other);
   void fromMerge(const DirSampled<Disc,T>& dirA, const DirSampled<Disc,T>& dirB);
@@ -124,7 +124,7 @@ T DirSampled<Disc,T>::logPdfUnderPriorMarginalized() const
 
 template<class Disc, typename T>
 T DirSampled<Disc,T>::logPdfUnderPriorMarginalizedMerged(
-    const shared_ptr<DirSampled<Disc,T> >& other) const
+    const boost::shared_ptr<DirSampled<Disc,T> >& other) const
 {
   return dir0_.logPdfUnderPriorMarginalizedMerged(other->dir0_);
 };

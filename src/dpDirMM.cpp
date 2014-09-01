@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   }
   cout << "alpha="<<alpha.transpose()<<endl;
 
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   MatrixXd& x(*spx);
   string pathIn ="";
   if(vm.count("input")) pathIn = vm["input"].as<string>();
@@ -144,8 +144,8 @@ int main(int argc, char **argv)
       cout <<"gamma="<<gamma<<endl;
     }
     DirMultd dir(gamma, &rndGen);
-    shared_ptr<DirMultSampledd> dirSampl(new DirMultSampledd(dir));
-    shared_ptr<LrCluster<DirMultSampledd,double> > lrTheta(new 
+    boost::shared_ptr<DirMultSampledd> dirSampl(new DirMultSampledd(dir));
+    boost::shared_ptr<LrCluster<DirMultSampledd,double> > lrTheta(new 
         LrCluster<DirMultSampledd,double>(dirSampl,1.0,&rndGen));
     dpmm = new DpSubclusterMM<DirMultSampledd,double>(alpha(0), 
         lrTheta, K, &rndGen);

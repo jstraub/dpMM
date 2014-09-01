@@ -401,7 +401,7 @@ void NiwSphereFull<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwSphereFull<T>::posterior( const shared_ptr<ClData<T> >& cldp, uint32_t k)
+void NiwSphereFull<T>::posterior( const boost::shared_ptr<ClData<T> >& cldp, uint32_t k)
 {
   assert(false);//TODO adapt!
 
@@ -463,7 +463,7 @@ T NiwSphereFull<T>::qRandomMuProposal() const
 
 template<typename T>
 T NiwSphereFull<T>::logPdfUnderPriorMarginalizedMerged(
-    const shared_ptr<NiwSphereFull<T> >& other) const
+    const boost::shared_ptr<NiwSphereFull<T> >& other) const
 {
   assert(false); //TODO updated - not used right now anyways
 

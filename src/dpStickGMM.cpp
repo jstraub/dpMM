@@ -92,7 +92,7 @@ int main(int argc, char **argv)
   }
   cout << "alpha="<<alpha.transpose()<<endl;
 
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   MatrixXd& x(*spx);
   string pathIn ="";
   if(vm.count("input")) pathIn = vm["input"].as<string>();
@@ -188,8 +188,8 @@ int main(int argc, char **argv)
     }
     NIWd niw(Delta, theta, nu, kappa, &rndGen);
 
-    shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
-    shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
+    boost::shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
+    boost::shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
         LrCluster<NiwSampledd,double>(niwSampl,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSampledd,double>(alpha(0), lrTheta, K, &rndGen);
 
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
+    boost::shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
     dpmm = new DirMM<double>(dir, niwSp);
@@ -262,8 +262,8 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    shared_ptr<NiwSphered> theta (new NiwSphered(iw, &rndGen));
-    shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
+    boost::shared_ptr<NiwSphered> theta (new NiwSphered(iw, &rndGen));
+    boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
       LrCluster<NiwSphered,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSphered,double>(alpha(0), lrTheta, K, &rndGen);
 
@@ -299,8 +299,8 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
-    shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
+    boost::shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
+    boost::shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
       LrCluster<NiwSphereFulld,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSphereFulld,double>(alpha(0), lrTheta, 
         K, &rndGen);
@@ -341,8 +341,8 @@ int main(int argc, char **argv)
     cout<<"theta = "<<mu.transpose()<<endl;
     cout<<"kappa = "<<kappa<<endl;
     NIWd niw(Delta, mu, nu, kappa, &rndGen);
-    shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
-    shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
+    boost::shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
+    boost::shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
       LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwTangentd,double>(alpha(0), lrTheta, 
         K, &rndGen);
@@ -380,11 +380,11 @@ int main(int argc, char **argv)
     }
 
     IWd iw(Delta, nu, &rndGen);
-    vector<shared_ptr<BaseMeasure<double> > > thetas;
+    vector<boost::shared_ptr<BaseMeasure<double> > > thetas;
     for (uint32_t k=0; k<K-1; ++k)
-      thetas.push_back(shared_ptr<BaseMeasure<double> >(
+      thetas.push_back(boost::shared_ptr<BaseMeasure<double> >(
             new NiwSphered(iw, &rndGen)));
-    thetas.push_back(shared_ptr<BaseMeasure<double> >(new UnifSphered(D)));
+    thetas.push_back(boost::shared_ptr<BaseMeasure<double> >(new UnifSphered(D)));
 
     DirCatd dir(alpha,&rndGen); 
     dpmm = new DirMM<double>(dir, thetas);
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
+    boost::shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
     dpmmf = new DirMMcld<NiwSphered,double>(dir, niwSp);
@@ -446,7 +446,7 @@ int main(int argc, char **argv)
   {
     assert(dpmmf!=NULL);
 //    MatrixXf x_f = x.cast<float>();
-    shared_ptr<ClSphereGpud> cld(new ClSphereGpud(spx,
+    boost::shared_ptr<ClSphereGpud> cld(new ClSphereGpud(spx,
           spVectorXu(new VectorXu(N)),&rndGen,K));
     dpmmf->initialize(cld);
 
