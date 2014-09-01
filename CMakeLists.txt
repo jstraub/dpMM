@@ -1,12 +1,15 @@
 project(DpGMMs)
 cmake_minimum_required(VERSION 2.4.6)
 set(CMAKE_COLOR_MAKEFILE ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #set( CMAKE_VERBOSE_MAKEFILE on )
-  set(CMAKE_BUILD_TYPE Debug) # Release; debug; ...
-  set(CMAKE_BUILD_TYPE Release) # Release; debug; ...
-  #ENDIF()
+
+set(CMAKE_BUILD_TYPE Debug) # Release; debug; ...
+set(CMAKE_BUILD_TYPE Release) # Release; debug; ...
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+option(USE_OPENMP "Uses OpenMP (default true)" ON)
 
 # add flags depending on build type
 #set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -fopenmp -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
@@ -14,18 +17,24 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-deprecated  -DCUDA")
 set(CMAKE_CXX_FLAGS_RELEASE "-g  -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wno-deprecated  -DCUDA")
+
+if(USE_OPENMP)
+	set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} -fopenmp)
+	set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} -fopenmp)
+endif()
+
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
 
-#need this in mac
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -ccbin /usr/bin/clang)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 find_package (Eigen3 REQUIRED)
 #find_package (Boost REQUIRED)
 find_package(Boost COMPONENTS program_options random system unit_test_framework REQUIRED )
-#find_package (OpenMP REQUIRED)
 find_package (CUDA REQUIRED)
+
+if(USE_OPENMP)
+	find_package (OpenMP REQUIRED)
+endif()
 
 message(${EIGEN3_INCLUDE_DIR})
 message(${CUDA_TOOLKIT_ROOT_DIR})
