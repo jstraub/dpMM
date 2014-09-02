@@ -26,11 +26,12 @@ endif()
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
 
-
-
 find_package (Eigen3 REQUIRED)
 #find_package (Boost REQUIRED)
+
+set(Boost_NO_SYSTEM_PATHS on)
 find_package(Boost COMPONENTS program_options random system unit_test_framework REQUIRED )
+
 find_package (CUDA REQUIRED)
 
 if(USE_OPENMP)
@@ -39,17 +40,21 @@ endif()
 
 message(${EIGEN3_INCLUDE_DIR})
 message(${CUDA_TOOLKIT_ROOT_DIR})
+message($ENV{BOOST_ROOT})
 message(${Boost_INCLUDE_DIR})
+message(${Boost_LIBRARY_DIRS})
+message(${Boost_LIBRARIES})
 include_directories(
   ./include
   ./cuda
   ${EIGEN3_INCLUDE_DIR}
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include
-  /usr/include
   #/usr/include/eigen3
   $ENV{WORKSPACE_HOME}/3rdparty/include
   ${Boost_INCLUDE_DIR}
+  /usr/include
 )
+
 link_directories(
   $ENV{WORKSPACE_HOME}/3rdparty/lib
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
