@@ -16,20 +16,72 @@ option(USE_OPENMP "Uses OpenMP (default true)" ON)
 #set(CMAKE_CXX_FLAGS_RELEASE "-g  -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
 #set(CMAKE_CXX_FLAGS_DEBUG "-g -Wno-deprecated  -DCUDA")
 
-if(USE_OPENMP)
-	set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
-	set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
-else()
-	set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
-	set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-deprecated  -DCUDA")
-endif()
+macro(remove_cxx_release_flag flag)
+  string(REPLACE "${flag}" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endmacro()
+
+macro(remove_cxx_debug_flag flag)
+  string(REPLACE "${flag}" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+endmacro()
+
+macro(remove_cuda_flag flag)
+  string(REPLACE "${flag}" "" CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}")
+endmacro()
+
+set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
+
+if(NOT USE_OPENMP)
+	remove_cxx_release_flag("-fopenmp")
+	remove_cxx_debug_flag("-fopenmp")
+endif()
+
+if(WIN32)
+	message("removing flags not available in MSVSC")
+	remove_cxx_release_flag("-Wno-deprecated")
+	remove_cxx_debug_flag("-Wno-deprecated")
+	
+	remove_cxx_release_flag("-finline-functions")
+	remove_cxx_debug_flag("-finline-functions")
+	
+	remove_cxx_release_flag("-g")
+	remove_cxx_debug_flag("-g")
+	
+	remove_cxx_release_flag("-finline-functions")
+	remove_cxx_debug_flag("-finline-functions")
+	
+	remove_cxx_release_flag("-Wall")
+	remove_cxx_debug_flag("-Wall")
+	
+	remove_cxx_release_flag("-fopenmp")
+	remove_cxx_debug_flag("-fopenmp")
+
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  /MP /MT /W0") 
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /MT") 
+	#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-m64")
+	#set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE} "-machine:X64")
+	#set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG} "-machine:X64")
+	
+	#remove_cuda_flag("-fopenmp")
+	#remove_cuda_flag("-machine:X64")
+	
+	set(Boost_USE_STATIC_LIBS   ON)
+	set(Boost_USE_STATIC_RUNTIME ON)
+
+	set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
+	#set(CUDA_SEPARABLE_COMPILATION OFF)
+	set(BUILD_SHARED_LIBS ON)
+	set(CUDA_VERBOSE_BUILD ON)
+
+	set(Boost_DEBUG 1)
+endif()
 
 find_package (Eigen3 REQUIRED)
 #find_package (Boost REQUIRED)
 
-set(Boost_NO_SYSTEM_PATHS on)
+set(Boost_NO_SYSTEM_PATHS ON)
 find_package(Boost COMPONENTS program_options random system unit_test_framework REQUIRED )
 
 find_package (CUDA REQUIRED)
@@ -38,12 +90,12 @@ if(USE_OPENMP)
 	find_package (OpenMP REQUIRED)
 endif()
 
-message(${EIGEN3_INCLUDE_DIR})
-message(${CUDA_TOOLKIT_ROOT_DIR})
-message($ENV{BOOST_ROOT})
-message(${Boost_INCLUDE_DIR})
-message(${Boost_LIBRARY_DIRS})
-message(${Boost_LIBRARIES})
+message("Eigen inc dir:" ${EIGEN3_INCLUDE_DIR})
+message("CUDA toolkit dir:" ${CUDA_TOOLKIT_ROOT_DIR})
+#message($ENV{BOOST_ROOT})
+message("BOOST inc dir:" ${Boost_INCLUDE_DIR})
+message("BOOST lib dir:" ${Boost_LIBRARY_DIRS})
+message("BOOST libs:" ${Boost_LIBRARIES})
 include_directories(
   ./include
   ./cuda
@@ -58,6 +110,7 @@ include_directories(
 link_directories(
   $ENV{WORKSPACE_HOME}/3rdparty/lib
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
+  ${Boost_LIBRARY_DIRS}
 )
 
 cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
