@@ -209,8 +209,11 @@ T NIW<T>::logPdf(const Normal<T>& normal) const
   logPdf -= lgamma_mult(nu_*0.5,D_);
   logPdf -= (0.5*(nu_+D_)+1.)*normal.logDetSigma();
   logPdf -= 0.5*(Delta_*normal.Sigma().inverse()).trace();
-  logPdf -= 0.5*kappa_*(normal.mu_ - theta_).transpose()*
-    normal.SigmaLDLT().solve(normal.mu_ - theta_);
+  T temp = (normal.mu_ - theta_).transpose()*
+	normal.SigmaLDLT().solve(normal.mu_ - theta_);
+  logPdf -= 0.5*kappa_*temp;
+  //logPdf -= 0.5*kappa_*(normal.mu_ - theta_).transpose()*
+  // normal.SigmaLDLT().solve(normal.mu_ - theta_);
   return logPdf;
 };
 

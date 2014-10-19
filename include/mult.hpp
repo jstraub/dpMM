@@ -11,6 +11,7 @@
 
 using namespace Eigen;
 using namespace std;
+using boost::math::lgamma; 
 
 template<typename T>
 class Mult : public Distribution<T>

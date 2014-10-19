@@ -1,6 +1,9 @@
 #include "sphere.hpp"
 
-
+template <typename T>
+double const Sphere<T>::MIN_DOT=-0.95;
+template <typename T>
+double const Sphere<T>::MAX_DOT=0.95;
 // ---------------------------------- impl ------------------------------------
 
 /* normal in tangent space around p rotate to the north pole

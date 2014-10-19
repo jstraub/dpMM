@@ -13,6 +13,7 @@
 
 using namespace Eigen;
 using namespace std;
+using boost::math::lgamma; 
 
 template<class Disc, typename T>
 class Dir : public Distribution<T>
