@@ -17,6 +17,7 @@ using namespace Eigen;
 using std::cout;
 using std::endl; 
 using boost::shared_ptr;
+using std::vector; 
 
 template<typename T=double>
 class DirNaiveBayes : public DpMM<T>{
@@ -26,7 +27,7 @@ public:
   DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirNaiveBayes();
 
-  virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
+  virtual void initialize(const vector< vector<T> > &x);
   virtual void initialize(const boost::shared_ptr<ClData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
 
@@ -58,7 +59,7 @@ protected:
 //  Cat cat_;
   vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
-  Matrix<T,Dynamic,Dynamic> x_;
+  vector<vector<T> > x_;
   VectorXu z_;
 };
 
@@ -70,7 +71,7 @@ DirNaiveBayes<T>::DirNaiveBayes(const Dir<Cat<T>,T>& alpha, const boost::shared_
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()) //cat_(dir_.sample()),
 {
 // init the parameters
-    cout<<"creating thetas (you only gave me one)"<<endl;
+    cout<<"[DirNaiveBayes::DirNaiveBayes] creating thetas (you only gave me one)"<<endl;
     for (uint32_t k=0; k<K_; ++k)
       thetas_.push_back(boost::shared_ptr<BaseMeasure<T> >(theta->copy()));
 };
@@ -98,20 +99,20 @@ Matrix<T,Dynamic,1> DirNaiveBayes<T>::getCounts()
 
 
 template<typename T>
-void DirNaiveBayes<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
+void DirNaiveBayes<T>::initialize(const vector< vector<T> > &x)
 {
   cout<<"init"<<endl;
   x_ = x;
   // randomly init labels from prior
-  z_.setZero(x.cols());
+  z_.setZero(x.size());
   cout<<"sample pi"<<endl;
   pi_ = dir_.sample(); 
   cout<<"init pi="<<pi_.pdf().transpose()<<endl;
   pi_.sample(z_);
 
-  pdfs_.setZero(x.cols(),K_);
+  pdfs_.setZero(x.size(),K_);
 #ifdef CUDA
-  sampler_ = new SamplerGpu<T>(x.cols(),K_,dir_.pRndGen_);
+  sampler_ = new SamplerGpu<T>(x.size(),K_,dir_.pRndGen_);
 #else 
   sampler_ = new Sampler<T>(dir_.pRndGen_);
 #endif
@@ -119,8 +120,6 @@ void DirNaiveBayes<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 #pragma omp parallel for
   for(uint32_t k=0; k<K_; ++k)
     thetas_[k]->posterior(x_,z_,k);
-//  for (uint32_t k=0; k<K_; ++k)
-//    thetas_[k].initialize(x_,z_);
 };
 
 template<typename T>
