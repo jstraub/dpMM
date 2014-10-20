@@ -20,7 +20,8 @@ if(USE_OPENMP)
 	set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
 	set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
 else()
-	set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+	#set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
+	set(CMAKE_CXX_FLAGS_RELEASE "-w -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
 	set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wno-deprecated  -DCUDA")
 endif()
 
