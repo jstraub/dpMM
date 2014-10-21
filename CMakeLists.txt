@@ -388,7 +388,7 @@ cuda_add_executable(myNaiveBayes
   ./cuda/sufficientStatistics_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
 )
-target_link_libraries(testNaiveBayes
+target_link_libraries(myNaiveBayes
 	${Boost_LIBRARIES}
 )
 
