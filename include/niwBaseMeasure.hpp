@@ -49,9 +49,13 @@ public:
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
   T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
+  T logLikelihood(const vector<Matrix<T,Dynamic,1>>& x) const;
+  T logLikelihood(const vector<Matrix<T,Dynamic,Dynamic>>& x, uint32_t i) const 
+    {return logLikelihood(x[i]);};
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-
+  void posterior(const vector<Matrix<T,Dynamic,Dynamic>>& x, const VectorXu& z, 
+    uint32_t k);
   void sample();
 
   T logPdfUnderPrior() const;
@@ -116,11 +120,30 @@ T NiwSampled<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
 };
 
 template<typename T>
+T NiwSampled<T>::logLikelihood(const vector<Matrix<T,Dynamic,1> >& x) const
+{
+	T logLike =0.; 
+	#pragma omp parallel for
+	for(uint32 i=0; i<x.size(); ++i)
+	{
+		logLike += normal_.logPdf(x[i]);
+	}
+	return logLike;
+};
+
+template<typename T>
 void NiwSampled<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k)
 {
   normal_ = niw0_.posterior(x,z,k).sample();
 };
+
+template<typename T>
+void NiwSampled<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic>>& x, 
+	const VectorXu& z, uint32_t k) 
+{
+	normal_ = niw0_.posterior(x,z,k).sample();
+}
 
 template<typename T>
 T NiwSampled<T>::logPdfUnderPrior() const

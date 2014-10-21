@@ -47,6 +47,14 @@ NIW<T> NIW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
 };
 
 template<typename T>
+NIW<T> NIW<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic>>& x, const VectorXu& z, 
+    uint32_t k) 
+{
+  getSufficientStatistics(x,z,k);
+  return posterior();
+}; 
+
+template<typename T>
 NIW<T> NIW<T>::posterior() const 
 {
 //  cout<<Delta_<<endl<<" + "<<endl<<scatter_<<endl<<" + "<<endl
@@ -97,6 +105,45 @@ void NIW<T>::getSufficientStatistics(const Matrix<T,Dynamic,Dynamic>& x,
   cout<<"scatter="<<endl<<scatter_<<endl;
   posterior().print();
 #endif
+};
+
+template<typename T>
+void NIW<T>::getSufficientStatistics(const vector<Matrix<T,Dynamic,Dynamic>>& x, 
+    const VectorXu& z, uint32_t k) 
+{
+	scatter_.setZero(D_,D_);
+	mean_.setZero(D_);
+	count_ = 0.;
+	// TODO: be carefull here when parallelizing since all are writing to the same 
+	// location in memory
+	for (uint32_t i=0; i<z.size(); ++i) //loop over docs
+	{
+		if(z(i) == k)
+		{      
+			#pragma omp parallel for
+			for (uint32_t j=0; j<x[i].cols(); ++j) //loop over words
+			{
+				Matrix<T,Dynamic,Dynamic> outer = x[i].col(j) * x[i].col(j).transpose();
+				#pragma omp critical
+				{
+					mean_ += x[i].col(j);
+					scatter_ += outer;
+					count_++;
+				}
+			}
+		}
+	}
+	if (count_ > 0.)
+	{
+		mean_ /= count_;
+		scatter_ -= (mean_*mean_.transpose())*count_;
+	}
+	#ifndef NDEBUG
+		cout<<" -- updating ss "<<count_<<endl;
+		cout<<"mean="<<mean_.transpose()<<endl;
+		cout<<"scatter="<<endl<<scatter_<<endl;
+		posterior().print();
+	#endif
 };
 
 template<typename T>

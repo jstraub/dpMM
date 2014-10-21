@@ -26,8 +26,16 @@ public:
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
 
+  virtual T logLikelihood(const vector<Matrix<T,Dynamic,1>>& x)
+	  {assert(false); return 0.0;};
+  virtual T logLikelihood(const vector<Matrix<T,Dynamic,Dynamic>>& x, uint32_t i) const 
+    {return logLikelihood(x[i]);};
+
   virtual void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
       uint32_t k) =0;
+  virtual void posterior(const vector<Matrix<T,Dynamic,Dynamic>>& x, const VectorXu& z, 
+      uint32_t k)
+  {assert(false);};
   virtual void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k) 
   {assert(false);};
 
