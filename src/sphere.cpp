@@ -92,7 +92,7 @@ void Sphere<T>::rotate_p2north(const Matrix<T,Dynamic,1>& p,
 
   if (x_p.rows() == D_){
 #pragma omp parallel for
-    for(uint32_t i=0; i<x_p.cols(); ++i)
+    for(int32_t i=0; i<x_p.cols(); ++i)
       if(z(i) == k)
       {
         ASSERT(fabs(x_p.col(i).transpose()*p)<1e-5,
@@ -149,7 +149,7 @@ void Sphere<T>::rotate_p2north( const Matrix<T,Dynamic,Dynamic>& ps,
 //    return (x * northR.transpose()).leftCols(D_-1);
   if (x.rows() == D_){
 #pragma omp parallel for
-    for(uint32_t i=0; i<N; ++i)
+    for(int32_t i=0; i<N; ++i)
     {
       ASSERT(fabs(x.col(i).transpose()*ps.col(z(i)))<1e-6,
           x.col(i).transpose()*ps.col(z(i)));
@@ -212,7 +212,7 @@ Matrix<T,Dynamic,Dynamic> Sphere<T>::Log_p(const Matrix<T,Dynamic,1>& p,
   assert(q.rows() == D_);
   Matrix<T,Dynamic,Dynamic> x(q.rows(),q.cols());
 #pragma omp parallel for
-  for (uint32_t i=0; i<q.cols(); ++i)
+  for (int32_t i=0; i<q.cols(); ++i)
   {
     x.col(i) =  Log_p_single(p,q.col(i));
 //    Log_p(p,q.col(i),x.col(i));
@@ -281,7 +281,7 @@ Matrix<T,Dynamic,Dynamic> Sphere<T>::Log_p(const Matrix<T,Dynamic,1>& p,
   assert(q.rows() == D_);
   Matrix<T,Dynamic,Dynamic> x(q.rows(),q.cols());
 #pragma omp parallel for
-  for (uint32_t i=0; i<q.cols(); ++i)
+  for (int32_t i=0; i<q.cols(); ++i)
     if(w(i) >0.0)
     {
      x.col(i) =  Log_p_single(p,q.col(i));
@@ -318,7 +318,7 @@ void Sphere<T>::Log_p(const Matrix<T,Dynamic,1>& p,
   assert(x.cols() == q.cols());
 
 #pragma omp parallel for
-  for (uint32_t i=0; i<q.cols(); ++i)
+  for (int32_t i=0; i<q.cols(); ++i)
       if(z(i)/zDivider ==k)
     {
       x.col(i) =  Log_p_single(p,q.col(i));
@@ -336,7 +336,7 @@ void Sphere<T>::Log_ps(const Matrix<T,Dynamic,Dynamic>& p,
   assert(x.cols() == q.cols());
 
 #pragma omp parallel for
-  for (uint32_t i=0; i<q.cols(); ++i)
+  for (int32_t i=0; i<q.cols(); ++i)
     {
      x.col(i) =  Log_p_single(p.col(z(i)),q.col(i));
 //     Log_p(p.col(z(i)),q.col(i), x.col(i));
@@ -410,7 +410,7 @@ Matrix<T,Dynamic,Dynamic> Sphere<T>::Exp_p(const Matrix<T,Dynamic,1>& p,
   Matrix<T,Dynamic,Dynamic> q(x.rows(),x.cols());
 
 #pragma omp parallel for
-  for (uint32_t i=0; i<x.cols(); ++i)
+  for (int32_t i=0; i<x.cols(); ++i)
   {
     q.col(i) = Exp_p_single(p,x.col(i));
   }

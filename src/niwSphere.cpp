@@ -102,7 +102,7 @@ void NiwSphere<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
   Matrix<T,Dynamic,1> w(z.size()); 
   w.setZero(z.size());
 #pragma omp parallel for
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (int32_t i=0; i<z.size(); ++i)
     if(z[i] == k) w[i]=1.0;
   if(w.sum() > 0)
   {
@@ -123,7 +123,7 @@ void NiwSphere<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
   sumAngle_ = 0;
   sumAngleSq_ = 0;
 #pragma omp parallel for
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (int32_t i=0; i<z.size(); ++i)
     if(z[i] == k)
     {
       T theta = x_mu.col(i).norm();

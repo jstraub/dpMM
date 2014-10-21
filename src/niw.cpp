@@ -81,7 +81,7 @@ void NIW<T>::getSufficientStatistics(const Matrix<T,Dynamic,Dynamic>& x,
   // TODO: be carefull here when parallelizing since all are writing to the same 
   // location in memory
 #pragma omp parallel for
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (int32_t i=0; i<z.size(); ++i)
   {
     if(z(i) == k)
     {      
@@ -121,7 +121,7 @@ void NIW<T>::getSufficientStatistics(const vector<Matrix<T,Dynamic,Dynamic> >&x,
 		if(z(i) == k)
 		{      
 			#pragma omp parallel for
-			for (uint32_t j=0; j<x[i].cols(); ++j) //loop over words
+			for (int32_t j=0; j<x[i].cols(); ++j) //loop over words
 			{
 				Matrix<T,Dynamic,Dynamic> outer = x[i].col(j) * x[i].col(j).transpose();
 				#pragma omp critical

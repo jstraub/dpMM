@@ -31,7 +31,7 @@ IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
   // TODO: be carefull here when parallelizing since all are writing to the same 
   // location in memory
 #pragma omp parallel for
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (int32_t i=0; i<z.size(); ++i)
   {
     if(z(i)/zDivider == k)
     {  
