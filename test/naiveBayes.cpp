@@ -5,6 +5,7 @@
 #include "dirNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
 #include "typedef.h"
+#include "timer.hpp"
 
 namespace po = boost::program_options;
 
@@ -37,30 +38,38 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	uint32_t K=2;
-	if (vm.count("K")) K = vm["K"].as<int>();
-	// number of iterations
-	uint32_t T=100;
-	if (vm.count("T")) T = vm["T"].as<int>();
-	uint32_t N=100;
-	if (vm.count("N")) N = vm["N"].as<int>();
-	uint32_t D=2;
-	if (vm.count("D")) D = vm["D"].as<int>();
+	uint K=2;
+	uint T=100;
+	uint N=100;
+	uint D=2;
+	uint M=2;
 	vector<uint> Mword; 
-	uint32_t M=2;
-	if (vm.count("M")) M = vm["M"].as<int>();
+	if (vm.count("K")) 
+		K = vm["K"].as<int>();
+	if (vm.count("T")) 
+		T = vm["T"].as<int>();
+	if (vm.count("N")) 
+		N = vm["N"].as<int>();
+	if (vm.count("D")) 
+		D = vm["D"].as<int>();
+	if (vm.count("M")) 
+		M = vm["M"].as<int>();
 
+	string pathIn ="";
+	string pathOut ="";
+	if(vm.count("input")) 
+		pathIn = vm["input"].as<string>();
+	if(vm.count("output")) 
+		pathOut= vm["output"].as<string>();
 	
 	vector< Matrix<double, Dynamic, Dynamic> > x;
 	x.reserve(N);
-	string pathIn ="";
-	if(vm.count("input")) pathIn = vm["input"].as<string>();
 	if (!pathIn.compare(""))
 	{
 		uint Ndoc=M;
 		uint Nword=int(N/M); 
 		for(uint i=0; i<Ndoc; ++i) {
-			MatrixXd  xdoc(3,Nword);  
+			MatrixXd  xdoc(D,Nword);  
 			for(uint w=0; w<Nword; ++w) {
 				if(i<Ndoc/2)
 					xdoc.col(w) <<  VectorXd::Zero(D);
@@ -74,28 +83,23 @@ int main(int argc, char **argv){
 		
 		MatrixXd data(D,N);
 		VectorXu words(M);
-
 		cout<<"loading data from "<<pathIn<<endl;
 		ifstream fin(pathIn.data(),ifstream::in);
-		for (uint32_t j=0; j<M; ++j)
-			fin >> words(j,1); 
-
-		for (uint32_t j=1; j<(D+1); ++j) 
-		{
-			for (uint32_t i=0; i<N; ++i) 
-			{
+		for (uint j=0; j<M; ++j) 
+			fin>>words(j); 
+		
+		for (uint j=1; j<(D+1); ++j) 
+			for (uint i=0; i<N; ++i) 
 				fin>>data(j-1,i);
-			}
-		}
 		
 		uint count = 0;
-		for (uint32_t j=0; j<M; ++j)
+		for (uint j=0; j<M; ++j)
 		{
 			x.push_back(data.middleCols(count,words[j]));
 			count+=words[j];
 		}
+		fin.close();
 	}
-
 
 	
 	double nu = D+1;
@@ -108,10 +112,6 @@ int main(int argc, char **argv){
 	boost::mt19937 rndGen(9191);
 	NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 
-	boost::shared_ptr<NiwMarginalized<double> > niwMargBase(
-		new NiwMarginalized<double>(niw));
-
-
 	Dir<Catd,double> dir(alpha,&rndGen); 
 
   
@@ -119,20 +119,39 @@ int main(int argc, char **argv){
 	//DirNaiveBayes<double> naive_marg(dir,niwMargBase);
 	//naive_marg.initialize(x);
 	//cout<<naive_marg.labels().transpose()<<endl;
-	//for(uint32_t t=0; t<30; ++t)
+	//for(uint t=0; t<30; ++t)
 	//{
 	//naive_marg.sampleLabels();
 	//naive_marg.sampleParameters();
 	//cout<<naive_marg.labels().transpose()
 		//<<" logJoint="<<naive_marg.logJoint()<<endl;
 	//}
+	Timer tlocal;
+	tlocal.start();
 
 	boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
 	DirNaiveBayes<double> naive_samp(dir,niwSampled);
   
 	naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
-	naive_samp.inferAll(30,true);
+	naive_samp.inferAll(T,false);
 
+
+	if (pathOut.compare(""))
+	{
+		ofstream fout(pathOut.data(),ofstream::out);
+		
+		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
+
+			naive_samp.dump(fout,fout);
+
+		std::cout.rdbuf(coutbuf); //reset to standard output again
+
+		fout.close();
+	}
+
+	tlocal.stop();
+	tlocal.displayElapsedTimeAuto();
 	return(0); 
 	
 };
