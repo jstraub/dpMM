@@ -292,6 +292,31 @@ using namespace std;
 		}
 		return *this;
 	  };
+	
+	  void displayElapsedTimeAuto() 
+	  { 
+		double time; 
+		gettimeofday(&t1, NULL);
+		time=this->getDtMs(t0);
+		if(time<1000){
+			std::cout << "[Timer::displayElapsedTimeAuto] Elapsed time " << time << " (ms)." << std::endl;	
+		}else if(time>=1000 && time<60000) {
+			std::cout << "[Timer::displayElapsedTimeAuto] Elapsed time " << time * 0.001 << " (s)." << std::endl;	
+		} else {
+			time  *= 0.001; //time in seconds 
+			int hr, minutes, secs; 
+			hr = int(time/3600); 
+			minutes = floor( int(time/60) % 60); 
+			secs  = (int) time % 60; 
+			std::cout <<  "[Timer::displayElapsedTimeAuto] Elapsed time: "; 
+			if(hr>0) 
+				std::cout << setw(2) << setfill('0') << hr << "hr:";
+				std::cout << setw(2) << setfill('0') << minutes << "min:";
+				std::cout << setw(2) << setfill('0') << secs << "secs." << std::endl;	
+			} 
+
+      }
+
 
 	private:
 	  float dt;

@@ -127,7 +127,7 @@ int main(int argc, char **argv){
 		//<<" logJoint="<<naive_marg.logJoint()<<endl;
 	//}
 	Timer tlocal;
-	tlocal.start();
+	tlocal.tic();
 
 	boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
 	DirNaiveBayes<double> naive_samp(dir,niwSampled);
@@ -150,7 +150,6 @@ int main(int argc, char **argv){
 		fout.close();
 	}
 
-	tlocal.stop();
 	tlocal.displayElapsedTimeAuto();
 	return(0); 
 	
