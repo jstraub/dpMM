@@ -24,11 +24,11 @@ class DirNaiveBayes : public DpMM<T>{
 
 public:
   DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta);
-  DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
+  DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >&thetas);
   virtual ~DirNaiveBayes();
 
-  virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >& x);
-  virtual void initialize(const boost::shared_ptr<ClData<T> >& cld)
+  virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >&x);
+  virtual void initialize(const boost::shared_ptr<ClData<T> >&cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();
@@ -59,7 +59,7 @@ protected:
 //  Cat cat_;
   vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
-  vector<Matrix<T,Dynamic,Dynamic>> x_;
+  vector<Matrix<T,Dynamic,Dynamic> > x_;
   VectorXu z_;
 };
 

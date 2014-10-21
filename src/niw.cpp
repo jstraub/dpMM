@@ -47,7 +47,7 @@ NIW<T> NIW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
 };
 
 template<typename T>
-NIW<T> NIW<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic>>& x, const VectorXu& z, 
+NIW<T> NIW<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> > &x, const VectorXu& z, 
     uint32_t k) 
 {
   getSufficientStatistics(x,z,k);
@@ -108,7 +108,7 @@ void NIW<T>::getSufficientStatistics(const Matrix<T,Dynamic,Dynamic>& x,
 };
 
 template<typename T>
-void NIW<T>::getSufficientStatistics(const vector<Matrix<T,Dynamic,Dynamic>>& x, 
+void NIW<T>::getSufficientStatistics(const vector<Matrix<T,Dynamic,Dynamic> >&x, 
     const VectorXu& z, uint32_t k) 
 {
 	scatter_.setZero(D_,D_);
