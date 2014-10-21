@@ -27,7 +27,7 @@ public:
   DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirNaiveBayes();
 
-  virtual void initialize(const vector< vector<T> > &x);
+  virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >& x);
   virtual void initialize(const boost::shared_ptr<ClData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
 
@@ -59,7 +59,7 @@ protected:
 //  Cat cat_;
   vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
-  vector<vector<T> > x_;
+  vector<Matrix<T,Dynamic,Dynamic>> x_;
   VectorXu z_;
 };
 
@@ -99,7 +99,7 @@ Matrix<T,Dynamic,1> DirNaiveBayes<T>::getCounts()
 
 
 template<typename T>
-void DirNaiveBayes<T>::initialize(const vector< vector<T> > &x)
+void DirNaiveBayes<T>::initialize(const vector< Matrix<T,Dynamic,Dynamic> > &x)
 {
   cout<<"init"<<endl;
   x_ = x;
@@ -138,7 +138,7 @@ void DirNaiveBayes<T>::sampleLabels()
     for(uint32_t k=0; k<K_; ++k)
     {
 //      cout<<thetas_[k].logLikelihood(x_.col(i))<<" ";
-      logPdf_z[k] += thetas_[k]->logLikelihood(x_.col(i));
+      logPdf_z[k] += thetas_[k]->logLikelihood(x_[i]);
     }
 //    cout<<endl;
     // make pdf sum to 1. and exponentiate
@@ -180,7 +180,7 @@ T DirNaiveBayes<T>::logJoint(bool verbose)
 
 #pragma omp parallel for reduction(+:logJoint)  
   for (uint32_t i=0; i<z_.size(); ++i)
-    logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_.col(i));
+    logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_[i]);
   if(verbose)
   	cout<<"log p(phi)*p(theta)*p(x|z,theta)="<<logJoint<<"]"<<endl;
   
@@ -201,7 +201,7 @@ MatrixXu DirNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>&
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
       {
-        T logLike = thetas_[z_[i]]->logLikelihood(x_.col(i));
+        T logLike = thetas_[z_[i]]->logLikelihood(x_[i]);
         for (uint32_t j=0; j<n; ++j)
           if(logLikes(j,k) < logLike)
           {
