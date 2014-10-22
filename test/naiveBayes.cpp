@@ -18,9 +18,7 @@ int main(int argc, char **argv){
     ("help,h", "produce help message")
 	("K,K", po::value<int>(), "number of initial clusters ")
 	("T,T", po::value<int>(), "iterations")
-	("N,N", po::value<int>(), "number of input datapoints")
-	("M,M", po::value<int>(), "number of documents")
-    ("D,D", po::value<int>(), "number of dimensions of the data")
+	("v,v", po::value<bool>(), "verbose output")
     ("input,i", po::value<string>(), 
       "path to input dataset .csv file (rows: dimensions; cols: different "
       "datapoints)")
@@ -43,17 +41,15 @@ int main(int argc, char **argv){
 	uint N=100;
 	uint D=2;
 	uint M=2;
+	uint NumObs = 1; 
+	bool verbose = false; 
 	vector<uint> Mword; 
 	if (vm.count("K")) 
 		K = vm["K"].as<int>();
 	if (vm.count("T")) 
 		T = vm["T"].as<int>();
-	if (vm.count("N")) 
-		N = vm["N"].as<int>();
-	if (vm.count("D")) 
-		D = vm["D"].as<int>();
-	if (vm.count("M")) 
-		M = vm["M"].as<int>();
+	if (vm.count("v"))
+		verbose = vm["v"].as<bool>();
 
 	string pathIn ="";
 	string pathOut ="";
@@ -66,6 +62,7 @@ int main(int argc, char **argv){
 	x.reserve(N);
 	if (!pathIn.compare(""))
 	{
+		cout<<"making some data up " <<endl;
 		uint Ndoc=M;
 		uint Nword=int(N/M); 
 		for(uint i=0; i<Ndoc; ++i) {
@@ -80,11 +77,19 @@ int main(int argc, char **argv){
 			x.push_back(xdoc); 
 		}
 	}else{
-		
-		MatrixXd data(D,N);
-		VectorXu words(M);
+
 		cout<<"loading data from "<<pathIn<<endl;
 		ifstream fin(pathIn.data(),ifstream::in);
+		
+		//read parameters from file (tired of passing them in)
+		fin>>NumObs; 
+		fin>>N;
+		fin>>M;
+		fin>>D; 
+
+		MatrixXd data(D,N);
+		VectorXu words(M);
+
 		for (uint j=0; j<M; ++j) 
 			fin>>words(j); 
 		
@@ -132,8 +137,14 @@ int main(int argc, char **argv){
 	boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
 	DirNaiveBayes<double> naive_samp(dir,niwSampled);
   
+	cout << "naiveBayesian Clustering:" << endl; 
+	cout << "Ndocs=" << M << endl; 
+	cout << "Ndata=" << N << endl; 
+	cout << "dim=" << D << endl;
+	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
+
 	naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
-	naive_samp.inferAll(T,false);
+	naive_samp.inferAll(T,verbose);
 
 
 	if (pathOut.compare(""))

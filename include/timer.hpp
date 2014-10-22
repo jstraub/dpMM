@@ -185,7 +185,7 @@ using namespace std;
 					time  *= 0.000001; //time in seconds 
 					int hr, minutes, secs; 
 					hr = int(time/3600); 
-					minutes = floor( int(time/60) % 60); 
+					minutes = int( int(time/60) % 60); 
 					secs  = (int) time % 60; 
 					std::cout <<  "[Timer::displayElapsedTimeAuto] Elapsed time: "; 
 					if(hr>0) 

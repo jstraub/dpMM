@@ -121,7 +121,7 @@ void DirNaiveBayes<T>::initialize(const vector< Matrix<T,Dynamic,Dynamic> > &x)
 #endif
 
 #pragma omp parallel for
-  for(int32_t k=0; k<K_; ++k)
+  for(int32_t k=0; k<int32_t(K_); ++k)
     thetas_[k]->posterior(x_,z_,k);
 };
 
@@ -162,7 +162,7 @@ template<typename T>
 void DirNaiveBayes<T>::sampleParameters()
 {
 #pragma omp parallel for 
-  for(int32_t k=0; k<K_; ++k)
+  for(int32_t k=0; k<int32_t(K_); ++k)
   {
     thetas_[k]->posterior(x_,z_,k);
 //    cout<<"k:"<<k<<endl;
@@ -179,7 +179,7 @@ T DirNaiveBayes<T>::logJoint(bool verbose)
   	cout<<"log p(pi)="<<logJoint<<" -> ";
 
 #pragma omp parallel for reduction(+:logJoint)  
-  for (int32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<int32_t(K_); ++k)
     logJoint = logJoint + thetas_[k]->logPdfUnderPrior();
 	if(verbose)
 		cout<<"log p(pi)*p(theta)="<<logJoint<<" -> ";
@@ -203,7 +203,7 @@ MatrixXu DirNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>&
   logLikes *= -99999.0;
   
 #pragma omp parallel for 
-  for (int32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<int32_t(K_); ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
