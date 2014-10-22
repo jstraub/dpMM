@@ -10,6 +10,7 @@ set(CMAKE_BUILD_TYPE Release) # Release; debug; ...
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 option(USE_OPENMP "Uses OpenMP (default true)" ON)
+option(COMPILE_TEST "Specify whether to compile test programs (default true)" ON)
 
 # add flags depending on build type
 #set(CMAKE_CXX_FLAGS_RELEASE "-g -Wall -fopenmp -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") # -DNDEBUG
@@ -81,6 +82,8 @@ if(WIN32)
 	set(CUDA_VERBOSE_BUILD ON)
 
 	set(Boost_DEBUG 1)
+	
+	set(COMPILE_TEST OFF)
 endif()
 
 find_package (Eigen3 REQUIRED)
@@ -101,6 +104,7 @@ message("CUDA toolkit dir:" ${CUDA_TOOLKIT_ROOT_DIR})
 message("BOOST inc dir:" ${Boost_INCLUDE_DIR})
 message("BOOST lib dir:" ${Boost_LIBRARY_DIRS})
 message("BOOST libs:" ${Boost_LIBRARIES})
+
 include_directories(
   ./include
   ./cuda
@@ -116,6 +120,48 @@ link_directories(
   $ENV{WORKSPACE_HOME}/3rdparty/lib
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
   ${Boost_LIBRARY_DIRS}
+)
+
+cuda_add_executable(testSphere ./test/sphere.cpp
+	./src/normal.cpp
+	./src/sphere.cpp
+	./src/sampler.cpp
+  ./cuda/log_p_kernel.cu
+  ./cuda/karcherMeans_kernel.cu
+  ./cuda/sufficientStatistics_kernel.cu
+  ./cuda/sphereMixturePdf_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
+  ./cuda/choiceMult_kernel.cu
+)
+
+target_link_libraries(testSphere
+${Boost_LIBRARIES}
+  #boost_system
+  #boost_random
+  #boost_unit_test_framework
+)
+
+
+cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
+  ./src/distribution.cpp
+  ./src/niw.cpp
+  ./src/iw.cpp
+  ./src/normal.cpp
+  ./src/cat.cpp
+  ./src/mult.cpp
+  ./src/dir.cpp
+  ./src/niwSphere.cpp
+  ./src/niwSphereFull.cpp
+  ./src/niwTangent.cpp
+  ./src/sphere.cpp
+  ./src/sampler.cpp
+  ./cuda/choiceMult_kernel.cu
+)
+target_link_libraries(dpDirMM
+${Boost_LIBRARIES}
+  #boost_system
+  #boost_random
+  #boost_program_options
 )
 
 cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
@@ -146,27 +192,187 @@ ${Boost_LIBRARIES}
   #boost_program_options
 )
 
-cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
-  ./src/distribution.cpp
-  ./src/niw.cpp
-  ./src/iw.cpp
+
+
+add_executable(generateSphericalData ./src/generateSphericalData.cpp
   ./src/normal.cpp
-  ./src/cat.cpp
-  ./src/mult.cpp
-  ./src/dir.cpp
-  ./src/niwSphere.cpp
-  ./src/niwSphereFull.cpp
-  ./src/niwTangent.cpp
+  ./src/iw.cpp
   ./src/sphere.cpp
-  ./src/sampler.cpp
-  ./cuda/choiceMult_kernel.cu
 )
-target_link_libraries(dpDirMM
+target_link_libraries(generateSphericalData
 ${Boost_LIBRARIES}
   #boost_system
   #boost_random
   #boost_program_options
 )
+
+cuda_add_executable(myNaiveBayes 
+	./test/naiveBayes.cpp
+	./src/dir.cpp
+	./src/cat.cpp
+	./src/mult.cpp
+	./src/niw.cpp
+	./src/iw.cpp
+	./src/normal.cpp
+	./src/niwSphere.cpp
+	./src/sampler.cpp
+	./src/sphere.cpp
+  ./cuda/choiceMult_kernel.cu
+  ./cuda/log_p_kernel.cu
+  ./cuda/karcherMeans_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
+  ./cuda/sufficientStatistics_kernel.cu
+  ./cuda/sphereMixturePdf_kernel.cu
+)
+target_link_libraries(myNaiveBayes
+	${Boost_LIBRARIES}
+)
+
+
+cuda_add_executable(dirMultiObsNaiveBayes 
+	./src/dirMultiObsNaiveBayes.cpp
+	./src/dir.cpp
+	./src/cat.cpp
+	./src/mult.cpp
+	./src/niw.cpp
+	./src/iw.cpp
+	./src/normal.cpp
+	./src/niwSphere.cpp
+	./src/sampler.cpp
+	./src/sphere.cpp
+  ./cuda/choiceMult_kernel.cu
+  ./cuda/log_p_kernel.cu
+  ./cuda/karcherMeans_kernel.cu
+  ./cuda/gmmPdf_kernel.cu
+  ./cuda/sufficientStatistics_kernel.cu
+  ./cuda/sphereMixturePdf_kernel.cu
+)
+target_link_libraries(dirMultiObsNaiveBayes
+	${Boost_LIBRARIES}
+)
+
+
+if( COMPILE_TEST ) 
+
+	
+	cuda_add_executable(testDirMM ./test/dirMM.cpp
+		./src/dir.cpp
+		./src/cat.cpp
+		./src/mult.cpp
+		./src/niw.cpp
+		./src/iw.cpp
+		./src/normal.cpp
+	  #  ./src/niwBaseMeasure.cpp
+		./src/niwSphere.cpp
+		./src/sampler.cpp
+		./src/sphere.cpp
+	  #  ./src/gpuMatrix.cpp
+	  ./cuda/choiceMult_kernel.cu
+	  ./cuda/log_p_kernel.cu
+	  ./cuda/karcherMeans_kernel.cu
+	  ./cuda/gmmPdf_kernel.cu
+	  ./cuda/sufficientStatistics_kernel.cu
+	  ./cuda/sphereMixturePdf_kernel.cu
+	)
+	target_link_libraries(testDirMM
+	${Boost_LIBRARIES}
+	  #boost_system
+	  #boost_random
+	  #boost_unit_test_framework
+	)
+
+
+
+	cuda_add_executable(testSampler ./test/sampler.cpp
+	  ./src/sampler.cpp
+	  ./src/gpuMatrix.cpp
+	  ./cuda/choiceMult_kernel.cu
+	)
+	target_link_libraries(testSampler
+	${Boost_LIBRARIES}
+	  #boost_system
+	  #boost_random
+	  #boost_unit_test_framework
+	)
+
+
+	cuda_add_executable(testClData ./test/clData.cpp
+	  ./src/gpuMatrix.cpp
+	  ./src/normal.cpp
+	  ./src/sphere.cpp
+	  ./cuda/log_p_kernel.cu
+	  ./cuda/sphereMixturePdf_kernel.cu
+	  ./cuda/karcherMeans_kernel.cu
+	  ./cuda/sufficientStatistics_kernel.cu
+	)
+	target_link_libraries(testClData
+	${Boost_LIBRARIES}
+	  #boost_system
+	  #boost_random
+	  #boost_unit_test_framework
+	)
+
+	cuda_add_executable(testSPKM ./test/spkm.cpp
+	  ./src/sphere.cpp
+	  ./src/normal.cpp
+	  ./src/cat.cpp
+	  ./src/mult.cpp
+	  ./src/dir.cpp
+	)
+	target_link_libraries(testSPKM
+	${Boost_LIBRARIES}
+	  #boost_system
+	  #boost_random
+	  #boost_unit_test_framework
+	)
+
+	cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
+		./src/cat.cpp
+		./src/mult.cpp
+		./src/dir.cpp
+		./src/niw.cpp
+		./src/iw.cpp
+		./src/normal.cpp
+		./src/niwSphere.cpp
+		./src/niwSphereFull.cpp
+		./src/niwTangent.cpp
+		./src/sphere.cpp
+	  ./src/sampler.cpp
+	  ./src/gpuMatrix.cpp
+	  ./cuda/choiceMult_kernel.cu
+	)
+	target_link_libraries(testDpSubclusterMM
+	${Boost_LIBRARIES}
+	  #boost_system
+	  #boost_random
+	  #boost_unit_test_framework
+	)
+
+	cuda_add_executable(testNaiveBayes 
+		./test/test_naiveBayes.cpp
+		./src/dir.cpp
+		./src/cat.cpp
+		./src/mult.cpp
+		./src/niw.cpp
+		./src/iw.cpp
+		./src/normal.cpp
+		./src/niwSphere.cpp
+		./src/sampler.cpp
+		./src/sphere.cpp
+	  ./cuda/choiceMult_kernel.cu
+	  ./cuda/log_p_kernel.cu
+	  ./cuda/karcherMeans_kernel.cu
+	  ./cuda/gmmPdf_kernel.cu
+	  ./cuda/sufficientStatistics_kernel.cu
+	  ./cuda/sphereMixturePdf_kernel.cu
+	)
+	target_link_libraries(testNaiveBayes
+		${Boost_LIBRARIES}
+	)
+
+endif() 
+
+
 
 #add_executable(dpSubclusterGMM ./src/dpSubclusterGMM.cpp
   #./src/dpSubclustersMM.cpp
@@ -229,169 +435,3 @@ ${Boost_LIBRARIES}
   #boost_unit_test_framework
   #gsl gslcblas m rt
 #)
-
-add_executable(generateSphericalData ./src/generateSphericalData.cpp
-  ./src/normal.cpp
-  ./src/iw.cpp
-  ./src/sphere.cpp
-)
-target_link_libraries(generateSphericalData
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_program_options
-)
-
-cuda_add_executable(testDirMM ./test/dirMM.cpp
-	./src/dir.cpp
-	./src/cat.cpp
-	./src/mult.cpp
-	./src/niw.cpp
-	./src/iw.cpp
-	./src/normal.cpp
-  #  ./src/niwBaseMeasure.cpp
-	./src/niwSphere.cpp
-	./src/sampler.cpp
-	./src/sphere.cpp
-  #  ./src/gpuMatrix.cpp
-  ./cuda/choiceMult_kernel.cu
-  ./cuda/log_p_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/gmmPdf_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-)
-target_link_libraries(testDirMM
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-
-cuda_add_executable(testSphere ./test/sphere.cpp
-	./src/normal.cpp
-	./src/sphere.cpp
-	./src/sampler.cpp
-  ./cuda/log_p_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-  ./cuda/gmmPdf_kernel.cu
-  ./cuda/choiceMult_kernel.cu
-)
-target_link_libraries(testSphere
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-cuda_add_executable(testSampler ./test/sampler.cpp
-  ./src/sampler.cpp
-  ./src/gpuMatrix.cpp
-  ./cuda/choiceMult_kernel.cu
-)
-target_link_libraries(testSampler
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-cuda_add_executable(testClData ./test/clData.cpp
-  ./src/gpuMatrix.cpp
-  ./src/normal.cpp
-  ./src/sphere.cpp
-  ./cuda/log_p_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-)
-target_link_libraries(testClData
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-cuda_add_executable(testSPKM ./test/spkm.cpp
-  ./src/sphere.cpp
-  ./src/normal.cpp
-  ./src/cat.cpp
-  ./src/mult.cpp
-  ./src/dir.cpp
-)
-target_link_libraries(testSPKM
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
-	./src/cat.cpp
-	./src/mult.cpp
-	./src/dir.cpp
-	./src/niw.cpp
-	./src/iw.cpp
-	./src/normal.cpp
-	./src/niwSphere.cpp
-	./src/niwSphereFull.cpp
-	./src/niwTangent.cpp
-	./src/sphere.cpp
-  ./src/sampler.cpp
-  ./src/gpuMatrix.cpp
-  ./cuda/choiceMult_kernel.cu
-)
-target_link_libraries(testDpSubclusterMM
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
-
-cuda_add_executable(testNaiveBayes 
-	./test/test_naiveBayes.cpp
-	./src/dir.cpp
-	./src/cat.cpp
-	./src/mult.cpp
-	./src/niw.cpp
-	./src/iw.cpp
-	./src/normal.cpp
-	./src/niwSphere.cpp
-	./src/sampler.cpp
-	./src/sphere.cpp
-  ./cuda/choiceMult_kernel.cu
-  ./cuda/log_p_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/gmmPdf_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-)
-target_link_libraries(testNaiveBayes
-	${Boost_LIBRARIES}
-)
-
-cuda_add_executable(myNaiveBayes 
-	./test/naiveBayes.cpp
-	./src/dir.cpp
-	./src/cat.cpp
-	./src/mult.cpp
-	./src/niw.cpp
-	./src/iw.cpp
-	./src/normal.cpp
-	./src/niwSphere.cpp
-	./src/sampler.cpp
-	./src/sphere.cpp
-  ./cuda/choiceMult_kernel.cu
-  ./cuda/log_p_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/gmmPdf_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-)
-target_link_libraries(myNaiveBayes
-	${Boost_LIBRARIES}
-)
-
