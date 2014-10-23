@@ -39,9 +39,9 @@ int main(int argc, char **argv){
 	uint K=2;
 	uint T=100;
 	uint N=100;
-	uint D=2;
+	uint D=3;
 	uint M=2;
-	uint NumObs = 1; 
+	uint NumObs = 2; 
 	bool verbose = false; 
 	vector<uint> Mword; 
 	if (vm.count("K")) 
@@ -58,7 +58,7 @@ int main(int argc, char **argv){
 	if(vm.count("output")) 
 		pathOut= vm["output"].as<string>();
 	
-	vector< Matrix<double, Dynamic, Dynamic> > x;
+	vector<vector< Matrix<double, Dynamic, Dynamic> > > x;
 	x.reserve(N);
 	if (!pathIn.compare(""))
 	{
@@ -66,44 +66,47 @@ int main(int argc, char **argv){
 		uint Ndoc=M;
 		uint Nword=int(N/M); 
 		for(uint i=0; i<Ndoc; ++i) {
-			MatrixXd  xdoc(D,Nword);  
-			for(uint w=0; w<Nword; ++w) {
-				if(i<Ndoc/2)
-					xdoc.col(w) <<  VectorXd::Zero(D);
-				else
-					xdoc.col(w) <<  2.0*VectorXd::Ones(D);
+			vector<Matrix<double, Dynamic, Dynamic> > temp;
+			for(uint m=0; m<M; ++m) {
+				MatrixXd  xdoc(D,Nword);  
+				for(uint w=0; w<Nword; ++w) {
+					if(i<Ndoc/2)
+						xdoc.col(w) <<  VectorXd::Zero(D);
+					else
+						xdoc.col(w) <<  2.0*VectorXd::Ones(D);
+				}	
+				temp.push_back(xdoc);
 			}
-
-			x.push_back(xdoc); 
+			x.push_back(temp); 
 		}
 	}else{
-
-		cout<<"loading data from "<<pathIn<<endl;
-		ifstream fin(pathIn.data(),ifstream::in);
+		assert(false);
+		//cout<<"loading data from "<<pathIn<<endl;
+		//ifstream fin(pathIn.data(),ifstream::in);
 		
-		//read parameters from file (tired of passing them in)
-		fin>>NumObs; 
-		fin>>N;
-		fin>>M;
-		fin>>D; 
+		////read parameters from file (tired of passing them in)
+		//fin>>NumObs; 
+		//fin>>N;
+		//fin>>M;
+		//fin>>D; 
 
-		MatrixXd data(D,N);
-		VectorXu words(M);
+		//MatrixXd data(D,N);
+		//VectorXu words(M);
 
-		for (uint j=0; j<M; ++j) 
-			fin>>words(j); 
+		//for (uint j=0; j<M; ++j) 
+			//fin>>words(j); 
 		
-		for (uint j=1; j<(D+1); ++j) 
-			for (uint i=0; i<N; ++i) 
-				fin>>data(j-1,i);
+		//for (uint j=1; j<(D+1); ++j) 
+			//for (uint i=0; i<N; ++i) 
+				//fin>>data(j-1,i);
 		
-		uint count = 0;
-		for (uint j=0; j<M; ++j)
-		{
-			x.push_back(data.middleCols(count,words[j]));
-			count+=words[j];
-		}
-		fin.close();
+		//uint count = 0;
+		//for (uint j=0; j<M; ++j)
+		//{
+			//x.push_back(data.middleCols(count,words[j]));
+			//count+=words[j];
+		//}
+		//fin.close();
 	}
 
 	
@@ -134,7 +137,12 @@ int main(int argc, char **argv){
 	Timer tlocal;
 	tlocal.tic();
 
-	boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
+	boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
+	vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
+	for(uint m=0;m<M; ++m)
+		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
+
+
 	DirMultiNaiveBayes<double> naive_samp(dir,niwSampled);
   
 	cout << "naiveBayesian Clustering:" << endl; 
@@ -143,23 +151,23 @@ int main(int argc, char **argv){
 	cout << "dim=" << D << endl;
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
 
-	naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
-	naive_samp.inferAll(T,verbose);
+	//naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
+	//naive_samp.inferAll(T,verbose);
 
 
-	if (pathOut.compare(""))
-	{
-		ofstream fout(pathOut.data(),ofstream::out);
+	//if (pathOut.compare(""))
+	//{
+		//ofstream fout(pathOut.data(),ofstream::out);
 		
-		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
-		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
+		//streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
 
-			naive_samp.dump(fout,fout);
+			//naive_samp.dump(fout,fout);
 
-		std::cout.rdbuf(coutbuf); //reset to standard output again
+		//std::cout.rdbuf(coutbuf); //reset to standard output again
 
-		fout.close();
-	}
+		//fout.close();
+	//}
 
 	tlocal.displayElapsedTimeAuto();
 	return(0); 

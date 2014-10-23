@@ -23,11 +23,10 @@ template<typename T=double>
 class DirMultiNaiveBayes : public DpMM<T>{
 
 public:
-  DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta);
   DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >&thetas);
   virtual ~DirMultiNaiveBayes();
 
-  virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >&x);
+  virtual void initialize(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x);
   virtual void initialize(const boost::shared_ptr<ClData<T> >&cld)
     {cout<<"not supported"<<endl; assert(false);};
 
@@ -50,7 +49,9 @@ public:
 
 
 protected: 
-  uint32_t K_;
+  uint32_t Nd_;  
+  uint32_t K_; //num cluseters
+  uint32_t M_; //num data sources
   Dir<Cat<T>, T> dir_;
   Cat<T> pi_;
 #ifdef CUDA
@@ -60,9 +61,9 @@ protected:
 #endif
   Matrix<T,Dynamic,Dynamic> pdfs_;
 //  Cat cat_;
-  vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
+  vector<vector<boost::shared_ptr<BaseMeasure<T> > > > thetas_;  // theta_[K][M]
 
-  vector<Matrix<T,Dynamic,Dynamic> > x_;
+  vector<vector<Matrix<T,Dynamic,Dynamic> > > x_; //x_[doc][M](:,word)
   VectorXu z_;
 };
 
@@ -70,22 +71,18 @@ protected:
 
 
 template<typename T>
-DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()) //cat_(dir_.sample()),
-{
-// init the parameters
-    cout<<"[DirMultiNaiveBayes::DirMultiNaiveBayes] creating thetas (you only gave me one)"<<endl;
-    for (uint32_t k=0; k<K_; ++k)
-      thetas_.push_back(boost::shared_ptr<BaseMeasure<T> >(theta->copy()));
-};
-
-
-template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
-  thetas_(thetas)
-{};
+  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(thetas.size())) 
+{ 
+    for (uint32_t k=0; k<K_; ++k) {
+    	vector<boost::shared_ptr<BaseMeasure<T> > > temp;
+    	for (uint32_t m=0; m<M_; ++m) {	
+      		temp.push_back(boost::shared_ptr<BaseMeasure<T> >(thetas[m]->copy()));
+      	}
+      thetas_.push_back(temp); 
+    }
+};
 
 
 template<typename T>
@@ -102,20 +99,19 @@ Matrix<T,Dynamic,1> DirMultiNaiveBayes<T>::getCounts()
 
 
 template<typename T>
-void DirMultiNaiveBayes<T>::initialize(const vector< Matrix<T,Dynamic,Dynamic> > &x)
+void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dynamic> > > &x)
 {
-  cout<<"init"<<endl;
+  Nd_= uint32_t(x.size());
+
   x_ = x;
   // randomly init labels from prior
-  z_.setZero(x.size());
-  cout<<"sample pi"<<endl;
+  z_.setZero(Nd_);
   pi_ = dir_.sample(); 
-  cout<<"init pi="<<pi_.pdf().transpose()<<endl;
   pi_.sample(z_);
 
-  pdfs_.setZero(x.size(),K_);
+  pdfs_.setZero(Nd_,K_);
 #ifdef CUDA
-  sampler_ = new SamplerGpu<T>(uint32_t(x.size()),K_,dir_.pRndGen_);
+  sampler_ = new SamplerGpu<T>(uint32_t(Nd_),K_,dir_.pRndGen_);
 #else 
   sampler_ = new Sampler<T>(dir_.pRndGen_);
 #endif

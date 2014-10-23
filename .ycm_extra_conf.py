@@ -47,9 +47,10 @@ flags = [
 '-I/usr/local/cuda/targets/x86_64-linux/include',
 '-I/Users/rcabezas/include/boost/install/clang/include',
 '-I/usr/local/cuda/include',
+'-I/usr/include/c++/4.2.1',
 '-isystem',
-'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1',
-'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include'
+'-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1',
+'-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include'
 ]
 
 
