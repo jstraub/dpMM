@@ -104,7 +104,7 @@ Matrix<T,Dynamic,1> DirMultiNaiveBayes<T>::getCounts()
 template<typename T>
 void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dynamic> > > &x)
 {
-  Nd_= uint32_t(x.size());
+  Nd_= uint32_t(x.front().size());
 
   x_ = x;
   // randomly init labels from prior
@@ -283,16 +283,16 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
 template <typename T>
 void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
 {
-	cout << "dumping naiveBayes" << endl; 
+	cout << "dumping MulTiObs naiveBayes" << endl; 
 	cout << "doc index: " << endl;  
 	cout << this->labels().transpose() << endl; 
 
 	cout << "printing cluster params: " << endl; 
 	cout << K_ << endl;
 
-	for(uint32_t k=0; k<K_; ++k) {
-		for(uint32_t m=0; m<M_; ++m) {
-			cout << "theta: " << k  << " " << m << endl;
+	for(uint32_t m=0; m<M_; ++m) {
+		for(uint32_t k=0; k<K_; ++k) {
+			cout << "theta: " << m  << " " << k << endl;
 			thetas_[m][k]->print();
 		}
 	}

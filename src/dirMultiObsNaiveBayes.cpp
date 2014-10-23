@@ -36,14 +36,16 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	uint K=2;
-	uint T=100;
-	uint N=100;
-	uint D=3;
-	uint M=2;
-	uint NumObs = 2; 
+	uint NumObs = 2; //num observations (number of components of multi-dimention data)
+	uint K=2; //num clusters
+	uint T=100; //iterations
+	uint M=2; //num docs
+
+	vector<uint> N(NumObs, 100) ; //num data points (total)
+	vector<uint> D(NumObs, 2);  //dimention of data 
+
 	bool verbose = false; 
-	vector<uint> Mword; 
+
 	if (vm.count("K")) 
 		K = vm["K"].as<int>();
 	if (vm.count("T")) 
@@ -59,115 +61,134 @@ int main(int argc, char **argv){
 		pathOut= vm["output"].as<string>();
 	
 	vector<vector< Matrix<double, Dynamic, Dynamic> > > x;
-	x.reserve(N);
+	x.reserve(NumObs);
 	if (!pathIn.compare(""))
 	{
-		cout<<"making some data up " <<endl;
-		uint Ndoc=M;
-		uint Nword=int(N/M); 
-		for(uint m=0; m<M; ++m) {
+		cout<<"making some data up" <<endl;
+		for (uint n=0; n<NumObs; ++n) 
+		{
 			vector<Matrix<double, Dynamic, Dynamic> > temp;
-			for(uint i=0; i<Ndoc; ++i) {
-				MatrixXd  xdoc(D,Nword);  
-				for(uint w=0; w<Nword; ++w) {
+			temp.reserve(M); 
+			uint Ndoc=M;
+			uint Nword=int(N[n]/M); 
+			for(uint i=0; i<Ndoc; ++i) 
+			{
+				MatrixXd  xdoc(D[n],Nword);  
+				for(uint w=0; w<Nword; ++w) 
+				{
 					if(i<Ndoc/2)
-						xdoc.col(w) <<  VectorXd::Zero(D);
+						xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
 					else
-						xdoc.col(w) <<  2.0*VectorXd::Ones(D);
-				}	
-				temp.push_back(xdoc);
+						xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
+				}
+
+				temp.push_back(xdoc); 
 			}
 			x.push_back(temp); 
 		}
+
 	}else{
-		assert(false);
-		//cout<<"loading data from "<<pathIn<<endl;
-		//ifstream fin(pathIn.data(),ifstream::in);
-		
-		////read parameters from file (tired of passing them in)
-		//fin>>NumObs; 
-		//fin>>N;
-		//fin>>M;
-		//fin>>D; 
+		cout<<"loading data from "<<pathIn<<endl;
+		ifstream fin(pathIn.data(),ifstream::in);
 
-		//MatrixXd data(D,N);
-		//VectorXu words(M);
+		if (!fin.good()) {
+			cout << "could not open file...returning" << endl;
+			return(-1);
+		}
 
-		//for (uint j=0; j<M; ++j) 
-			//fin>>words(j); 
+		//read data
+		fin>>NumObs; 
+		N.clear(); N.reserve(NumObs);
+		D.clear(); D.reserve(NumObs);
 		
-		//for (uint j=1; j<(D+1); ++j) 
-			//for (uint i=0; i<N; ++i) 
-				//fin>>data(j-1,i);
+		for(uint32_t n=0; n<NumObs; ++n) 
+		{
+			vector< Matrix<double, Dynamic, Dynamic> > xiter;
+			uint Niter, Diter;  
+
+			fin>>Niter;
+			fin>>M;
+			fin>>Diter; 
+
+			N.push_back(Niter); 
+			D.push_back(Diter); 
+
+			MatrixXd data(Diter,Niter);
+			VectorXu words(M);
+
+			for (uint j=0; j<M; ++j) 
+				fin>>words(j); 
 		
-		//uint count = 0;
-		//for (uint j=0; j<M; ++j)
-		//{
-			//x.push_back(data.middleCols(count,words[j]));
-			//count+=words[j];
-		//}
-		//fin.close();
+			for (uint j=1; j<(Diter+1); ++j) 
+				for (uint i=0; i<Niter; ++i) 
+					fin>>data(j-1,i);
+		
+			uint count = 0;
+			for (uint j=0; j<M; ++j)
+			{
+				xiter.push_back(data.middleCols(count,words[j]));
+				count+=words[j];
+			}
+			x.push_back(xiter);
+		}
+		fin.close();
 	}
 
 	
-	double nu = D+1;
-	double kappa = D+1;
-	MatrixXd Delta = 0.1*MatrixXd::Identity(D,D);
-	Delta *= nu;
-	VectorXd theta = VectorXd::Zero(D);
 	VectorXd alpha = 10.0*VectorXd::Ones(K);
 
 	boost::mt19937 rndGen(9191);
-	NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 
 	Dir<Catd,double> dir(alpha,&rndGen); 
+	vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
+	niwSampled.reserve(NumObs);
 
-  
-	//cout<<"------ marginalized ---- NIW "<<endl;
-	//DirNaiveBayes<double> naive_marg(dir,niwMargBase);
-	//naive_marg.initialize(x);
-	//cout<<naive_marg.labels().transpose()<<endl;
-	//for(uint t=0; t<30; ++t)
-	//{
-	//naive_marg.sampleLabels();
-	//naive_marg.sampleParameters();
-	//cout<<naive_marg.labels().transpose()
-		//<<" logJoint="<<naive_marg.logJoint()<<endl;
-	//}
+	//creates thetas  
+	for(uint m=0;m<NumObs ; ++m) 
+	{
+		double nu = D[m]+1;
+		double kappa = D[m]+1;
+		MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+		Delta *= nu;
+		VectorXd theta = VectorXd::Zero(D[m]);
+
+		NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+		boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
+		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
+	}
+	
 	Timer tlocal;
 	tlocal.tic();
 
-	boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
-	vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
-	for(uint m=0;m<M; ++m)
-		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
-
-
 	DirMultiNaiveBayes<double> naive_samp(dir,niwSampled);
   
-	cout << "naiveBayesian Clustering:" << endl; 
+	cout << "multiObsNaiveBayesian Clustering:" << endl; 
 	cout << "Ndocs=" << M << endl; 
-	cout << "Ndata=" << N << endl; 
-	cout << "dim=" << D << endl;
+	cout << "NumComp=" << NumObs << endl; 
+	cout << "NumData,Dim= ";
+	for(uint n=0; n<NumObs; ++n)
+		cout << "[" << N[n] << ", " << D[n] << "]; "; 
+	cout << endl; 
+
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
 
 	naive_samp.initialize( x );
 	naive_samp.inferAll(T,verbose);
 
 
-	//if (pathOut.compare(""))
-	//{
-		//ofstream fout(pathOut.data(),ofstream::out);
+	if (pathOut.compare(""))
+	{
+		ofstream fout(pathOut.data(),ofstream::out);
 		
-		//streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
-		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
+		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
 
-			//naive_samp.dump(fout,fout);
+			naive_samp.dump(fout,fout);
 
-		//std::cout.rdbuf(coutbuf); //reset to standard output again
+		std::cout.rdbuf(coutbuf); //reset to standard output again
 
-		//fout.close();
-	//}
+		fout.close();
+	}
 
 	tlocal.displayElapsedTimeAuto();
 	return(0); 
