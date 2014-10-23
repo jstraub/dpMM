@@ -65,9 +65,9 @@ int main(int argc, char **argv){
 		cout<<"making some data up " <<endl;
 		uint Ndoc=M;
 		uint Nword=int(N/M); 
-		for(uint i=0; i<Ndoc; ++i) {
+		for(uint m=0; m<M; ++m) {
 			vector<Matrix<double, Dynamic, Dynamic> > temp;
-			for(uint m=0; m<M; ++m) {
+			for(uint i=0; i<Ndoc; ++i) {
 				MatrixXd  xdoc(D,Nword);  
 				for(uint w=0; w<Nword; ++w) {
 					if(i<Ndoc/2)
@@ -151,8 +151,8 @@ int main(int argc, char **argv){
 	cout << "dim=" << D << endl;
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
 
-	//naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
-	//naive_samp.inferAll(T,verbose);
+	naive_samp.initialize( x );
+	naive_samp.inferAll(T,verbose);
 
 
 	//if (pathOut.compare(""))
