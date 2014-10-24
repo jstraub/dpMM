@@ -154,7 +154,7 @@ int main(int argc, char **argv){
 
 		NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 		boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
-		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
+		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 	}
 	
 	Timer tlocal;

@@ -128,17 +128,18 @@ for(int32_t m=0; m<int32_t(M_); ++m)
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleLabels()
 {
-  // obtain posterior categorical under labels
-  pi_ = dir_.posterior(z_).sample();
+// obtain posterior categorical under labels
+pi_ = dir_.posterior(z_).sample();
 //  cout<<pi_.pdf().transpose()<<endl;
   
+// compute categorical distribution over label z_i 
+// no need to re-compute the array and log every iteration)
+VectorXd logPdf_z_value = pi_.pdf().array().log();
 
 #pragma omp parallel for
   for(int32_t d=0; d<int32_t(Nd_); ++d)
   {
-    //TODO: could buffer this better
-    // compute categorical distribution over label z_i
-    VectorXd logPdf_z = pi_.pdf().array().log();
+	VectorXd logPdf_z = logPdf_z_value; 
 	for(uint32_t m=0; m<uint32_t(M_); ++m)
 	{
 		for(uint32_t k=0; k<K_; ++k)
@@ -283,16 +284,20 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
 template <typename T>
 void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
 {
-	cout << "dumping MulTiObs naiveBayes" << endl; 
+	cout << "dumping MultiObs naiveBayes" << endl; 
 	cout << "doc index: " << endl;  
 	cout << this->labels().transpose() << endl; 
+	
+	cout << "printing num components: " << endl; 
+	cout << M_ << endl;
 
 	cout << "printing cluster params: " << endl; 
 	cout << K_ << endl;
 
 	for(uint32_t m=0; m<M_; ++m) {
+		cout << "component: " << m  << endl;
 		for(uint32_t k=0; k<K_; ++k) {
-			cout << "theta: " << m  << " " << k << endl;
+			cout << "theta: " << k  << endl;
 			thetas_[m][k]->print();
 		}
 	}
