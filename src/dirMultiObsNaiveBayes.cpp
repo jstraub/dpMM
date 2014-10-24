@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp> //case insensitve string comparison
 
 #include "dirMultiNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
@@ -8,6 +9,7 @@
 #include "timer.hpp"
 
 namespace po = boost::program_options;
+using boost::iequals; 
 
 int main(int argc, char **argv){
 
@@ -25,7 +27,10 @@ int main(int argc, char **argv){
     ("output,o", po::value<string>(), 
       "path to output labels .csv file (rows: time; cols: different "
       "datapoints)")
-    ;
+	("b,b", po::value<std::vector<string> >()->multitoken(), 
+	  "base class to use for components (must be the same size as M in the data). " 
+	  "valid values: NiwSampled, NiwTangent, [default: NiwSampled].");
+    
 
     po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -43,6 +48,8 @@ int main(int argc, char **argv){
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
 	vector<uint> D(NumObs, 2);  //dimention of data 
+	vector<string> baseDist; //base distributions for each component
+
 
 	bool verbose = false; 
 
@@ -134,6 +141,23 @@ int main(int argc, char **argv){
 		fin.close();
 	}
 
+	if(vm.count("b")) { 
+		baseDist.clear();
+		baseDist = vm["b"].as<vector<string>>();
+
+		if(uint(baseDist.size())!=NumObs) { 
+			cerr << "Error specified number of base distributions not equal number of data components" << endl;
+			cerr << "#bases =" << baseDist.size() << ", #data components=" << NumObs <<  "." << endl;
+			cerr << "exiting" << endl;
+			return(-1); 
+		}
+
+	} else {
+		baseDist.clear();
+		baseDist = vector<string>(NumObs, "NiwSampled");
+	}
+
+
 	
 	VectorXd alpha = 10.0*VectorXd::Ones(K);
 
@@ -146,15 +170,25 @@ int main(int argc, char **argv){
 	//creates thetas  
 	for(uint m=0;m<NumObs ; ++m) 
 	{
-		double nu = D[m]+1;
-		double kappa = D[m]+1;
-		MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
-		Delta *= nu;
-		VectorXd theta = VectorXd::Zero(D[m]);
+		if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
+			double nu = D[m]+1;
+			double kappa = D[m]+1;
+			MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+			Delta *= nu;
+			VectorXd theta = VectorXd::Zero(D[m]);
 
-		NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
-		boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
-		niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+			NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+			boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
+			niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+
+		} else if(iequals(baseDist[m], "NiwTangent")) {
+			cerr << "NiwTangent base not coded yet... fix me" << endl;
+			return(-1); 
+
+		} else {
+			cerr << "error with base distributions (check help) ... returning." << endl;
+			return(-1); 
+		}
 	}
 	
 	Timer tlocal;
