@@ -76,6 +76,8 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(thetas.size())) 
 { 
 
+	sampler_ = NULL;
+
 	for (uint32_t m=0; m<M_; ++m) 
 	{	
 		vector<boost::shared_ptr<BaseMeasure<T> > > temp;
