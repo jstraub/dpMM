@@ -143,7 +143,7 @@ int main(int argc, char **argv){
 
 	if(vm.count("b")) { 
 		baseDist.clear();
-		baseDist = vm["b"].as<vector<string>>();
+		baseDist = vm["b"].as<vector<string> >();
 
 		if(uint(baseDist.size())!=NumObs) { 
 			cerr << "Error specified number of base distributions not equal number of data components" << endl;
