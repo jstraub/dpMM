@@ -46,7 +46,12 @@ public:
   virtual void inferAll(uint32_t nIter, bool verbose=false);
   
   virtual void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs); 
-
+  virtual vector<boost::shared_ptr<BaseMeasure<T> > > getThetas(uint32_t m) {
+	  return(thetas_[m]);
+  };
+  virtual boost::shared_ptr<BaseMeasure<T> > getThetas(uint32_t m, uint32_t k) {
+	  return(thetas_[m][k]);
+  };
 
 protected: 
   uint32_t Nd_;  
