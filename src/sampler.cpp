@@ -82,7 +82,8 @@ void Sampler<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& 
 // ----------------------------------------------------------------------------
 template<typename T>
 SamplerGpu<T>::SamplerGpu(uint32_t N, uint32_t K, boost::mt19937* pRndGen)
-  : Sampler<T>(pRndGen), pdfs_(N,K), z_(N), r_(N)
+  : Sampler<T>(pRndGen), pdfs_(new GpuMatrix<T>(N,K)), logNormalizers_(N,1),
+  z_(N), r_(N)
 {};
 
 template<typename T>
@@ -90,32 +91,63 @@ SamplerGpu<T>::~SamplerGpu()
 {};
 
 template<typename T>
+void SamplerGpu<T>::setPdfs(const boost::shared_ptr<GpuMatrix<T> >& pdfs, bool logScale)
+{
+  pdfs_ = pdfs;
+  z_.resize(pdfs_->rows(),1);
+};
+
+template<typename T>
 void SamplerGpu<T>::sampleUnif(Matrix<T,Dynamic,1>& r)
 {
   assert(r.size() == r_.rows());
   unifGpu(r_.data(), r_.rows(), 
-    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   r_.get(r);
 };
 
 template<typename T>
-void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z)
+void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool logScale)
 {
-  choiceMultGpu(d_pdfs, z_.data(), pdfs_.rows(), pdfs_.cols(),
-    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+  if(logScale)
+    choiceMultGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
+      static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+  else
+
+    choiceMultLogPdfGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
+      static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 };
 
 template<typename T>
+void SamplerGpu<T>::sampleDiscPdf()
+{
+//  pdfs_->print();
+//  z_.print();
+  if(!z_.isInit()){
+    z_.resize(pdfs_->rows(),1);
+    z_.setZero();
+  }
+  // internally we use logPdf
+  choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+      static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+};
+
+template<typename T>
 void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, 
-    VectorXu& z)
+    VectorXu& z, bool logScale)
 {
   if(pdfs.cols()==1) {z.setZero(); return;}
-  pdfs_.set(pdfs);
+  pdfs_->set(pdfs);
   if(!z_.isInit()){z_.set(z);}
 //cout<<pdfs<<endl;
-  choiceMultGpu(pdfs_.data(), z_.data(), pdfs_.rows(), pdfs_.cols(),
-    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+  if(logScale)
+    choiceMultGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+      static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+  else
+    choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+      static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
+
   z_.get(z);
 //cout<<z<<endl;
 };
@@ -125,11 +157,11 @@ void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs,
 //    const spVectorXu& z)
 //{
 //  if(pdfs.cols()==1) {z.setZero(); return;}
-//  pdfs_.set(pdfs);
+//  pdfs_->set(pdfs);
 //  if(!z_.isInit()){z_.set(z);}
 ////cout<<pdfs<<endl;
-//  choiceMultGpu(pdfs_.data(), z_.data(), pdfs_.rows(), pdfs_.cols(),
-//    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+//  choiceMultGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+//    static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
 //  z_.get(z);
 ////  VectorXu zz(z_.rows());
 ////  z_.get(zz);
@@ -142,12 +174,41 @@ void SamplerGpu<T>::sampleDiscLogPdfUnNormalized(const
   Matrix<T,Dynamic,Dynamic>& logPdfs,VectorXu& z)
 {
   if(logPdfs.cols()==1) {z.setZero(); return;}
-  pdfs_.set(logPdfs);
+  pdfs_->set(logPdfs);
   if(!z_.isInit()){z_.set(z);}
-  choiceMultLogPdfUnNormalizedGpu(pdfs_.data(), z_.data(), pdfs_.rows(), 
-    pdfs_.cols(), static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+  choiceMultLogPdfUnNormalizedGpu(pdfs_->data(), z_.data(), pdfs_->rows(), 
+    pdfs_->cols(), static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 }
+
+
+template<typename T>
+void SamplerGpu<T>::logNormalizer(uint32_t dk, uint32_t K)
+{
+  logNormalizers_.resize(pdfs_->rows(),K/dk);
+  logNormalizers_.setZero();
+  logNormalizerGpu(pdfs_->data(),logNormalizers_.data(),dk,K,pdfs_->rows());
+};
+
+template<typename T>
+void SamplerGpu<T>::logNormalize(uint32_t dk, uint32_t K)
+{
+  logNormalizeGpu(pdfs_->data(),dk,K,pdfs_->rows());
+};
+
+template<typename T>
+void SamplerGpu<T>::addTopLevel(const Matrix<T,Dynamic,1>& pi,uint32_t dk)
+{ 
+  uint32_t K = pi.rows()*dk;
+  assert(pdfs_->cols() == K);
+//  logNormalizer(dk,K); // compute logNormalizers over the dk sets
+  cout<<logNormalizers_.get().topRows(30)<<endl;
+
+  // add the logNormalizers and logPi into the pdfs
+  GpuMatrix<T> d_pi(pi);
+  logAddTopLevelGpu(pdfs_->data(),logNormalizers_.data(),d_pi.data(),dk,K,
+      pdfs_->rows());
+};
 
 template class Sampler<double>;
 template class Sampler<float>;

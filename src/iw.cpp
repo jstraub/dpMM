@@ -50,11 +50,11 @@ IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
     scatter_ -= (mean_*mean_.transpose())*count_;
   }
 
-#ifndef NDEBUG
-  cout<<"    scatter=\n"<<scatter_<<endl;
-  cout<<"    mean =  "<<mean_.transpose()<<endl;
-  cout<<"    count = "<<count_<<endl;
-#endif
+  #ifndef NDEBUG
+    cout<<"    scatter=\n"<<scatter_<<endl;
+    cout<<"    mean =  "<<mean_.transpose()<<endl;
+    cout<<"    count = "<<count_<<endl;
+  #endif
   return posterior();
 };
 
@@ -63,6 +63,13 @@ IW<T> IW<T>::posterior() const
 {
   assert(scatter_.cols() == Delta_.cols());
   assert(scatter_.rows() == Delta_.rows());
+//  #ifndef NDEBUG
+//    cout<<"    scatter=\n"<<scatter_<<endl;
+//    cout<<"    Delta=\n"<<Delta_<<endl;
+//    cout<<"    mean =  "<<mean_.transpose()<<endl;
+//    cout<<"    count = "<<count_<<endl;
+//    cout<<"    mean*mean.T = \n"<<(mean_*mean_.transpose())<<endl;
+//  #endif
   //TODO this one ignores the sample mean
 //  return IW<T>(Delta_+scatter_, nu_+count_, this->pRndGen_);
   //TODO this one assumes zero mean Gaussian

@@ -3,13 +3,16 @@
 #include <stdint.h>
 #include <assert.h>
 #include <cuda_runtime.h>
-#include "helper_cuda.h"
+#include <nvidia/helper_cuda.h>
 
 #define PI 3.141592653589793
 #define DIM 3
 
 #define MIN_DOT -0.95
 #define MAX_DOT 0.95
+
+#define MAX_UINT32 4294967295
+#define INVALID_LABEL MAX_UINT32 //4294967294
 
 #if DIM==3
 template<typename T>
@@ -30,6 +33,7 @@ __device__ inline void Log_p(T *p, T *q, T *x)
   x[1] = (q[1]-p[1]*dot)*invSinc;
   x[2] = (q[2]-p[2]*dot)*invSinc;
 }
+
 
 template<typename T>
 __device__ inline void Ab(T *A, T *b)

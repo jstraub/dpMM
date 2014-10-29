@@ -24,6 +24,8 @@ int main(int argc, char** argv)
     ("K,K", po::value<int>(), "number of initial clusters ")
     ("nu,nu", po::value<double>(), "nu parameter of IW from which "
       "sigmas are sampled")
+    ("minAngle,a", po::value<double>(), "min angle between means on sphere")
+    ("delta,d", po::value<double>(), "delta of NIW")
     ("output,o", po::value<string>(), 
       "path to output labels and data .csv file (rows: time; cols: different "
       "datapoints)")
@@ -55,10 +57,16 @@ int main(int argc, char** argv)
   
   double nu = static_cast<double>(D)+2.; // 100 for spherical
   if (vm.count("nu")) nu = vm["nu"].as<double>();
+  if(nu < static_cast<double>(D)+1.+1e-8)
+    nu = static_cast<double>(D)+1.+1e-8;
+  double minAngle = 6.;
+  if (vm.count("minAngle")) nu = vm["minAngle"].as<double>(); 
+  double delta = 6.;
+  if (vm.count("delta")) nu = vm["delta"].as<double>(); 
 
   MatrixXd Delta(D-1,D-1);
   Delta = MatrixXd::Identity(D-1,D-1);
-  Delta *= nu*(3.0*PI)/180.;
+  Delta *= nu*(delta*PI/180.)*(delta*PI/180.);
 
 //  double nu = D+0.1
 //  MatrixXd Delta(D,D);
@@ -66,7 +74,7 @@ int main(int argc, char** argv)
 //  Delta *= nu * (12.*PI)/180.0;
   MatrixXd x(D,N);
   VectorXu z(N);
-  sampleClustersOnSphere<double>(Delta,nu,x,z,K);
+  sampleClustersOnSphere<double>(Delta,nu,x,z,K,minAngle);
   for(uint32_t i=0; i<N-1; ++i)
     if(fabs(x.col(i).norm()-1.0) > 1e-2)
     {

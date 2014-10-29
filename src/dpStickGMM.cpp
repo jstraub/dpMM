@@ -16,6 +16,8 @@
 #include "unifSphere.hpp"
 #include "sphericalKMeans.hpp"
 #include "kmeans.hpp"
+#include "dpvMFmeans.hpp"
+#include "timer.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -92,7 +94,7 @@ int main(int argc, char **argv)
   }
   cout << "alpha="<<alpha.transpose()<<endl;
 
-  boost::shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   MatrixXd& x(*spx);
   string pathIn ="";
   if(vm.count("input")) pathIn = vm["input"].as<string>();
@@ -188,8 +190,8 @@ int main(int argc, char **argv)
     }
     NIWd niw(Delta, theta, nu, kappa, &rndGen);
 
-    boost::shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
-    boost::shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
+    shared_ptr<NiwSampledd> niwSampl(new NiwSampledd(niw));
+    shared_ptr<LrCluster<NiwSampledd,double> > lrTheta(new 
         LrCluster<NiwSampledd,double>(niwSampl,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSampledd,double>(alpha(0), lrTheta, K, &rndGen);
 
@@ -225,7 +227,7 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    boost::shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
+    shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
     dpmm = new DirMM<double>(dir, niwSp);
@@ -262,8 +264,8 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    boost::shared_ptr<NiwSphered> theta (new NiwSphered(iw, &rndGen));
-    boost::shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
+    shared_ptr<NiwSphered> theta (new NiwSphered(iw, &rndGen));
+    shared_ptr<LrCluster<NiwSphered,double> > lrTheta(new 
       LrCluster<NiwSphered,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSphered,double>(alpha(0), lrTheta, K, &rndGen);
 
@@ -299,8 +301,8 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    boost::shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
-    boost::shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
+    shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
+    shared_ptr<LrCluster<NiwSphereFulld,double> > lrTheta(new 
       LrCluster<NiwSphereFulld,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwSphereFulld,double>(alpha(0), lrTheta, 
         K, &rndGen);
@@ -341,8 +343,8 @@ int main(int argc, char **argv)
     cout<<"theta = "<<mu.transpose()<<endl;
     cout<<"kappa = "<<kappa<<endl;
     NIWd niw(Delta, mu, nu, kappa, &rndGen);
-    boost::shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
-    boost::shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
+    shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
+    shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
       LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
     dpmm = new DpSubclusterMM<NiwTangentd,double>(alpha(0), lrTheta, 
         K, &rndGen);
@@ -380,9 +382,9 @@ int main(int argc, char **argv)
     }
 
     IWd iw(Delta, nu, &rndGen);
-    vector<boost::shared_ptr<BaseMeasure<double> > > thetas;
+    vector<shared_ptr<BaseMeasure<double> > > thetas;
     for (uint32_t k=0; k<K-1; ++k)
-      thetas.push_back(boost::shared_ptr<BaseMeasure<double> >(
+      thetas.push_back(shared_ptr<BaseMeasure<double> >(
             new NiwSphered(iw, &rndGen)));
     thetas.push_back(boost::shared_ptr<BaseMeasure<double> >(new UnifSphered(D)));
 
@@ -421,10 +423,19 @@ int main(int argc, char **argv)
       }
     }
     IWd iw(Delta, nu, &rndGen);
-    boost::shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
+    shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
     dpmmf = new DirMMcld<NiwSphered,double>(dir, niwSp);
+  }else if(!base.compare("DPvMFmeans")){
+    double lambda = cos(5.0*M_PI/180.0);
+    if(vm.count("params"))
+    {
+      vector<double> params = vm["params"].as< vector<double> >();
+      cout<<"params length="<<params.size()<<endl;
+      lambda = params[0];
+    }
+    spkm = new DPvMFMeans<double>(spx, K, lambda, &rndGen);
   }else if(!base.compare("spkm")){
     spkm = new SphericalKMeans<double>(spx, K, &rndGen);
   }else if(!base.compare("spkmKarcher")){
@@ -446,8 +457,8 @@ int main(int argc, char **argv)
   {
     assert(dpmmf!=NULL);
 //    MatrixXf x_f = x.cast<float>();
-    boost::shared_ptr<ClSphereGpud> cld(new ClSphereGpud(spx,
-          spVectorXu(new VectorXu(N)),&rndGen,K));
+    shared_ptr<ClSphereGpud> cld(new ClSphereGpud(spx,
+          spVectorXu(new VectorXu(N)),K));
     dpmmf->initialize(cld);
 
     ofstream fout(pathOut.data(),ofstream::out);
@@ -485,24 +496,32 @@ int main(int argc, char **argv)
     fout.close();
 
   }else if(!base.compare("spkm") || !base.compare("spkmKarcher") 
-      || !base.compare("kmeans"))
+      || !base.compare("DPvMFmeans") || !base.compare("kmeans"))
   {
     ofstream fout(pathOut.data(),ofstream::out);
     ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
+    Timer watch;
     for (uint32_t t=0; t<T; ++t)
     {
       cout<<"------------ t="<<t<<" -------------"<<endl;
+      watch.tic();
       spkm->updateCenters();
+      watch.toctic("-- updateCenters");
 
       const VectorXu& z = spkm->z();
       for (uint32_t i=0; i<z.size()-1; ++i) 
         fout<<z(i)<<" ";
       fout<<z(z.size()-1)<<endl;
       double deviation = spkm->avgIntraClusterDeviation();
-      cout<<"avg deviation "<<deviation<<endl;
+
+      cout<<"   K="<<spkm->getK();
+      cout<<"  counts=   "<<counts<double,uint32_t>(z,spkm->getK()).transpose();
+      cout<<" avg deviation "<<deviation<<endl;
       foutJointLike<<deviation<<endl;
 
+      watch.tic();
       spkm->updateLabels();
+      watch.toctic("-- updateLabels");
     }
     fout.close();
 
@@ -518,6 +537,10 @@ int main(int argc, char **argv)
     fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
     fout<<deviates<<endl;
     fout.close();
+
+    ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
+    foutMeans << spkm->centroids()<<endl;
+    foutMeans.close();
 
   }else{
     assert(dpmm!=NULL);

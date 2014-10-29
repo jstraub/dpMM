@@ -279,7 +279,7 @@ void niwSphere_sampled::merge_with(niwSphere_sampled &other1, niwSphere_sampled 
   //      t[d] += other1.t[d] + other2.t[d];
 
   // find karcher mean
-  Sphere<> M;
+  Sphere<double> M;
   Eigen::MatrixXd mus(mu_.rows(),3); mus << mu_,other1.mu_,other2.mu_;
   Eigen::VectorXd w(3); w << N,other1.N,other2.N;
   mu_ = karcherMeanWeighted<Eigen::Dynamic>(mu_,mus,w,100);

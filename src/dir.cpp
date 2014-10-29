@@ -7,7 +7,7 @@ Dir<Disc,T>::Dir(const Matrix<T,Dynamic,1>& alpha, boost::mt19937* pRndGen)
   counts_(Matrix<T,Dynamic,1>::Zero(K_))
 {
   for(uint32_t k=0; k<K_; ++k)
-    gammas_.push_back(boost::random::gamma_distribution<>(alpha_(k)));
+    gammas_.push_back(gamma_distribution<>(alpha_(k)));
 };
 
 template<class Disc, typename T>
@@ -16,7 +16,7 @@ Dir<Disc,T>::Dir(const Dir& other)
   counts_(other.counts())
 {
   for(uint32_t k=0; k<K_; ++k)
-    gammas_.push_back(boost::random::gamma_distribution<>(alpha_(k)));
+    gammas_.push_back(gamma_distribution<>(alpha_(k)));
 };
 
 template<class Disc, typename T>

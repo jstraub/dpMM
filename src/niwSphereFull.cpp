@@ -244,7 +244,7 @@ void NiwSphereFull<T>::sample()
     if( HR > 0 || unif_(*iw0_.pRndGen_) < exp(HR))
     {
       normalS_ = normalS;
-      cout<<"\x1b[33m -- accepted after "<<t <<" --\x1b[0m"<<endl;
+//      cout<<"\x1b[33m -- accepted after "<<t <<" --\x1b[0m"<<endl;
     }
   }
 
@@ -401,7 +401,7 @@ void NiwSphereFull<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwSphereFull<T>::posterior( const boost::shared_ptr<ClData<T> >& cldp, uint32_t k)
+void NiwSphereFull<T>::posterior( const shared_ptr<ClData<T> >& cldp, uint32_t k)
 {
   assert(false);//TODO adapt!
 
@@ -454,16 +454,16 @@ T NiwSphereFull<T>::qRandomMuProposal() const
 {
   NormalSphere<T> mergeProposal(meanKarch_, iw0_.posterior().mode(),
     iw0_.pRndGen_);
-  cout<<"NiwSphereFull<T>::qRandomMuProposal() eval mean "
-    <<normalS_.getMean().transpose()<<endl
-    <<" around karcher mean "<<meanKarch_.transpose()<<endl;
+//  cout<<"NiwSphereFull<T>::qRandomMuProposal() eval mean "
+//    <<normalS_.getMean().transpose()<<endl
+//    <<" around karcher mean "<<meanKarch_.transpose()<<endl;
   return mergeProposal.logPdf(normalS_.getMean());
 };
 
 
 template<typename T>
 T NiwSphereFull<T>::logPdfUnderPriorMarginalizedMerged(
-    const boost::shared_ptr<NiwSphereFull<T> >& other) const
+    const shared_ptr<NiwSphereFull<T> >& other) const
 {
   assert(false); //TODO updated - not used right now anyways
 
