@@ -29,9 +29,15 @@ public:
   virtual void updateCenters();
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& deviates);
   virtual T avgIntraClusterDeviation();
+
+  virtual T dist(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b);
+  virtual bool closer(T a, T b);
+  virtual uint32_t indOfClosestCluster(int32_t i);
+  virtual Matrix<T,Dynamic,1> computeCenter(uint32_t k);
   
+
 protected:
-  Sphere<T> S_; 
+  Sphere<T> S_;  // TODO this should not be here - needed for the empty cluster
 };
 
 // --------------------------- impl -------------------------------------------
@@ -60,20 +66,60 @@ template<class T>
 KMeans<T>::~KMeans()
 {}
 
+
+template<class T>
+T KMeans<T>::dist(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b)
+{
+  return (a-b).norm();
+};
+
+template<class T>
+bool KMeans<T>::closer(T a, T b)
+{
+  return a<b; // if dist a is smaller than dist b a is closer than b (Eucledian)
+};
+
+
+template<class T>
+uint32_t KMeans<T>::indOfClosestCluster(int32_t i)
+{
+  T sim_closest = dist(this->ps_.col(0), this->spx_->col(i));
+  uint32_t z_i = 0;
+  for(uint32_t k=1; k<this->K_; ++k)
+  {
+    T sim_k = dist(this->ps_.col(k), this->spx_->col(i));
+    if( closer(sim_k, sim_closest))
+    {
+      sim_closest = sim_k;
+      z_i = k;
+    }
+  }
+  return z_i;
+};
+
 template<class T>
 void KMeans<T>::updateLabels()
 {
 #pragma omp parallel for 
   for(uint32_t i=0; i<this->N_; ++i)
   {
-    Matrix<T,Dynamic,1> sim(this->K_);
-    for(uint32_t k=0; k<this->K_; ++k)
-      sim(k) = (this->ps_.col(k) - this->spx_->col(i)).norm();
-    int z_i,dummy;
-//    cout<<sim.transpose()<<endl;
-    sim.minCoeff(&z_i,&dummy);
-    this->z_(i) = z_i;
+    this->z_(i) = indOfClosestCluster(i);
   }
+}
+
+template<class T>
+Matrix<T,Dynamic,1> KMeans<T>::computeCenter(uint32_t k)
+{
+  this->Ns_(k) = 0.0;
+  Matrix<T,Dynamic,1> mean_k(this->D_);
+  mean_k.setZero(this->D_);
+  for(uint32_t i=0; i<this->N_; ++i)
+    if(this->z_(i) == k)
+    {
+      mean_k += this->spx_->col(i); 
+      this->Ns_(k) ++;
+    }
+  return mean_k/this->Ns_(k);
 }
 
 template<class T>
@@ -82,18 +128,8 @@ void KMeans<T>::updateCenters()
 #pragma omp parallel for 
   for(uint32_t k=0; k<this->K_; ++k)
   {
-    T N_k=0;
-    Matrix<T,Dynamic,1> mean_k(this->D_);
-    mean_k.setZero(this->D_);
-    for(uint32_t i=0; i<this->N_; ++i)
-      if(this->z_(i) == k)
-      {
-        mean_k += this->spx_->col(i); 
-        N_k ++;
-      }
-    if (N_k >0) 
-      this->ps_.col(k) = mean_k/N_k;
-    else 
+    this->ps_.col(k) = computeCenter(k);
+    if (this->Ns_(k) <= 0) 
       this->ps_.col(k) = S_.sampleUnif(this->pRndGen_);
   }
 }
@@ -112,9 +148,10 @@ MatrixXu KMeans<T>::mostLikelyInds(uint32_t n,
     for (uint32_t i=0; i<this->N_; ++i)
       if(this->z_(i) == k)
       {
-        T deviate = (this->ps_.col(k) - this->spx_->col(i)).norm();
+        T deviate = dist(this->ps_.col(k), this->spx_->col(i));
+//        T deviate = (this->ps_.col(k) - this->spx_->col(i)).norm();
         for (uint32_t j=0; j<n; ++j)
-          if(deviates(j,k) > deviate)
+          if(closer(deviate, deviates(j,k)))
           {
             for(uint32_t l=n-1; l>j; --l)
             {
@@ -146,14 +183,15 @@ T KMeans<T>::avgIntraClusterDeviation()
 #pragma omp parallel for 
   for (uint32_t k=0; k<this->K_; ++k)
   {
-    T N_k = 0.0;
+    this->Ns_(k) = 0.0;
     for (uint32_t i=0; i<this->N_; ++i)
       if(this->z_(i) == k)
       {
-        deviates(k) += (this->ps_.col(k) - this->spx_->col(i)).norm();
-        N_k ++;
+        deviates(k) += dist(this->ps_.col(k), this->spx_->col(i));
+//        deviates(k) += (this->ps_.col(k) - this->spx_->col(i)).norm();
+        this->Ns_(k) ++;
       }
-    if(N_k > 0.0) deviates(k) /= N_k;
+    if(this->Ns_(k) > 0.0) deviates(k) /= this->Ns_(k);
   }
   return deviates.sum()/static_cast<T>(this->K_);
 }

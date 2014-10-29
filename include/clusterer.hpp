@@ -1,6 +1,14 @@
 #pragma once
 
 
+#include <global.hpp>
+//#include <Eigen/Dense>
+//#include <boost/shared_ptr.hpp>
+
+#include <boost/random/mersenne_twister.hpp>
+
+using namespace Eigen;
+
 template<class T>
 class Clusterer
 {
@@ -20,12 +28,16 @@ public:
   const VectorXu& z() const {return z_;};
   const Matrix<T,Dynamic,Dynamic>& centroids() const {return ps_;};
 
+  uint32_t getK(){return K_;};
+  uint32_t K(){return K_;};
+
 protected:
-  const uint32_t K_;
+  uint32_t K_;
   const uint32_t D_;
-  const uint32_t N_;
+  uint32_t N_;
   boost::shared_ptr<Matrix<T,Dynamic,Dynamic> > spx_; // pointer to data
   Matrix<T,Dynamic,Dynamic> ps_; // centroids on the sphere
+  Matrix<uint32_t,Dynamic,1> Ns_; // counts for each cluster
   VectorXu z_; // labels
   boost::mt19937* pRndGen_;
 };
@@ -36,8 +48,8 @@ template<class T>
 Clusterer<T>::Clusterer(
     const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx, uint32_t K,
     boost::mt19937* pRndGen)
-  : K_(K), D_(spx->rows()), N_(spx->cols()), spx_(spx), ps_(D_,K_), z_(N_), 
-    pRndGen_(pRndGen)
+  : K_(K), D_(spx->rows()), N_(spx->cols()), spx_(spx), ps_(D_,K_), Ns_(K_),
+    z_(N_), pRndGen_(pRndGen)
 {};
 
 template<class T>

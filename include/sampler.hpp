@@ -65,6 +65,10 @@ extern void choiceMultGpu(double* d_pdf, uint32_t* d_z, uint32_t N,
     uint32_t M, uint32_t seed);
 extern void choiceMultGpu(float* d_pdf, uint32_t* d_z, uint32_t N, 
     uint32_t M, uint32_t seed);
+extern void choiceMultLogPdfGpu(double* d_logPdf, uint32_t* d_z, uint32_t N, 
+    uint32_t M, uint32_t seed);
+extern void choiceMultLogPdfGpu(float* d_logPdf, uint32_t* d_z, uint32_t N, 
+    uint32_t M, uint32_t seed);
 extern void choiceMultLogPdfUnNormalizedGpu(double* d_pdf, uint32_t* d_z, 
   uint32_t N, uint32_t M, uint32_t seed);
 extern void choiceMultLogPdfUnNormalizedGpu(float* d_pdf, uint32_t* d_z, 
@@ -72,11 +76,24 @@ extern void choiceMultLogPdfUnNormalizedGpu(float* d_pdf, uint32_t* d_z,
 extern void unifGpu(double* d_u, uint32_t N, uint32_t seed);
 extern void unifGpu(float* d_u, uint32_t N, uint32_t seed);
 
+extern void logNormalizerGpu(float* d_logPdf, float* d_logNormalizer, 
+    uint32_t dk, uint32_t K, uint32_t N);
+extern void logNormalizerGpu(double* d_logPdf, double* d_logNormalizer, 
+    uint32_t dk, uint32_t K, uint32_t N);
+extern void logNormalizeGpu(float* d_logPdf, uint32_t dk, uint32_t K, uint32_t N);
+extern void logNormalizeGpu(double* d_logPdf, uint32_t dk, uint32_t K, uint32_t N);
+extern void logAddTopLevelGpu(float* d_logPdf, float* d_logNormalizer, 
+    float* d_logPi, uint32_t dk, uint32_t K, uint32_t N);
+extern void logAddTopLevelGpu(double* d_logPdf, double* d_logNormalizer, 
+    double* d_logPi, uint32_t dk, uint32_t K, uint32_t N);
+
+
 /* Sampler for GPU */
 template<typename T=float>
 class SamplerGpu : public Sampler<T>
 {
-  GpuMatrix<T> pdfs_; // one pdf per row
+  boost::shared_ptr<GpuMatrix<T> > pdfs_; // one pdf per row
+  GpuMatrix<T> logNormalizers_; // one pdf per row
   GpuMatrix<uint32_t> z_; // samples from pdfs
   GpuMatrix<T> r_; // unif random numbers
 
@@ -92,18 +109,34 @@ public:
     return u;
   };
 
+  virtual void setPdfs(const boost::shared_ptr<GpuMatrix<T> >& pdfs, bool logScale);
+
   virtual void sampleDiscLogPdfUnNormalized(
       const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& z);
   /* use pdfs already prestored in GPU memory */
-  void sampleDiscPdf(T *d_pdfs, const spVectorXu& z);
+  void sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool logScale=false);
 //  void sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, const spVectorXu& z);
-  void sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& z);
-  VectorXu sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs)
+  void sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& z, 
+      bool logScale = false);
+  VectorXu sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, 
+      bool logScale=false)
   {
     VectorXu z(pdfs.rows());
-    sampleDiscPdf(pdfs,z);
+    sampleDiscPdf(pdfs,z,logScale);
     return z;
   };
+  // sample from internal pdfs_
+  void sampleDiscPdf();
+
+  // compute logNormalizer over blocks of dk columns
+  void logNormalizer(uint32_t dk, uint32_t K);
+  // log normalize the distributions in pdfs_ in blocks of dk cols
+  void logNormalize(uint32_t dk, uint32_t K);
+  // add logNormalizer+pi to pdfs_ -> add one layer of hierarchy
+  void addTopLevel(const Matrix<T,Dynamic,1>& pi,uint32_t dk);
+
+  // get Z from memory
+  void getZ( VectorXu& z){ z_.get(z);};
 };
 #endif
 

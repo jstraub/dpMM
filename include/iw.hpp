@@ -12,7 +12,8 @@
 #include "normal.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::endl;
+using std::cout;
 
 template<typename T>
 class IW : public Distribution<T>

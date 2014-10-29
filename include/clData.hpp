@@ -32,6 +32,7 @@ public:
       const spVectorXu& z, uint32_t K);
   virtual ~ClData();
 
+  virtual void init();
 
   /* after changing z_ outside - we can use update to get new statistics */
   virtual void update(uint32_t K);
@@ -83,6 +84,10 @@ ClData<T>::ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x,
 
 template<class T>
 ClData<T>::~ClData()
+{};
+
+template<typename T>
+void ClData<T>::init()
 {};
 
 template<class T>

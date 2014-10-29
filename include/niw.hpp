@@ -14,7 +14,8 @@
 #define PI 3.141592653589793
 
 using namespace Eigen;
-using namespace std;
+using std::endl;
+using std::cout;
 
 template<typename T>
 class NIW : public Distribution<T>

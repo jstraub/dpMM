@@ -10,7 +10,7 @@
 
 
 using namespace Eigen;
-using namespace std;
+using std::endl, std::cout, std::vector;
 using boost::shared_ptr;
 
 template <typename T>

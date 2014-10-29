@@ -15,6 +15,12 @@ using std::cout;
 using std::endl;
 using std::min;
 
+#ifdef BOOST_OLD
+using boost::normal_distribution;
+#else
+using boost::random::normal_distribution;
+#endif
+
 template<typename T>
 class Normal : public Distribution<T>
 {
@@ -53,7 +59,7 @@ private:
   T logDetSigma_;
   LDLT<Matrix<T,Dynamic,Dynamic> > SigmaLDLT_;
 
-  boost::random::normal_distribution<> gauss_;
+  normal_distribution<> gauss_;
 };
 
 typedef Normal<double> Normald;

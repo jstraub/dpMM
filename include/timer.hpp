@@ -5,64 +5,78 @@
 #include <sys/time.h>
 #include <string>
 
-using namespace std;
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::ostream;
+using std::string;
 
 class Timer
 {
 public:
   Timer()
   {
-    gettimeofday(&tinit, NULL);
     tic();
+    tInit_ = t0_;
   };
+  virtual ~Timer() {};
 
   void tic(void)
   {
-    gettimeofday(&t0, NULL);
+    gettimeofday(&t0_, NULL);
   };
 
   float toc(void)
   {
-    gettimeofday(&t1, NULL);
-    return getDtMs(t0);
+    gettimeofday(&t1_, NULL);
+    dt_ = getDtMs(t0_,t1_);
+    return dt_;
   };
 
-  float toctic(string description)
+  float toctic(string description="")
   {
-    gettimeofday(&t1, NULL);
-    float dt = getDtMs(t0);
+    toc();
     if (description.size()>0)
-      cerr<<description<<": "<<dt<<"ms"<<endl;
+      cerr<<description<<" :"<<dt_<<"ms"<<endl;
     tic();
-    return dt;
+    return dt_;
   };
 
   float lastDt(void) const
   {
-    return dt;
+    return dt_;
   };
 
   float dtFromInit(void) 
   {
-    return getDtMs(tinit);
+    timeval tNow; 
+    gettimeofday(&tNow, NULL);
+    return getDtMs(tInit_,tNow);
   };
 
   Timer& operator=(const Timer& t)
   {
     if(this != &t){
-      dt=t.lastDt();
+      dt_=t.lastDt();
     }
     return *this;
   };
 
-private:
-  float dt;
-  timeval tinit, t0, t1;
+protected:
+  float dt_;
+  timeval tInit_, t0_, t1_;
 
-  float getDtMs(const timeval& t) 
+  timeval getTimeOfDay()
   {
-    dt = (t1.tv_sec - t.tv_sec) * 1000.0f; // sec to ms
-    dt += (t1.tv_usec - t.tv_usec) / 1000.0f; // us to ms
+    timeval t;
+    gettimeofday(&t,NULL);
+    return t;
+  };
+
+  float getDtMs(const timeval& t0, const timeval& t1) 
+  {
+    float dt = (t1.tv_sec - t0.tv_sec) * 1000.0f; // sec to ms
+    dt += (t1.tv_usec - t0.tv_usec) / 1000.0f; // us to ms
     return dt;
   };
 };

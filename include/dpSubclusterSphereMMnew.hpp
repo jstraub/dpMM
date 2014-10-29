@@ -20,7 +20,8 @@
 
 
 using namespace Eigen;
-using namespace std;
+using std::endl;
+using std::cout;
 using boost::shared_ptr;
 //using boost::math::lgamma;
 
@@ -30,11 +31,11 @@ template <class B, typename T>
 class DpSubclusterMM : public DpMM<T>
 {
 public:
-  DpSubclusterMM(const T alpha, const boost::shared_ptr<LrCluster<B,T> >& theta,
+  DpSubclusterMM(const T alpha, const shared_ptr<LrCluster<B,T> >& theta,
     uint32_t K0, boost::mt19937 *pRndGen);
   virtual ~DpSubclusterMM();
 
-  virtual void initialize(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx);
+  virtual void initialize(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx);
 
   void relinearize();
   void relinearize(uint32_t k);
@@ -64,7 +65,7 @@ public:
   virtual const VectorXu & getLabels(){ return z_;};
   virtual uint32_t getK() const { return K_;};
 
-  boost::shared_ptr<LrCluster<B,T> > get(uint32_t k) { return thetas_[k];};
+  shared_ptr<LrCluster<B,T> > get(uint32_t k) { return thetas_[k];};
 
   MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
@@ -82,13 +83,13 @@ protected:
   uint32_t N_;
   uint32_t D_;
   T alpha_;
-  boost::shared_ptr<LrCluster<B,T> > theta0_;
+  shared_ptr<LrCluster<B,T> > theta0_;
 
-  vector<boost::shared_ptr<LrCluster<B,T> > > thetas_;
+  vector<shared_ptr<LrCluster<B,T> > > thetas_;
 
-  boost::shared_ptr<Matrix<T,Dynamic,Dynamic> > spq_; // points on the sphere
-  boost::shared_ptr<Matrix<T,Dynamic,Dynamic> > spxMu_; // points in T_muS
-  boost::shared_ptr<Matrix<T,Dynamic,Dynamic> > spx_; // points in T_northS
+  shared_ptr<Matrix<T,Dynamic,Dynamic> > spq_; // points on the sphere
+  shared_ptr<Matrix<T,Dynamic,Dynamic> > spxMu_; // points in T_muS
+  shared_ptr<Matrix<T,Dynamic,Dynamic> > spx_; // points in T_northS
   VectorXu z_;
   VectorXu lr_;
 
@@ -112,7 +113,7 @@ protected:
 // --------------------------------- impl -------------------------------------
 template <class B, typename T>
 DpSubclusterMM<B,T>::DpSubclusterMM(const T alpha, 
-    const boost::shared_ptr<LrCluster<B,T> >& theta, uint32_t K0, boost::mt19937 *pRndGen)
+    const shared_ptr<LrCluster<B,T> >& theta, uint32_t K0, boost::mt19937 *pRndGen)
   : K_(K0), alpha_(alpha), theta0_(theta), sticks_(K0), pRndGen_(pRndGen)
 {
 };
@@ -134,7 +135,7 @@ Matrix<T,Dynamic,1> DpSubclusterMM<B,T>::getCounts()
 
 template <class B, typename T>
 void DpSubclusterMM<B,T>::initialize(
-  const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& spq)
+  const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spq)
 {
 //  assert(K_ == 1);
   spq_ = spq;
@@ -173,7 +174,7 @@ void DpSubclusterMM<B,T>::initialize(
 
   for(uint32_t k=0; k<K_; ++k)
   {
-    thetas_.push_back(boost::shared_ptr<LrCluster<B,T> >(theta0_->copy()));
+    thetas_.push_back(shared_ptr<LrCluster<B,T> >(theta0_->copy()));
 //    thetas_[k]->posterior(*spx_,z_,2*k);
   }
   pdfsLR_.resize(N_,2);
@@ -276,9 +277,9 @@ void DpSubclusterMM<NiwSphered, double>::relinearize(uint32_t k)
 {
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
   assert(spx_.get() != NULL);
@@ -302,9 +303,9 @@ void DpSubclusterMM<NiwSphereFulld, double>::relinearize(uint32_t k)
 {
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
   assert(spx_.get() != NULL);
@@ -347,9 +348,9 @@ void DpSubclusterMM<NiwTangentd, double>::relinearize(uint32_t k)
 {
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
   assert(spx_.get() != NULL);
@@ -377,9 +378,9 @@ void DpSubclusterMM<NiwSphered, double>::relinearize()
   Sphere<double> S(D_);
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
   Matrix<double,Dynamic,Dynamic> p0s(D_,2*K_);
@@ -416,9 +417,9 @@ void DpSubclusterMM<NiwTangentd, double>::relinearize()
   Sphere<double> S(D_);
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
 //  Matrix<double,Dynamic,Dynamic> p0s(D_,2*K_);
@@ -456,9 +457,9 @@ void DpSubclusterMM<NiwSpheref, float>::relinearize()
   Sphere<float> S(D_);
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<float,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<float,Dynamic,Dynamic> >(
         new Matrix<float,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<float,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<float,Dynamic,Dynamic> >(
         new Matrix<float,Dynamic,Dynamic>(D_-1,N_));
  }
 
@@ -486,9 +487,9 @@ void DpSubclusterMM<NiwSphereFulld, double>::relinearize()
   Sphere<double> S(D_);
   if(spx_.get() == NULL)
   {
-    spxMu_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = boost::shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
         new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
   }
   Matrix<double,Dynamic,Dynamic> p0s(D_,2*K_);
@@ -798,7 +799,7 @@ void DpSubclusterMM<B,T>::proposeMerges()
         // construct the merge here and sample it then decide to accept or 
         // reject it
 // TODO we sample inside the merge method since it may be a specific proposal 
-        boost::shared_ptr<LrCluster<B,T> > merged(thetas_[k]->merge(thetas_[j]));
+        shared_ptr<LrCluster<B,T> > merged(thetas_[k]->merge(thetas_[j]));
 //        merged->sample();
         // Hastings Ratio
         //TODO deterministic merge
@@ -893,7 +894,7 @@ void DpSubclusterMM<B,T>::proposeMerges()
             }
           
           // TODO may need to relinearize the merged one?
-//          boost::shared_ptr<LrCluster<B,T> > merged(thetas_[k]->merge(thetas_[j]));
+//          shared_ptr<LrCluster<B,T> > merged(thetas_[k]->merge(thetas_[j]));
           thetas_[k] = merged; // replace k with the merged one
           thetas_[k]->stickL() = sticks_(k);
           thetas_[k]->stickR() = sticks_(j);
@@ -1132,7 +1133,7 @@ void DpSubclusterMM<B,T>::proposeSplits()
         // create new clusters from scratch with 50% 50% sticks
         thetas_[k].reset(
           new LrCluster<B,T>(thetas_[k]->getL(),thetas_[k]->alpha(),pRndGen_));
-        thetas_.push_back(boost::shared_ptr<LrCluster<B,T> >(
+        thetas_.push_back(shared_ptr<LrCluster<B,T> >(
           new LrCluster<B,T>(thetas_[k]->getR(),thetas_[k]->alpha(),pRndGen_)));
 
 //#ifndef NDEBUG

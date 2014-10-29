@@ -31,7 +31,7 @@ protected:
 //  Matrix<T,Dynamic,1> logLikeWindow;
 
 public:
-  LrCluster(const boost::shared_ptr<B>& theta, T alpha, boost::mt19937 *pRndGen);
+  LrCluster(const shared_ptr<B>& theta, T alpha, boost::mt19937 *pRndGen);
   ~LrCluster();
 
   virtual LrCluster<B,T>* copy();
@@ -44,7 +44,7 @@ public:
 //  void dataLogLikelihoodMarginalizedMergedWith(
   virtual T logPdfUnderPrior() const;
   virtual T logPdfUnderPriorMarginalized();
-  virtual T dataLogLikelihoodMarginalizedMerged(const boost::shared_ptr<LrCluster<B,T> >& other);
+  virtual T dataLogLikelihoodMarginalizedMerged(const shared_ptr<LrCluster<B,T> >& other);
   virtual void print() const;
 
   virtual T& logLikelihoodOfSubclusterSplit(){ return logLikeSubClSplit_;};
@@ -57,7 +57,7 @@ public:
 //  virtual void sampleLR();
   void sample();
 
-  LrCluster<B,T>* merge(const boost::shared_ptr<LrCluster<B,T> >& other);
+  LrCluster<B,T>* merge(const shared_ptr<LrCluster<B,T> >& other);
 
   bool splittable();
   void setSplittable() { splittable_ = true;};
@@ -69,9 +69,9 @@ public:
   void updateAvgLogLikeData(T avgLogLikeData);
   void updateAvgLogLikeData();
 
-  boost::shared_ptr<B>& getUpper(){ return theta_;};
-  boost::shared_ptr<B>& getR(){ return thetaR_;};
-  boost::shared_ptr<B>& getL(){ return thetaL_;};
+  shared_ptr<B>& getUpper(){ return theta_;};
+  shared_ptr<B>& getR(){ return thetaR_;};
+  shared_ptr<B>& getL(){ return thetaL_;};
 
   T count() const {return theta_->count();};
   T countR(){ return thetaR_->count();};
@@ -88,10 +88,10 @@ public:
   T& stickR(){return stickR_;};
   
   T stickL_, stickR_;
-  boost::shared_ptr<B> theta0_; // prior
-  boost::shared_ptr<B> theta_; // full cluster
-  boost::shared_ptr<B> thetaL_; // left cluster
-  boost::shared_ptr<B> thetaR_; // right cluster
+  shared_ptr<B> theta0_; // prior
+  shared_ptr<B> theta_; // full cluster
+  shared_ptr<B> thetaL_; // left cluster
+  shared_ptr<B> thetaR_; // right cluster
 private:
 
   void posteriorSticks();
@@ -100,7 +100,7 @@ private:
 // ---------------------------------- impl -----------------------------------
 
 template<class B, typename T>
-LrCluster<B,T>::LrCluster(const boost::shared_ptr<B>& theta, T alpha,
+LrCluster<B,T>::LrCluster(const shared_ptr<B>& theta, T alpha,
   boost::mt19937 *pRndGen)
   : pRndGen_(pRndGen), alpha_(alpha), avgLogLikeData_(-9999999.), splittable_(false), 
   nDecrease_(0),
@@ -131,10 +131,10 @@ LrCluster<B,T>* LrCluster<B,T>::copy()
 }
 
 template<class B, typename T>
-LrCluster<B,T>* LrCluster<B,T>::merge(const boost::shared_ptr<LrCluster<B,T> >& other)
+LrCluster<B,T>* LrCluster<B,T>::merge(const shared_ptr<LrCluster<B,T> >& other)
 {
   LrCluster<B,T>* merged = new LrCluster<B,T>(
-    boost::shared_ptr<B>(theta_->merge(*other->getUpper())),
+    shared_ptr<B>(theta_->merge(*other->getUpper())),
     alpha_,pRndGen_);
   merged->getL().reset(theta_->copyNative());
   merged->getR().reset(other->getUpper()->copyNative());
@@ -158,10 +158,10 @@ T LrCluster<B,T>::logPdfUnderPriorMarginalized()
 
 template<class B, typename T>
 T LrCluster<B,T>::dataLogLikelihoodMarginalizedMerged(
-    const boost::shared_ptr<LrCluster<B,T> >& other) 
+    const shared_ptr<LrCluster<B,T> >& other) 
 {
 //  LrCluster<B,T>* merged = new LrCluster<B,T>(
-//    boost::shared_ptr<B>(theta_->merge(*other->getUpper())),
+//    shared_ptr<B>(theta_->merge(*other->getUpper())),
 //    alpha_,pRndGen_);
 //  merged->getL().reset(theta_->copyNative());
 //  merged->getR().reset(other->getUpper()->copyNative());
@@ -406,7 +406,7 @@ void LrCluster<B,T>::updateAvgLogLikeData(T avgLogLikeData)
 
 //template<class B, typename T>
 //void LrCluster<B,T>::dataLogLikelihoodMarginalizedMergedWith(
-//    const boost::shared_ptr<B >& other)
+//    const shared_ptr<B >& other)
 //{
 //  return 
 //};

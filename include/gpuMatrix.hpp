@@ -2,18 +2,25 @@
 
 #include <iostream>
 #include <stdint.h>
+#include <vector>
 #include <Eigen/Dense>
 
 #include <cuda_runtime.h>
-//#include <helper_functions.h> 
-#include <helper_cuda.h> 
+#include <nvidia/helper_cuda.h> 
 
 #include "global.hpp"
 
 using namespace Eigen;
-using boost::shared_ptr;
+//using boost::shared_ptr;
 using std::cout;
 using std::endl;
+
+extern void copy_gpu( double *d_from, double *d_to , uint32_t N, 
+    uint32_t step, uint32_t offset, uint32_t D);
+extern void copy_gpu( float *d_from, float *d_to , uint32_t N, 
+    uint32_t step, uint32_t offset, uint32_t D);
+extern void copy_gpu( uint32_t *d_from, uint32_t *d_to , uint32_t N, 
+    uint32_t step, uint32_t offset, uint32_t D);
 
 template <class T>
 struct GpuMatrix
@@ -26,12 +33,15 @@ struct GpuMatrix
   GpuMatrix(const boost::shared_ptr<Matrix<T,Dynamic,1> > & data);
   ~GpuMatrix();
 
+  void set(T A);
+  void set(const std::vector<T>& A);
   void set(const Matrix<T,Dynamic,Dynamic>& A);
   void set(const Matrix<T,Dynamic,1>& A);
   void set(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A);
   void set(const boost::shared_ptr<Matrix<T,Dynamic,1> >& A);
   void setZero();
 
+  void get(T& a);
   void get(Matrix<T,Dynamic,Dynamic>& A);
   void get(Matrix<T,Dynamic,1>& A);
   void get(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A);
@@ -41,6 +51,7 @@ struct GpuMatrix
     Matrix<T,Dynamic,Dynamic> d(rows_,cols_);
     this->get(d); return d;
   };
+  void copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offset, uint32_t rows);
 
   void resize(uint32_t rows, uint32_t cols);
 
@@ -124,6 +135,28 @@ void GpuMatrix<T>::resize(uint32_t rows, uint32_t cols)
 
 //setters 
 template <class T>
+  void GpuMatrix<T>::set(T A)
+{
+  resize(1,1);
+  assert(1 == cols_);
+  assert(1 == rows_);
+  checkCudaErrors(cudaMemcpy(data_, &A, cols_*rows_* sizeof(T),
+        cudaMemcpyHostToDevice));
+  initialized_ = true;
+};
+
+template <class T>
+  void GpuMatrix<T>::set(const std::vector<T>& A)
+{
+  resize(A.size(),1);
+  assert(A.size() == rows_);
+  assert(1 == cols_);
+  checkCudaErrors(cudaMemcpy(data_, A.data(), cols_*rows_* sizeof(T),
+        cudaMemcpyHostToDevice));
+  initialized_ = true;
+}
+
+template <class T>
 void GpuMatrix<T>::set(const Matrix<T,Dynamic,Dynamic>& A)
 {
   resize(A.rows(),A.cols());
@@ -178,8 +211,17 @@ void GpuMatrix<T>::setZero()
 
  // getters
 template <class T>
+  void GpuMatrix<T>::get(T& a)
+{
+  assert(1 == cols_);
+  assert(1 == rows_);
+  checkCudaErrors(cudaMemcpy(&a,data_, cols_*rows_*sizeof(T),
+                cudaMemcpyDeviceToHost));
+}
+template <class T>
 void GpuMatrix<T>::get(Matrix<T,Dynamic,Dynamic>& A)
 {
+  A.resize(rows_,cols_);
   assert(A.cols() == cols_);
   assert(A.rows() == rows_);
   checkCudaErrors(cudaMemcpy(A.data(),data_, cols_*rows_*sizeof(T),
@@ -189,6 +231,7 @@ void GpuMatrix<T>::get(Matrix<T,Dynamic,Dynamic>& A)
 template <class T>
 void GpuMatrix<T>::get(Matrix<T,Dynamic,1>& A)
 {
+  A.resize(rows_);
   assert(A.cols() == cols_);
   assert(A.rows() == rows_);
   checkCudaErrors(cudaMemcpy(A.data(),data_, cols_*rows_*sizeof(T),
@@ -198,6 +241,7 @@ void GpuMatrix<T>::get(Matrix<T,Dynamic,1>& A)
 template <class T>
 void GpuMatrix<T>::get(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A)
 {
+  A->resize(rows_,cols_);
   assert(A->cols() == cols_);
   assert(A->rows() == rows_);
   checkCudaErrors(cudaMemcpy(A->data(),data_, cols_*rows_*sizeof(T),
@@ -207,9 +251,29 @@ void GpuMatrix<T>::get(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A)
 template <class T>
 void GpuMatrix<T>::get(const boost::shared_ptr<Matrix<T,Dynamic,1> >& A)
 {
+  A->resize(rows_);
   assert(A->cols() == cols_);
   assert(A->rows() == rows_);
   checkCudaErrors(cudaMemcpy(A->data(),data_, cols_*rows_*sizeof(T),
                 cudaMemcpyDeviceToHost));
+};
+
+template <class T>
+void GpuMatrix<T>::copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offset, uint32_t rows)
+{
+  // input d_A is N long and step per element
+  // output (this class) is N long and rows per element
+  resize(rows,N);
+//  checkCudaErrors(cudaMemcpy(A->data(),data_, cols_*rows_*sizeof(T),            
+//                        cudaMemcpyDeviceToHost));
+  if(step != rows || offset!=0)
+    copy_gpu(d_A, data_, N, step, offset, rows);
+  else{
+    // can just do simple mem copy
+    checkCudaErrors(cudaMemcpy(data_, d_A, cols_*rows_*sizeof(T),
+                cudaMemcpyDeviceToDevice));
+  }
+
+  initialized_ = true;
 };
 

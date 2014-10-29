@@ -10,13 +10,13 @@ typedef Eigen::Matrix<uint32_t,Eigen::Dynamic,1> VectorXu;
 typedef Eigen::Matrix<uint32_t,Eigen::Dynamic,Eigen::Dynamic> MatrixXu;
 
 // shared pointer typedefs
-typedef boost::shared_ptr<Eigen::MatrixXd> spMatrixXd;
-typedef boost::shared_ptr<Eigen::MatrixXf> spMatrixXf;
+typedef shared_ptr<Eigen::MatrixXd> spMatrixXd;
+typedef shared_ptr<Eigen::MatrixXf> spMatrixXf;
 
-typedef boost::shared_ptr<Eigen::VectorXd> spVectorXd;
-typedef boost::shared_ptr<Eigen::VectorXf> spVectorXf;
-typedef boost::shared_ptr<Eigen::VectorXi> spVectorXi;
-typedef boost::shared_ptr<VectorXu> spVectorXu;
+typedef shared_ptr<Eigen::VectorXd> spVectorXd;
+typedef shared_ptr<Eigen::VectorXf> spVectorXf;
+typedef shared_ptr<Eigen::VectorXi> spVectorXi;
+typedef shared_ptr<VectorXu> spVectorXu;
 
 #ifndef NDEBUG
 #   define ASSERT(condition, message) \

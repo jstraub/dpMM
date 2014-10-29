@@ -12,7 +12,15 @@
 #include "mult.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::cout;
+using std::endl;
+using std::vector;
+
+#ifdef BOOST_OLD
+using boost::gamma_distribution;
+#else
+using boost::random::gamma_distribution;
+#endif
 
 template<class Disc, typename T>
 class Dir : public Distribution<T>
@@ -66,7 +74,7 @@ public:
 private:
 
   Matrix<T,Dynamic,1> counts_; // counts for the different classes -> SS
-  vector<boost::random::gamma_distribution<> > gammas_;
+  vector<gamma_distribution<> > gammas_;
 
   Matrix<T,Dynamic,1> samplePdf();
 };

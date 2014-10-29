@@ -6,6 +6,8 @@
 #include "iw.hpp"
 #include "sphere.hpp"
 
+#define LOG_2PI 1.8378770664093453
+
 template<typename T>
 class NormalSphere : public Distribution<T>
 {
@@ -33,6 +35,7 @@ public:
   void setSigma(const Matrix<T,Dynamic,Dynamic>& Sigma)
   {return normal_.setSigma(Sigma);};
   T logDetSigma() const {return normal_.logDetSigma();};
+  T logNormalizer() const {return -0.5*(normal_.logDetSigma()+D_*LOG_2PI);};
 
   /* mean on sphere */
   void setMean( const Matrix<T,Dynamic,1>& mu); 
@@ -178,7 +181,8 @@ Matrix<T,Dynamic,1> NormalSphere<T>::sample()
 template<class T>
 inline Matrix<T,Dynamic,Dynamic> sampleClustersOnSphere(
     const Matrix<T,Dynamic,Dynamic>& Delta, T nu,
-    Matrix<T,Dynamic,Dynamic>& x, VectorXu& z, uint32_t K)
+    Matrix<T,Dynamic,Dynamic>& x, VectorXu& z, uint32_t K,
+    T minAngle = static_cast<T>(6.))
 {
   uint32_t N = x.cols();
   uint32_t D = x.rows();
@@ -190,10 +194,29 @@ inline Matrix<T,Dynamic,Dynamic> sampleClustersOnSphere(
   for(uint32_t k=0; k<K; ++k)
   {
     Matrix<T,Dynamic,Dynamic> Sigma = iw.sample();
-    NormalSphere<T> gauss_k(S_.sampleUnif(&rndGen),Sigma,&rndGen);
+//    cout<<Sigma<<endl;
+//    cout<<"nu "<<nu<<endl;
+//    cout<<Delta<<endl;
+    Matrix<T,Dynamic,1> mu = S_.sampleUnif(&rndGen);
+    if(k>0) 
+    {
+      bool done = false; 
+      while(!done)
+      {
+        mu = S_.sampleUnif(&rndGen);
+        done = true;
+        for(uint32_t j=0; j<k; ++j)
+          done = done & (mu.transpose()*mus.col(j) < cos(minAngle*M_PI/180.0));
+      }
+    }
+    cout<<"sampling data for k="<<k<<" around mu="<<mu.transpose()<<" Sigma:"<<endl;
+    cout<<Sigma*(180.0/M_PI)*(180.0/M_PI)<<endl;
+    NormalSphere<T> gauss_k(mu,Sigma,&rndGen);
     mus.col(k) = gauss_k.getMean();
     for (uint32_t i=k*(N/K); i<min(N,(k+1)*(N/K)+N%K); ++i) 
     {
+//      cout<<"--"<<endl;
+//      cout<<mus.col(k).transpose()<<endl;
       do{
         x.col(i) = gauss_k.sample();
       }while(fabs(x.col(i).norm()-1.0) > 1e-3); 
@@ -201,7 +224,7 @@ inline Matrix<T,Dynamic,Dynamic> sampleClustersOnSphere(
         cout<<x.col(i).norm()<<endl;
       z(i) = k;
 //        x.col(i) /= x.col(i).norm();
-//        cout<<x.col(i).transpose()<<endl;
+//      cout<<x.col(i).transpose()<<endl;
     }
   }
   return mus;

@@ -16,6 +16,13 @@ using std::max;
 using std::cout;
 using std::endl;
 
+#ifdef BOOST_OLD
+using boost::mt19937;
+#else
+using boost::mt19937;
+#endif
+
+
 // TODO Template needs fixing - probably just remove
 template <typename T>
 class Sphere
@@ -77,7 +84,7 @@ public:
   Matrix<T,Dynamic,1> Exp_p_single(const Matrix<T,Dynamic,1>& p, 
     const Matrix<T,Dynamic,1>& x) const;
 
-  Matrix<T,Dynamic,1> sampleUnif(boost::mt19937* pRndGen);
+  Matrix<T,Dynamic,1> sampleUnif(mt19937* pRndGen);
  
   // http://en.wikipedia.org/wiki/N-sphere
   T logSurfaceArea() const {

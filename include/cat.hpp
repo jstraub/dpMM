@@ -12,7 +12,8 @@
 #include "sampler.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::cout;
+using std::endl;
 
 template<typename T>
 class Cat : public Distribution<T>

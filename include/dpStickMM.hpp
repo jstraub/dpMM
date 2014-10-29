@@ -8,7 +8,8 @@
 #include "niw.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::endl;
+using std::cout; using std::vector; using std::string;
 
 /*
  * DP mixture model
@@ -26,7 +27,7 @@ public:
   {};
 
   virtual void initialize(const MatrixXd& x);
-  virtual void initialize(const boost::shared_ptr<ClData<double> >& cld)
+  virtual void initialize(const shared_ptr<ClData<double> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
   virtual void sampleLabels();
   virtual void sampleParameters(){;}; 

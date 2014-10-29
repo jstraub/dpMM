@@ -17,7 +17,8 @@
 #include "clData.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::endl;
+using std::cout;
 
 
 template<typename T>
@@ -45,7 +46,7 @@ public:
 
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-  void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k);
+  void posterior(const shared_ptr<ClData<T> >& cldp, uint32_t k);
   /* assumes the x are already in T_northS correctly */
   void posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k, uint32_t zDivider=1);
@@ -58,7 +59,7 @@ public:
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const boost::shared_ptr<NiwSphereFull<T> >& other) const;
+  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSphereFull<T> >& other) const;
   T qRandomMuProposal() const;
 
   void print() const;

@@ -17,8 +17,8 @@
 #include "clData.hpp"
 
 using namespace Eigen;
-using namespace std;
-
+using std::endl;
+using std::cout;
 
 /* Actually just places an IW prior on covariances in the tangent plane */
 template<typename T>
@@ -45,7 +45,7 @@ public:
 
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-  void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k);
+  void posterior(const shared_ptr<ClData<T> >& cldp, uint32_t k);
   /* assumes the x are already in T_northS correctly */
   void posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k);
@@ -54,7 +54,7 @@ public:
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const boost::shared_ptr<NiwSphere<T> >& other) const;
+  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSphere<T> >& other) const;
 
   void print() const;
 
