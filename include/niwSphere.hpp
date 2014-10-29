@@ -36,6 +36,8 @@ public:
   virtual BaseMeasure<T>* copy();
   virtual NiwSphere<T>* copyNative();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SPHERE); }
+
   /* for any point on the sphere; maps into T_muS and rotates north first */
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const ;
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 

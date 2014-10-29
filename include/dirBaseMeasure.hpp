@@ -22,6 +22,8 @@ public:
   DirSampled(const Dir<Disc,T>& dir);
   ~DirSampled();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(DIR_SAMPLED); }
+
   virtual BaseMeasure<T>* copy();
   virtual DirSampled<Disc,T>* copyNative();
 

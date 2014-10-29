@@ -43,7 +43,7 @@ int main(int argc, char **argv){
 
 	uint NumObs = 2; //num observations (number of components of multi-dimention data)
 	uint K=2; //num clusters
-	uint T=100; //iterations
+	uint T=10; //iterations
 	uint M=2; //num docs
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
@@ -209,6 +209,8 @@ int main(int argc, char **argv){
 	naive_samp.initialize( x );
 	naive_samp.inferAll(T,verbose);
 
+	ofstream fout(pathOut.data(),ofstream::out);
+	naive_samp.dump(fout,fout);
 
 	if (pathOut.compare(""))
 	{

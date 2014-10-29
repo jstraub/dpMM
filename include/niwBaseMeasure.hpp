@@ -18,6 +18,8 @@ public:
   NiwMarginalized(const NIW<T>& niw);
   ~NiwMarginalized();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_MARGINALIZED); }
+
   virtual BaseMeasure<T>* copy();
 
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
@@ -43,6 +45,8 @@ public:
   NiwSampled(const NIW<T>& niw);
   ~NiwSampled();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SAMPLED); }
+  
   virtual BaseMeasure<T>* copy();
   virtual NiwSampled<T>* copyNative();
 

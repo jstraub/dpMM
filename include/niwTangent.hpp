@@ -32,6 +32,8 @@ public:
   NiwTangent(const NIW<T>& niw, boost::mt19937* pRndGen);
   ~NiwTangent();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_TANGENT); }
+
   virtual BaseMeasure<T>* copy();
   virtual NiwTangent<T>* copyNative();
 

@@ -33,6 +33,8 @@ public:
   NiwSphereFull(const IW<T>& iw, boost::mt19937* pRndGen);
   ~NiwSphereFull();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SPHERE_FULL); }
+
   virtual BaseMeasure<T>* copy();
   virtual NiwSphereFull<T>* copyNative();
 
