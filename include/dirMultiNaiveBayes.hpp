@@ -12,6 +12,7 @@
 #include "niw.hpp"
 #include "sampler.hpp"
 #include "basemeasure.hpp"
+#include "niwBaseMeasure.hpp"
 
 using namespace Eigen;
 using std::cout;
@@ -342,7 +343,6 @@ void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCo
 	for(uint32_t m=0; m<M_; ++m) {
 		cout << "component: " << m  << endl;
 		for(uint32_t k=0; k<K_; ++k) {
-			cout << "classType: " << thetas_[m][k]->getBaseMeasureType() << endl;
 			cout << "theta: " << k  << endl;
 			thetas_[m][k]->print();
 		}
@@ -351,5 +351,82 @@ void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCo
 	cout << "printing mixture params: " << endl;
 	pi_.print();
 
+
+}
+
+
+template <typename T>
+void DirMultiNaiveBayes<T>::dump_clean() {
+//clean dump, only data with specific format
+//FORMAT:
+	//M 1x1
+	//K	1x1
+	//Nd 1x1
+	//D[m] 1xM
+	//Type[m] 1xM
+	//labels 1xNd
+	// mixture parameters 
+	//params Loop over M then K each contains data type for specific type
+	//for type 1 (NIWSampled)
+		//---prior--- (NIW)
+			//nu 1x1
+			//kappa 1x1
+			//theta 1xD
+			//scatter DxD
+		//---estimate (normal)
+			//mu 1xD
+			//Sigma DxD
+	//for type XX (NIWSphereFull)
+	//?
+	
+	//prints headers
+	cout << M_ << endl 
+		 << K_ << endl
+		 << Nd_ << endl;
+
+	//print dim
+	for(uint m=0; m<M_; ++m) {
+		cout << x_[m].front().rows() << " "; 
+	}
+	cout << endl;
+	//print type
+	for(uint m=0; m<M_; ++m) {
+		cout << thetas_[m].front()->getBaseMeasureType() << " "; 
+	}
+	cout << endl;
+
+	//print labels
+	cout << this->labels().transpose() << endl; 
+
+	//print mixture parameters
+	assert(false);
+
+	//print parameters
+	for(uint32_t m=0; m<M_; ++m) {
+		vector<boost::shared_ptr<BaseMeasure<T> > >  theta_base = this->getThetas(m); 
+		for(uint32_t k=0; k<K_; ++k) {
+			baseMeasureType type = theta_base[k]->getBaseMeasureType(); 
+			if(type==NIW_SAMPLED) {
+				boost::shared_ptr<NiwSampled<T> >  *theta_iter = 
+						reinterpret_cast<boost::shared_ptr<NiwSampled<T> >* >( &theta_base[k]); 
+					//printing prior 
+					NIW<T> prior = theta_iter->get()->niw0_;
+					cout << prior.nu_				 << endl << 
+						    prior.kappa_			 << endl <<
+						    prior.theta_.transpose() << endl;
+					cout << prior.Delta_<<endl;
+
+					//printing posterior
+					Normal<T> norm = theta_iter->get()->normal_; 
+					cout << norm.mu_.transpose() << endl;
+					cout << norm.Sigma() << endl;
+			} else if(type==NIW_SPHERE_FULL) {
+					assert(false);
+			} else {
+					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
+					return;
+			}
+		}
+	}
 
 }

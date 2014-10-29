@@ -209,8 +209,7 @@ int main(int argc, char **argv){
 	naive_samp.initialize( x );
 	naive_samp.inferAll(T,verbose);
 
-	ofstream fout(pathOut.data(),ofstream::out);
-	naive_samp.dump(fout,fout);
+	naive_samp.dump_clean();
 
 	if (pathOut.compare(""))
 	{
