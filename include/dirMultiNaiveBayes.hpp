@@ -500,7 +500,8 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 	//print dim
 	for(uint m=0; m<M_; ++m) {
 		vector<boost::shared_ptr<BaseMeasure<T> > >  theta_base = this->getThetas(m); 
-		cout << theta_base[0]->getDim() << " "; 
+		uint temp = theta_base.front()->getDim();
+		cout << temp << " "; 
 		//cout << x_[m].front().rows() << " "; 
 	}
 	cout << endl;
