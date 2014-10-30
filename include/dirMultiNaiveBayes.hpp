@@ -24,10 +24,12 @@ template<typename T=double>
 class DirMultiNaiveBayes : public DpMM<T>{
 
 public:
+  DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng);
   DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >&thetas);
   DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >&thetas);
   virtual ~DirMultiNaiveBayes();
 
+  virtual void loadData(const vector<vector<Matrix<T,Dynamic,Dynamic> > > &x);//does nothing other than load data
   virtual void initialize(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x);
   virtual void initialize(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x, VectorXu &z);
   virtual void initialize(const boost::shared_ptr<ClData<T> >&cld)
@@ -80,6 +82,45 @@ protected:
 
 // --------------------------------------- impl -------------------------------
 
+template<typename T>
+DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng) :
+dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
+sampler_ = NULL;
+//initialize the class from the file pointer given
+in >> M_; 
+in >> K_;
+in >> Nd_;
+vector<uint> dim;
+vector<baseMeasureType> type;
+Matrix<T,Dynamic,1> alpha(K_); 
+
+for(uint m = 0; m<M_; ++m){
+	uint temp; 
+	in >> temp; 
+	dim.push_back(temp);
+}
+
+for(uint m = 0; m<M_; ++m){
+	uint temp;
+	in >> temp;
+	type.push_back(baseMeasureType(temp));
+}
+
+z_ = VectorXu(Nd_);
+for(uint n=0; n<Nd_; ++n) 
+	in >> z_(n);	
+
+for(uint k=0; k<K_; ++k)
+	in >> alpha(k,0);
+
+
+cout << "M:" << M_ << " K: " << K_ << " nd: " << Nd_ << endl;
+for(uint m = 0; m<M_; ++m){
+	cout << m << ": d="<< dim[m] << ", type=" << type[m] << endl;
+}
+cout << "z_ " << z_.transpose() << endl;
+cout << "alpha " << alpha.transpose() << endl;
+}
 
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
@@ -123,6 +164,10 @@ Matrix<T,Dynamic,1> DirMultiNaiveBayes<T>::getCounts()
   return counts<T,uint32_t>(z_,K_);
 };
 
+template<typename T>
+void DirMultiNaiveBayes<T>::loadData(const vector<vector<Matrix<T,Dynamic,Dynamic> > > &x){
+  x_ = x;
+}
 
 template<typename T>
 void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dynamic> > > &x)

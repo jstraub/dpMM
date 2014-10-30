@@ -21,6 +21,9 @@ int main(int argc, char **argv){
 	("K,K", po::value<int>(), "number of initial clusters ")
 	("T,T", po::value<int>(), "iterations")
 	("v,v", po::value<bool>(), "verbose output")
+    ("params,p", po::value<string>(), 
+      "path to file containing parameters (see class definition) "
+      "datapoints)")
     ("input,i", po::value<string>(), 
       "path to input dataset .csv file (rows: dimensions; cols: different "
       "datapoints)")
@@ -39,6 +42,19 @@ int main(int argc, char **argv){
 	if (vm.count("help")) {
 		cout << desc << "\n";
 		return 1;
+	}
+
+	//debugggin this option here only 
+	string paramsF="";
+	if (vm.count("params"))
+		paramsF = vm["params"].as<string>(); 
+
+	if(paramsF.compare("")){
+		ifstream fin(paramsF.data(),ifstream::in);
+		boost::mt19937 rng(9191);
+		DirMultiNaiveBayes<double> test(fin, &rng);
+		fin.close();
+		return(0);
 	}
 
 	uint NumObs = 2; //num observations (number of components of multi-dimention data)
