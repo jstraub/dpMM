@@ -209,18 +209,19 @@ int main(int argc, char **argv){
 	naive_samp.initialize( x );
 	naive_samp.inferAll(T,verbose);
 
-	naive_samp.dump_clean();
 
 	if (pathOut.compare(""))
 	{
 		ofstream fout(pathOut.data(),ofstream::out);
 		
-		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
-		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
+		//streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
 
-			naive_samp.dump(fout,fout);
+			//naive_samp.dump(fout,fout);
+			naive_samp.dump_clean(fout);
+			//naive_samp.dump_clean();
 
-		std::cout.rdbuf(coutbuf); //reset to standard output again
+		//std::cout.rdbuf(coutbuf); //reset to standard output again
 
 		fout.close();
 	}

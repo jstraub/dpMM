@@ -50,6 +50,7 @@ public:
   
   virtual void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs); 
   virtual void dump_clean();
+  virtual void dump_clean(std::ofstream &out);
   
   virtual vector<boost::shared_ptr<BaseMeasure<T> > > getThetas(uint32_t m) {
 	  return(thetas_[m]);
@@ -102,7 +103,7 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >& theta) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(thetas.size()), thetas_(theta) ) 
+  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size()), thetas_(theta) ) 
 { 
 	sampler_ = NULL;
 };
@@ -399,7 +400,7 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 	cout << this->labels().transpose() << endl; 
 
 	//print mixture parameters
-	assert(false);
+	cout << this->dir_.alpha_.transpose() << endl;
 
 	//print parameters
 	for(uint32_t m=0; m<M_; ++m) {
@@ -429,4 +430,12 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 		}
 	}
 
+}
+
+template <typename T>
+void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
+	streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+	cout.rdbuf(out.rdbuf()); //redirect std::cout to fout1 buffer
+	this->dump_clean(); //write using cout to the specified buffer
+	std::cout.rdbuf(coutbuf); //reset to standard output again
 }
