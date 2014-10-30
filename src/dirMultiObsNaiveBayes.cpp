@@ -44,18 +44,7 @@ int main(int argc, char **argv){
 		return 1;
 	}
 
-	//debugggin this option here only 
-	string paramsF="";
-	if (vm.count("params"))
-		paramsF = vm["params"].as<string>(); 
-
-	if(paramsF.compare("")){
-		ifstream fin(paramsF.data(),ifstream::in);
-		boost::mt19937 rng(9191);
-		DirMultiNaiveBayes<double> test(fin, &rng);
-		fin.close();
-		return(0);
-	}
+	bool verbose = false; 
 
 	uint NumObs = 2; //num observations (number of components of multi-dimention data)
 	uint K=2; //num clusters
@@ -64,10 +53,11 @@ int main(int argc, char **argv){
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
 	vector<uint> D(NumObs, 2);  //dimention of data 
-	vector<string> baseDist; //base distributions for each component
 
-
-	bool verbose = false; 
+	//use the params provided 
+	string paramsF="";
+	if (vm.count("params"))
+		paramsF = vm["params"].as<string>(); 
 
 	if (vm.count("K")) 
 		K = vm["K"].as<int>();
@@ -82,6 +72,7 @@ int main(int argc, char **argv){
 		pathIn = vm["input"].as<string>();
 	if(vm.count("output")) 
 		pathOut= vm["output"].as<string>();
+
 	
 	vector<vector< Matrix<double, Dynamic, Dynamic> > > x;
 	x.reserve(NumObs);
@@ -157,60 +148,79 @@ int main(int argc, char **argv){
 		fin.close();
 	}
 
-	if(vm.count("b")) { 
-		baseDist.clear();
-		baseDist = vm["b"].as<vector<string> >();
-
-		if(uint(baseDist.size())!=NumObs) { 
-			cerr << "Error specified number of base distributions not equal number of data components" << endl;
-			cerr << "#bases =" << baseDist.size() << ", #data components=" << NumObs <<  "." << endl;
-			cerr << "exiting" << endl;
-			return(-1); 
-		}
-
-	} else {
-		baseDist.clear();
-		baseDist = vector<string>(NumObs, "NiwSampled");
-	}
 
 
-	
-	VectorXd alpha = 10.0*VectorXd::Ones(K);
 
 	boost::mt19937 rndGen(9191);
+	DirMultiNaiveBayes<double> *naive_samp; 
+	
+	if(paramsF.compare("")){
+		//initialize from file 
+		ifstream fin(paramsF.data(),ifstream::in);
+			naive_samp = new DirMultiNaiveBayes<double>(fin,&rndGen);
+			naive_samp->loadData(x); 
+		fin.close();
+	} else {
+		//initialize here 
 
-	Dir<Catd,double> dir(alpha,&rndGen); 
-	vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
-	niwSampled.reserve(NumObs);
 
-	//creates thetas  
-	for(uint m=0;m<NumObs ; ++m) 
-	{
-		if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
-			double nu = D[m]+1;
-			double kappa = D[m]+1;
-			MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
-			Delta *= nu;
-			VectorXd theta = VectorXd::Zero(D[m]);
+		vector<string> baseDist; //base distributions for each component
+	
+		if(vm.count("b")) { 
+			baseDist.clear();
+			baseDist = vm["b"].as<vector<string> >();
 
-			NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
-			boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
-			niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
-
-		} else if(iequals(baseDist[m], "NiwTangent")) {
-			cerr << "NiwTangent base not coded yet... fix me" << endl;
-			return(-1); 
+			if(uint(baseDist.size())!=NumObs) { 
+				cerr << "Error specified number of base distributions not equal number of data components" << endl;
+				cerr << "#bases =" << baseDist.size() << ", #data components=" << NumObs <<  "." << endl;
+				cerr << "exiting" << endl;
+				return(-1); 
+			}
 
 		} else {
-			cerr << "error with base distributions (check help) ... returning." << endl;
-			return(-1); 
+			baseDist.clear();
+			baseDist = vector<string>(NumObs, "NiwSampled");
 		}
+
+
+		VectorXd alpha = 10.0*VectorXd::Ones(K);
+
+		Dir<Catd,double> dir(alpha,&rndGen); 
+		vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
+		niwSampled.reserve(NumObs);
+
+		//creates thetas  
+		for(uint m=0;m<NumObs ; ++m) 
+		{
+			if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
+				double nu = D[m]+1;
+				double kappa = D[m]+1;
+				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+				Delta *= nu;
+				VectorXd theta = VectorXd::Zero(D[m]);
+
+				NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+				boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
+				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+
+			} else if(iequals(baseDist[m], "NiwTangent")) {
+				cerr << "NiwTangent base not coded yet... fix me" << endl;
+				return(-1); 
+
+			} else {
+				cerr << "error with base distributions (check help) ... returning." << endl;
+				return(-1); 
+			}
+		}
+
+		naive_samp = new DirMultiNaiveBayes<double>(dir,niwSampled);
+		naive_samp->initialize( x );
 	}
-	
+
 	Timer tlocal;
 	tlocal.tic();
 
-	DirMultiNaiveBayes<double> naive_samp(dir,niwSampled);
+	
   
 	cout << "multiObsNaiveBayesian Clustering:" << endl; 
 	cout << "Ndocs=" << M << endl; 
@@ -222,8 +232,9 @@ int main(int argc, char **argv){
 
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
 
-	naive_samp.initialize( x );
-	naive_samp.inferAll(T,verbose);
+
+
+	naive_samp->inferAll(T,verbose);
 
 
 	if (pathOut.compare(""))
@@ -234,7 +245,7 @@ int main(int argc, char **argv){
 		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
 
 			//naive_samp.dump(fout,fout);
-			naive_samp.dump_clean(fout);
+			naive_samp->dump_clean(fout);
 			//naive_samp.dump_clean();
 
 		//std::cout.rdbuf(coutbuf); //reset to standard output again
@@ -243,6 +254,9 @@ int main(int argc, char **argv){
 	}
 
 	tlocal.displayElapsedTimeAuto();
+
+	delete naive_samp; 
+
 	return(0); 
 	
 };

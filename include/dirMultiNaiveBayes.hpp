@@ -72,6 +72,7 @@ protected:
 #else 
   Sampler<T>* sampler_;
 #endif
+  virtual void initialize_sampler(); 
   Matrix<T,Dynamic,Dynamic> pdfs_;
 //  Cat cat_;
   vector<vector<boost::shared_ptr<BaseMeasure<T> > > > thetas_;  // theta_[M][K]
@@ -83,15 +84,30 @@ protected:
 // --------------------------------------- impl -------------------------------
 
 template<typename T>
+void DirMultiNaiveBayes<T>::initialize_sampler() {
+	if (sampler_ != NULL) {
+		delete sampler_;
+		sampler_ = NULL;
+	}
+	//initialize sampler 
+	#ifdef CUDA
+	  sampler_ = new SamplerGpu<T>(uint32_t(Nd_),K_,dir_.pRndGen_);
+	#else 
+	  sampler_ = new Sampler<T>(dir_.pRndGen_);
+	#endif
+}
+
+template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng) :
 sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 	//initialize the class from the file pointer given
 	in >> M_; 
 	in >> K_;
 	in >> Nd_;
+
 	vector<uint> dim;
 	vector<baseMeasureType> type;
-	Matrix<T,Dynamic,1> alpha(K_); 
+	Matrix<T,Dynamic,1> alpha(K_), pi(K_); 
 
 	for(uint m = 0; m<M_; ++m){
 		uint temp; 
@@ -110,9 +126,16 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 		in >> z_(n);	
 
 	for(uint k=0; k<K_; ++k)
-		in >> alpha(k,0);
+		in >> alpha(k);
 
+	for(uint k=0; k<K_; ++k)
+		in >> pi(k); 
 
+	pdfs_ = Matrix<T,Dynamic,Dynamic>(Nd_,K_);
+	for(uint n=0; n<Nd_*K_; ++n)
+		in >> pdfs_(n%Nd_, (n-(n%Nd_))/Nd_); 
+		//in >> pdfs_((n-(n%Nd_))/Nd_, n%Nd_); 
+	//pdfs_ = pdfs_.transpose();
 
 	//get parameters
 	for(uint32_t m=0; m<M_; ++m) {
@@ -161,12 +184,18 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 	}
 
 
-	cout << "M:" << M_ << " K: " << K_ << " nd: " << Nd_ << endl;
-	for(uint m = 0; m<M_; ++m){
-		cout << m << ": d="<< dim[m] << ", type=" << type[m] << endl;
-	}
-	cout << "z_ " << z_.transpose() << endl;
-	cout << "alpha " << alpha.transpose() << endl;
+	dir_ =  Dir<Cat<T>, T>(alpha,rng);
+	pi_ = Cat<T>(pi,rng); 
+
+
+	this->initialize_sampler();
+
+	//cout << "M:" << M_ << " K: " << K_ << " nd: " << Nd_ << endl;
+	//for(uint m = 0; m<M_; ++m){
+	//	cout << m << ": d="<< dim[m] << ", type=" << type[m] << endl;
+	//}
+	//cout << "z_ " << z_.transpose() << endl;
+	//cout << "alpha " << alpha.transpose() << endl;
 }
 
 template<typename T>
@@ -240,16 +269,7 @@ void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dy
 
   pdfs_.setZero(Nd_,K_);
 
-  if( sampler_!=NULL)  {
-	  delete sampler_; 
-	  sampler_ = NULL;
-  }
-
-#ifdef CUDA
-  sampler_ = new SamplerGpu<T>(uint32_t(Nd_),K_,dir_.pRndGen_);
-#else 
-  sampler_ = new Sampler<T>(dir_.pRndGen_);
-#endif
+this->initialize_sampler();
 
 #pragma omp parallel for
 for(int32_t m=0; m<int32_t(M_); ++m)
@@ -453,6 +473,9 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 	//D[m] 1xM
 	//Type[m] 1xM
 	//labels 1xNd
+	//Dir alpha 1xK
+	//pi pdf 1xK
+	//pdf KxNd
 	// mixture parameters 
 	//params Loop over M then K each contains data type for specific type
 	//for type 1 (NIWSampled)
@@ -488,6 +511,8 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 
 	//print mixture parameters
 	cout << this->dir_.alpha_.transpose() << endl;
+	cout << this->pi_.pdf_.transpose() << endl;
+	cout << this->pdfs_.transpose() << endl; 
 
 	//print parameters
 	for(uint32_t m=0; m<M_; ++m) {
