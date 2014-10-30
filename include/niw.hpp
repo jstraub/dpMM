@@ -37,6 +37,7 @@ public:
   NIW<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
   NIW<T> posterior() const;
+  void resetSufficientStatistics();
   void getSufficientStatistics(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k);
   T logProb(const Matrix<T,Dynamic,Dynamic>& x_i) const;

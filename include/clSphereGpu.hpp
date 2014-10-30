@@ -61,7 +61,7 @@ public:
   ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
       const spVectorXu& z, uint32_t K);
   ~ClSphereGpu(){;};
-  virtual void init();
+  virtual void init(const Matrix<T,Dynamic,Dynamic>& ps);
   
   /* normal in tangent space around p rotate to the north pole
    * -> the last dimension will always be 0
@@ -129,7 +129,7 @@ ClSphereGpu<T>::ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >&
 {};
 
 template<typename T>
-void ClSphereGpu<T>::init()
+void ClSphereGpu<T>::init(const Matrix<T,Dynamic,Dynamic>& ps)
 {
   for(uint32_t i=0; i<this->N_; ++i)
     if(fabs(this->x_->col(i).norm()-1.0) > 1e-5 )
@@ -148,6 +148,7 @@ void ClSphereGpu<T>::init()
   for(uint32_t k=0; k<this->K_; ++k)
     this->Ss_[k].setZero(this->D_-1,this->D_-1);
   
+  ps_ = ps;
 //  for(uint32_t k=0; k<this->K_; ++k)
 //    ps_.col(k) = sphere_.sampleUnif(this->pRndGen_);
 };

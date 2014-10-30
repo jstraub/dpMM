@@ -117,9 +117,9 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
     for (uint32_t k=0; k<K_; ++k)
       thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
   }
-#pragma omp parallel for
-  for(uint32_t k=0; k<K_; ++k)
-    thetas_[k]->posterior(x_,z_,k);
+//#pragma omp parallel for
+//  for(uint32_t k=0; k<K_; ++k)
+//    thetas_[k]->posterior(x_,z_,k);
 //  for (uint32_t k=0; k<K_; ++k)
 //    thetas_[k].initialize(x_,z_);
 };
@@ -146,7 +146,7 @@ void DirMM<T>::sampleLabels()
     // make pdf sum to 1. and exponentiate
     pdfs_.row(i) = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
 //    cout<<pi_.pdf().transpose()<<endl;
-//    cout<<pdf.transpose()<<" |.|="<<pdf.sum();
+//    cout<<pdfs_.row(i)<<" |.|="<<pdfs_.row(i).sum()<<endl;;
 //    cout<<" z_i="<<z_[i]<<endl;
   }
   // sample z_i

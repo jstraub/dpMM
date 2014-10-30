@@ -21,12 +21,18 @@ IW<T>::~IW()
 {};
 
 template<typename T>
-IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
-    uint32_t k, uint32_t zDivider)
+void IW<T>::resetSufficientStatistics()
 {
   scatter_.setZero(D_,D_);
   mean_.setZero(D_);
   count_ = 0.;
+};
+
+template<typename T>
+IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
+    uint32_t k, uint32_t zDivider)
+{
+  resetSufficientStatistics();
 //  cout<<"posterior for indicators "<<k<<endl;
   // TODO: be carefull here when parallelizing since all are writing to the same 
   // location in memory

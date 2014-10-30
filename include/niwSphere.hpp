@@ -71,27 +71,12 @@ public:
   const Matrix<T,Dynamic,1>& getMean() const {return normalS_.getMean();};
   void setMean(const Matrix<T,Dynamic,1>& mean) {return normalS_.setMean(mean);};
 
-  // extension
-  Matrix<T,Dynamic,Dynamic> qqTSum_; // \sum q_i q_i^T
-  Matrix<T,Dynamic,Dynamic> qqTAngSum_; // \sum q_i q_i^T * theta_{q_i \mu}
-  Matrix<T,Dynamic,Dynamic> qqTAngSqSum_; // \sum q_i q_i^T * theta_{q_i \mu}^2
-  Matrix<T,Dynamic,1> qSum_; // \sum q_i
-  Matrix<T,Dynamic,1> qSumAngle_; // \sum q_i* theta_{q_i \mu}
-  Matrix<T,Dynamic,1> qSumAngleSq_; // \sum q_i* theta_{q_i \mu}^2
-  T sumAngle_; // \sum theta_{q_i \mu}
-  T sumAngleSq_; // \sum theta_{q_i \mu}^2
-
-  Matrix<T,Dynamic,Dynamic> scatterCorrection1(const Matrix<T,Dynamic,1>& p) const;
-
 private:
 
   void computeMergedSS( const NiwSphere<T>& niwA, 
     const NiwSphere<T>& niwB, Matrix<T,Dynamic,Dynamic>& scatterM, 
     Matrix<T,Dynamic,1>& muM, T& countM) const;
 
-  // sufficient statistics
-//  Matrix<T,Dynamic,Dynamic> scatter_;
-//  T count_;
 
 };
 

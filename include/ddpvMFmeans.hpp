@@ -448,6 +448,3 @@ void DDPvMFMeans<T>::solveProblem2(const Matrix<T,Dynamic,1>& xSum, T zeta,
   theta = asin(beta_/w *sin(phi));
   eta = asin(beta_/L2xSum *sin(phi));
 };
-
-
-

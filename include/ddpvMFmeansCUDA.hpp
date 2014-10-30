@@ -238,4 +238,3 @@ void DDPvMFMeansCUDA<T>::updateLabelsParallel()
   }while(idAction != MAX_UINT32);
 };
 
-

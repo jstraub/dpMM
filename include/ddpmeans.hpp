@@ -188,4 +188,3 @@ void DDPMeans<T>::updateState()
   psPrev_ = this->ps_;
   this->Kprev_ = this->K_;
 };
-

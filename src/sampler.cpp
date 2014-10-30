@@ -78,7 +78,11 @@ void Sampler<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& 
   }
 };
 
+template class Sampler<double>;
+template class Sampler<float>;
 
+
+#ifdef CUDA
 // ----------------------------------------------------------------------------
 template<typename T>
 SamplerGpu<T>::SamplerGpu(uint32_t N, uint32_t K, boost::mt19937* pRndGen)
@@ -110,11 +114,10 @@ template<typename T>
 void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool logScale)
 {
   if(logScale)
-    choiceMultGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
+    choiceMultLogPdfGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
       static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   else
-
-    choiceMultLogPdfGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
+    choiceMultGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
       static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   z_.get(z);
 };
@@ -142,10 +145,10 @@ void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs,
   if(!z_.isInit()){z_.set(z);}
 //cout<<pdfs<<endl;
   if(logScale)
-    choiceMultGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+    choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
       static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
   else
-    choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
+    choiceMultGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
       static_cast<uint32_t>(floor(unif_(*this->pRndGen_)*4294967296)));
 
   z_.get(z);
@@ -209,9 +212,6 @@ void SamplerGpu<T>::addTopLevel(const Matrix<T,Dynamic,1>& pi,uint32_t dk)
   logAddTopLevelGpu(pdfs_->data(),logNormalizers_.data(),d_pi.data(),dk,K,
       pdfs_->rows());
 };
-
-template class Sampler<double>;
-template class Sampler<float>;
 
 template class SamplerGpu<double>;
 template class SamplerGpu<float>;

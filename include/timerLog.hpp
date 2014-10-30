@@ -89,4 +89,3 @@ private:
   vector<double> Ns_; // counts of observations for each dt
 };
 
-

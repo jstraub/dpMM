@@ -117,4 +117,3 @@ void DPMeans<T>::updateCenters()
   this->ps_ = psNew;
   this->K_ = kNew;
 };
-
