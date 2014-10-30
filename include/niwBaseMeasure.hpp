@@ -43,6 +43,7 @@ public:
   Normal<T> normal_;
 
   NiwSampled(const NIW<T>& niw);
+  NiwSampled(const NIW<T>& niw, const Normal<T> &normal);
   ~NiwSampled();
 
   virtual baseMeasureType getBaseMeasureType() const {return(NIW_SAMPLED); }
@@ -89,6 +90,11 @@ template<typename T>
 NiwSampled<T>::NiwSampled(const NIW<T>& niw)
   : niw0_(niw), normal_(niw0_.sample())
 {};
+
+template<typename T>
+NiwSampled<T>::NiwSampled(const NIW<T>& niw, const Normal<T> &normal)
+ : niw0_(niw), normal_(normal)
+{}; 
 
 template<typename T>
 NiwSampled<T>::~NiwSampled()

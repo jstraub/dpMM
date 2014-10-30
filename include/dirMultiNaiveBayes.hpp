@@ -84,52 +84,96 @@ protected:
 
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng) :
-dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
-sampler_ = NULL;
-//initialize the class from the file pointer given
-in >> M_; 
-in >> K_;
-in >> Nd_;
-vector<uint> dim;
-vector<baseMeasureType> type;
-Matrix<T,Dynamic,1> alpha(K_); 
+sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
+	//initialize the class from the file pointer given
+	in >> M_; 
+	in >> K_;
+	in >> Nd_;
+	vector<uint> dim;
+	vector<baseMeasureType> type;
+	Matrix<T,Dynamic,1> alpha(K_); 
 
-for(uint m = 0; m<M_; ++m){
-	uint temp; 
-	in >> temp; 
-	dim.push_back(temp);
-}
+	for(uint m = 0; m<M_; ++m){
+		uint temp; 
+		in >> temp; 
+		dim.push_back(temp);
+	}
 
-for(uint m = 0; m<M_; ++m){
-	uint temp;
-	in >> temp;
-	type.push_back(baseMeasureType(temp));
-}
+	for(uint m = 0; m<M_; ++m){
+		uint temp;
+		in >> temp;
+		type.push_back(baseMeasureType(temp));
+	}
 
-z_ = VectorXu(Nd_);
-for(uint n=0; n<Nd_; ++n) 
-	in >> z_(n);	
+	z_ = VectorXu(Nd_);
+	for(uint n=0; n<Nd_; ++n) 
+		in >> z_(n);	
 
-for(uint k=0; k<K_; ++k)
-	in >> alpha(k,0);
+	for(uint k=0; k<K_; ++k)
+		in >> alpha(k,0);
 
 
-cout << "M:" << M_ << " K: " << K_ << " nd: " << Nd_ << endl;
-for(uint m = 0; m<M_; ++m){
-	cout << m << ": d="<< dim[m] << ", type=" << type[m] << endl;
-}
-cout << "z_ " << z_.transpose() << endl;
-cout << "alpha " << alpha.transpose() << endl;
+
+	//get parameters
+	for(uint32_t m=0; m<M_; ++m) {
+		baseMeasureType typeIter = baseMeasureType(type[m]);
+		vector<boost::shared_ptr<BaseMeasure<T> > > thetaM; 
+		if(typeIter==NIW_SAMPLED) {
+			uint Diter = dim[m];
+			T nu, kappa; 
+			Matrix<T,Dynamic,Dynamic> scatter(Diter, Diter), sigma(Diter,Diter); 
+			Matrix<T,Dynamic,1> theta(Diter), mu(Diter); 
+			for(uint32_t k=0; k<K_; ++k) {
+				//get nu and kappa
+					in>> nu;
+					in>> kappa;
+				//get theta
+					for(uint n=0; n<Diter; ++n)
+						in >> theta(n); 
+					theta = theta.transpose(); 
+				//get scatter
+					for(uint n=0; n<Diter*Diter; ++n)
+						in >> scatter((n-(n%Diter))/Diter, n%Diter); 
+				//get mean
+					for(uint n=0; n<Diter; ++n)
+						in >> mu(n); 
+					mu = mu.transpose();
+				//get sigma
+					for(uint n=0; n<Diter*Diter; ++n)
+						in >> sigma((n-(n%Diter))/Diter, n%Diter); 
+
+				//build theta[m][k]
+				NIW<T> niw(scatter,theta,nu,kappa,rng);
+				Normal<T> normal(mu,sigma,rng);
+				boost::shared_ptr<NiwSampled<T> > baseIter( new NiwSampled<T>(niw, normal));
+
+				//set 
+				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
+
+			}
+		} else if(typeIter==NIW_SPHERE_FULL) {
+			assert(false);
+		} else {
+				std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
+				return;
+		}
+		thetas_.push_back(thetaM);
+	}
+
+
+	cout << "M:" << M_ << " K: " << K_ << " nd: " << Nd_ << endl;
+	for(uint m = 0; m<M_; ++m){
+		cout << m << ": d="<< dim[m] << ", type=" << type[m] << endl;
+	}
+	cout << "z_ " << z_.transpose() << endl;
+	cout << "alpha " << alpha.transpose() << endl;
 }
 
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(thetas.size())) 
+  sampler_(NULL), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(thetas.size())) 
 { 
-
-	sampler_ = NULL;
-
 	for (uint32_t m=0; m<M_; ++m) 
 	{	
 		vector<boost::shared_ptr<BaseMeasure<T> > > temp;
@@ -144,10 +188,8 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >& theta) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size()), thetas_(theta) ) 
-{ 
-	sampler_ = NULL;
-};
+ sampler_(NULL), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size()), thetas_(theta) ) 
+{ };
 
 template<typename T>
 DirMultiNaiveBayes<T>::~DirMultiNaiveBayes()
