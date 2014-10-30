@@ -42,6 +42,8 @@ public:
   virtual const VectorXu& labels(){return z_;};
   virtual const VectorXu& getLabels(){return z_;};
   virtual uint32_t getK() const { return K_;};
+  virtual uint32_t getM() const { return M_;};
+  virtual uint32_t getN() const { return Nd_;};
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
   //virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
