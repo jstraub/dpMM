@@ -28,7 +28,7 @@ public:
       const VectorXu& z, uint32_t k);
   virtual T logPdfUnderPrior() const;
   void print() const {cout<<"Unif Sphere in D="<<D_<<endl;};
-
+  virtual uint32_t getDim() const {return(D_);};
 private:
 
 };

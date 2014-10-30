@@ -84,7 +84,7 @@ public:
     meanKarch_ = mean; 
   };
   void setMean(const Matrix<T,Dynamic,1>& mean) {normalS_.setMean(mean);};
-
+  virtual uint32_t getDim() const {return(D_);};
 private:
 
   void computeMergedSS( const NiwSphereFull<T>& niwA, 

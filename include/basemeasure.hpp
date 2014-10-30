@@ -44,6 +44,7 @@ public:
 
   virtual T logPdfUnderPrior() const =0;
   virtual void print() const =0;
+  virtual uint32_t getDim() const =0; // {return(0);};
 
 //  //TODO UGLY
 //  virtual Matrix<T,Dynamic,Dynamic>& scatter()

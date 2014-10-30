@@ -83,7 +83,7 @@ public:
   T sumAngleSq_; // \sum theta_{q_i \mu}^2
 
   Matrix<T,Dynamic,Dynamic> scatterCorrection1(const Matrix<T,Dynamic,1>& p) const;
-
+  virtual uint32_t getDim() const {return(normalS_.D_);};
 private:
 
   void computeMergedSS( const NiwTangent<T>& niwA, 

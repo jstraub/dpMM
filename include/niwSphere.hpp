@@ -59,6 +59,7 @@ public:
   T logPdfUnderPriorMarginalizedMerged(const boost::shared_ptr<NiwSphere<T> >& other) const;
 
   void print() const;
+  virtual uint32_t getDim() const {return(uint32_t(normalS_.D_));}; 
 
   virtual NiwSphere<T>* merge(const NiwSphere<T>& other);
   void fromMerge(const NiwSphere<T>& niwA, const NiwSphere<T>& niwB);

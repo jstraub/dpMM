@@ -30,6 +30,7 @@ public:
   T logPdfUnderPrior() const;
 
   void print() const ;
+  virtual uint32_t getDim() const {return(uint32_t(niw_.D_));}; 
 };
 
 /*
@@ -68,6 +69,7 @@ public:
   void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
 
   void print() const;
+  virtual uint32_t getDim() const {return(uint32_t(normal_.D_));}; 
 
   const Matrix<T,Dynamic,Dynamic>& scatter() const {return niw0_.scatter();};
   const Matrix<T,Dynamic,1>& mean() const {return niw0_.mean();};
