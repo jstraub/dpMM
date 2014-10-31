@@ -13,7 +13,7 @@
 #include "sampler.hpp"
 #include "basemeasure.hpp"
 #include "niwBaseMeasure.hpp"
-
+#include "niwSphere.hpp"
 using namespace Eigen;
 using std::cout;
 using std::endl; 
@@ -176,7 +176,8 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
 
 			}
-		} else if(typeIter==NIW_SPHERE_FULL) {
+		} else if(typeIter==NIW_SPHERE) {
+				std::cerr << "[DirMultiNaiveBayes::dump_clean] found not coded niw shpere ...returning" << endl;
 			assert(false);
 		} else {
 				std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
@@ -538,8 +539,23 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 					Normal<T> norm = theta_iter->get()->normal_; 
 					cout << norm.mu_.transpose() << endl;
 					cout << norm.Sigma() << endl;
-			} else if(type==NIW_SPHERE_FULL) {
-					assert(false);
+			} else if(type==NIW_SPHERE) {
+				boost::shared_ptr<NiwSphere<T> >  *theta_iter = 
+						reinterpret_cast<boost::shared_ptr<NiwSphere<T> >* >( &theta_base[k]); 
+				//prior
+				IW<T> prior = theta_iter->get()->iw0_; 
+				cout << prior.nu_ 		<< endl << 
+						prior.mean().transpose() 	<< endl << 
+						prior.scatter() << endl; 
+				cout << prior.Delta_<<endl;
+
+				//posterior 	
+				NormalSphere<T> norm = theta_iter->get()->normalS_; 
+				cout << norm.getMean().transpose() << endl;
+				cout << norm.Sigma() << endl;
+				//sphere 	
+				Sphere<T> sp = theta_iter->get()->S_; 
+				cout << sp.north().transpose() << endl; 
 			} else {
 					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
 					return;

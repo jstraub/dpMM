@@ -5,6 +5,8 @@
 
 #include "dirMultiNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
+#include "niwSphere.hpp"
+#include "iw.hpp"
 #include "typedef.h"
 #include "timer.hpp"
 
@@ -32,7 +34,7 @@ int main(int argc, char **argv){
       "datapoints)")
 	("b,b", po::value<std::vector<string> >()->multitoken(), 
 	  "base class to use for components (must be the same size as M in the data). " 
-	  "valid values: NiwSampled, NiwTangent, [default: NiwSampled].");
+	  "valid values: NiwSampled, NiwSphere, [default: NiwSampled].");
     
 
     po::variables_map vm;
@@ -203,9 +205,14 @@ int main(int argc, char **argv){
 				boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
 				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 
-			} else if(iequals(baseDist[m], "NiwTangent")) {
-				cerr << "NiwTangent base not coded yet... fix me" << endl;
-				return(-1); 
+			} else if(iequals(baseDist[m], "NiwSphere")) {
+				double nu = D[m]+1;
+				double kappa = D[m]+1;
+				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+				Delta *= nu;
+				IW<double> iw(Delta,nu,&rndGen);
+				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));
+				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;
