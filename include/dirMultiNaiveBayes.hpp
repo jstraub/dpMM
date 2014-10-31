@@ -63,6 +63,8 @@ public:
 	  return(thetas_[m][k]);
   };
 
+  virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint clusterInd, vector<uint> comp2eval =vector<uint>());
+
 protected: 
   uint32_t Nd_;  
   uint32_t K_; //num cluseters
@@ -571,4 +573,29 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 	cout.rdbuf(out.rdbuf()); //redirect std::cout to fout1 buffer
 	this->dump_clean(); //write using cout to the specified buffer
 	std::cout.rdbuf(coutbuf); //reset to standard output again
+}
+
+
+template <typename T>
+T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, 
+							  uint clusterInd, vector<uint> comp2eval) 
+{
+	if(comp2eval.empty()) {
+		for(uint m=0; m<M_; ++m)
+			comp2eval.push_back(m); 
+	}
+
+	//T logJoint = pi_.pdf_(clusterInd);
+	T logJoint  = 0; 
+ 
+	for (int32_t m=0; m<int32_t(comp2eval.size()); ++m) 
+	{
+		#pragma omp parallel for reduction(+:logJoint)  
+		for(int32_t w=0; w<xnew[m].cols(); ++w)
+		{
+			logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
+		}
+	}
+    
+  return logJoint;
 }
