@@ -6,6 +6,7 @@
 #include "dirMultiNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
 #include "niwSphere.hpp"
+#include "normalSphere.hpp" //for sampling points on the sphere
 #include "iw.hpp"
 #include "typedef.h"
 #include "timer.hpp"
@@ -90,16 +91,20 @@ int main(int argc, char **argv){
 			for(uint i=0; i<Ndoc; ++i) 
 			{
 				MatrixXd  xdoc(D[n],Nword);  
-				for(uint w=0; w<Nword; ++w) 
-				{
-					if(i<Ndoc/2)
-						xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
-					else
-						xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
-				}
+				//for(uint w=0; w<Nword; ++w) 
+				//{
+				//	if(i<Ndoc/2)
+				//		xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
+				//	else
+				//		xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
+				//}
+
+				sampleClustersOnSphere(xdoc,K); 
+
 
 				temp.push_back(xdoc); 
 			}
+
 			x.push_back(temp); 
 		}
 
@@ -206,9 +211,10 @@ int main(int argc, char **argv){
 				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 
 			} else if(iequals(baseDist[m], "NiwSphere")) {
-				double nu = D[m]+1;
-				double kappa = D[m]+1;
-				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+				//IW is one dimention smaller (makes sense since it's on tangent space)
+				double nu = D[m];
+				double kappa = D[m];
+				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m]-1,D[m]-1);
 				Delta *= nu;
 				IW<double> iw(Delta,nu,&rndGen);
 				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));

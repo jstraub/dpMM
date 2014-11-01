@@ -63,7 +63,7 @@ public:
 	  return(thetas_[m][k]);
   };
 
-  virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint clusterInd, vector<uint> comp2eval =vector<uint>());
+  virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint32_t clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
 
 protected: 
   uint32_t Nd_;  
@@ -83,6 +83,9 @@ protected:
 
   vector<vector<Matrix<T,Dynamic,Dynamic> > > x_; //x_[M][doc](:,word)
   VectorXu z_;
+
+  virtual void helper_setDims();
+  vector<VectorXu> dataDim; 
 };
 
 // --------------------------------------- impl -------------------------------
@@ -176,11 +179,55 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 
 				//set 
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
-
 			}
 		} else if(typeIter==NIW_SPHERE) {
-				std::cerr << "[DirMultiNaiveBayes::dump_clean] found not coded niw shpere ...returning" << endl;
-			assert(false);
+			ASSERT(false, "this is not working....");
+			uint Diter = dim[m]-1;
+			T nu; 
+			T counts;
+			Matrix<T,Dynamic,Dynamic> scatter(Diter, Diter), sigma(Diter,Diter),delta(Diter,Diter);  
+			Matrix<T,Dynamic,1> mu(Diter+1), mu_prior(Diter), north(Diter+1); 
+			for(uint32_t k=0; k<K_; ++k) {
+				//get nu
+					in>> nu;
+					in>> counts;
+				//get prior mean 
+					for(uint n=0; n<Diter; ++n)
+						in>> mu_prior(n);
+				//get scatter
+					for(uint n=0; n<Diter*Diter; ++n)
+						in >> scatter((n-(n%Diter))/Diter, n%Diter); 
+				//get delta
+					for(uint n=0; n<Diter*Diter; ++n)
+						in >> delta((n-(n%Diter))/Diter, n%Diter); 
+				//get mean
+					for(uint n=0; n<(Diter+1); ++n)
+						in >> mu(n); 
+					mu = mu.transpose();
+				//get sigma
+					for(uint n=0; n<Diter*Diter; ++n)
+						in >> sigma((n-(n%Diter))/Diter, n%Diter); 
+				//get north
+					for(uint n=0; n<(Diter+1); ++n)
+						in >> north(n); 
+					north = north.transpose();
+
+				//build theta[m][k]
+				//IW<T> iw(delta,nu, scatter, mu_prior, counts, rng);
+				IW<T> iw(delta,nu, rng);
+				//NiwSphere<T> niwSp(iw,rng);
+				//niwSp.S_ = Sphere<T>(north);
+				//niwSp.normalS_ = NormalSphere<T>(mu,sigma,rng);
+				
+
+				//set 
+				//thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(niwSp.copy()));
+				boost::shared_ptr<NiwSphere<T> > baseIter( new NiwSphere<T>(iw,rng));
+				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
+				
+			}
+
+
 		} else {
 				std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
 				return;
@@ -243,6 +290,7 @@ Matrix<T,Dynamic,1> DirMultiNaiveBayes<T>::getCounts()
 template<typename T>
 void DirMultiNaiveBayes<T>::loadData(const vector<vector<Matrix<T,Dynamic,Dynamic> > > &x){
   x_ = x;
+  this->helper_setDims();
 }
 
 template<typename T>
@@ -275,14 +323,23 @@ void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dy
   pdfs_.setZero(Nd_,K_);
 
 this->initialize_sampler();
+this->helper_setDims();
 
-#pragma omp parallel for
-for(int32_t m=0; m<int32_t(M_); ++m)
-  for(uint32_t k=0; k<K_; ++k)
-		thetas_[m][k]->posterior(x_[m],z_,k);
+this->sampleParameters();
 };
 
-
+template<typename T>
+void DirMultiNaiveBayes<T>::helper_setDims()
+{
+	dataDim.clear();
+	dataDim.reserve(M_); 
+	for(uint32_t m=0; m<M_; ++m) {
+		VectorXu temp(x_[m].size()); 
+		for(uint32_t t=0; t<x_[m].size(); ++t)
+			temp(t) = x_[m][t].cols(); 
+		dataDim.push_back(temp); 
+	}
+}
 
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleLabels()
@@ -327,15 +384,42 @@ VectorXd logPdf_z_value = pi_.pdf().array().log();
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleParameters()
 {
-#pragma omp parallel for 
-	for(int32_t m=0; m<int32_t(M_); ++m) 
-	{
-	  for(uint32_t k=0; k<K_; ++k)
-	  {
-		thetas_[m][k]->posterior(x_[m],z_,k);
-	//    cout<<"k:"<<k<<endl;
-	//    thetas_[k]->print();
-	  }
+//unpacks the contains here vector<vector<Matrix>> into what the posterior expects Matrix
+	MatrixXu dim(M_,K_); 
+	for(uint32_t m=0; m<M_; ++m) {
+		#pragma omp parallel for
+		for(int32_t k=0; k<K_; ++k) {
+			VectorXu temp = (z_.array()==k).select(dataDim[m],0); 
+			dim(m,k) = temp.sum();	
+		}
+	}
+
+	for(uint32_t m=0; m<M_; ++m) {
+		#pragma omp parallel for
+		for(int32_t k=0; k<K_; ++k) {
+			if(dim(m,k)!=0) {
+				Matrix<T,Dynamic,Dynamic> dataIn(x_[m].front().rows(),dim(m,k)); 
+
+				uint32_t count=0;
+				for(uint32_t d=0; d<Nd_; ++d) {
+					if(z_[d]==k) {
+						int add_size =x_[m][d].cols(); 
+						dataIn.middleCols(count,add_size) = x_[m][d]; 
+						count+=add_size;
+
+						if(count==dim(m,k))
+							break; //early out if you found them all
+					}
+				}
+				//always sends zeros as index and look for index==0
+				thetas_[m][k]->posterior(dataIn,VectorXu::Zero(dim(m,k)),0); 
+			} else {
+				Matrix<T,Dynamic,Dynamic> dataIn = Matrix<T,Dynamic,Dynamic>::Zero(x_[m].front().rows(),1); 
+				//the posterior needs to reset 
+				thetas_[m][k]->posterior(dataIn,VectorXu::Zero(1),1); 
+				//passing in one data point (all zeros, with 1 index value=0 and looking for 1) 
+			}
+		}
 	}
 };
 
@@ -492,8 +576,18 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 		//---estimate (normal)
 			//mu 1xD
 			//Sigma DxD
-	//for type XX (NIWSphereFull)
-	//?
+	//for type 2 (NIWSphereFull)
+		//----prior--- (IW)
+			//nu 1x1
+			//count 1x1
+			//mean 1x(D-1)
+			//scatter (D-1)x(D-1)
+			//Delta	 (D-1)x(D-1)
+		//--posterior (NormalSphere)
+			//mean 1x(D-1)
+			//Sigma (D-1)x(D-1)
+		//--sphere--- (Sphere)
+			//north 1x(D-1)
 	
 	//prints headers
 	cout << M_ << endl 
@@ -534,8 +628,8 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 					NIW<T> prior = theta_iter->get()->niw0_;
 					cout << prior.nu_				 << endl << 
 						    prior.kappa_			 << endl <<
-						    prior.theta_.transpose() << endl;
-					cout << prior.Delta_<<endl;
+						    prior.theta_.transpose() << endl <<
+						    prior.Delta_	<<	endl;
 
 					//printing posterior
 					Normal<T> norm = theta_iter->get()->normal_; 
@@ -546,10 +640,11 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 						reinterpret_cast<boost::shared_ptr<NiwSphere<T> >* >( &theta_base[k]); 
 				//prior
 				IW<T> prior = theta_iter->get()->iw0_; 
-				cout << prior.nu_ 		<< endl << 
-						prior.mean().transpose() 	<< endl << 
-						prior.scatter() << endl; 
-				cout << prior.Delta_<<endl;
+				cout << prior.nu_ 				 << endl 
+					 << prior.count()			 << endl
+				 	 << prior.mean().transpose() << endl
+					 << prior.scatter()			 << endl 
+					 << prior.Delta_			 << endl;
 
 				//posterior 	
 				NormalSphere<T> norm = theta_iter->get()->normalS_; 
@@ -578,7 +673,7 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 
 template <typename T>
 T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, 
-							  uint clusterInd, vector<uint> comp2eval) 
+							  uint32_t clusterInd, vector<uint32_t> comp2eval) 
 {
 	if(comp2eval.empty()) {
 		for(uint m=0; m<M_; ++m)
