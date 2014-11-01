@@ -10,6 +10,16 @@ IW<T>::IW(const Matrix<T,Dynamic,Dynamic>& Delta, T nu, boost::mt19937 *pRndGen)
   assert(Delta_.cols() == Delta_.rows());
 };
 
+
+template<typename T>
+IW<T>::IW(const Matrix<T,Dynamic,Dynamic>& Delta, T nu, const Matrix<T,Dynamic,Dynamic>& scatter, 
+	 const Matrix<T,Dynamic,1>& mean, T counts, boost::mt19937 *pRndGen) 
+: Distribution<T>(pRndGen), Delta_(Delta), nu_(nu), D_(Delta.cols()),
+  scatter_(scatter), mean_(mean), count_(counts)
+{
+  assert(Delta_.cols() == Delta_.rows());
+};
+
 template<typename T>
 IW<T>::IW(const IW& iw)
 : Distribution<T>(iw.pRndGen_), Delta_(iw.Delta_), nu_(iw.nu_), D_(iw.D_),

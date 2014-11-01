@@ -23,6 +23,10 @@ class Sphere
 public:
   Sphere(uint32_t D) : D_(D), north_(Matrix<T,Dynamic,1>::Zero(D))
   {north_(D_-1) = 1.0;};
+  
+  //assumes north is size D and last entry is 1
+  Sphere(Matrix<T,Dynamic,1> north) : D_(north.rows()), north_(north)
+  {};
   virtual ~Sphere() {};
 
   /* 

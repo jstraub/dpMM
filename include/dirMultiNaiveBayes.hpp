@@ -181,7 +181,6 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
 			}
 		} else if(typeIter==NIW_SPHERE) {
-			ASSERT(false, "this is not working....");
 			uint Diter = dim[m]-1;
 			T nu; 
 			T counts;
@@ -213,17 +212,17 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 					north = north.transpose();
 
 				//build theta[m][k]
-				//IW<T> iw(delta,nu, scatter, mu_prior, counts, rng);
-				IW<T> iw(delta,nu, rng);
-				//NiwSphere<T> niwSp(iw,rng);
-				//niwSp.S_ = Sphere<T>(north);
-				//niwSp.normalS_ = NormalSphere<T>(mu,sigma,rng);
+				IW<T> iw(delta,nu, scatter, mu_prior, counts, rng);
+				//IW<T> iw(delta,nu, rng);
+				NiwSphere<T> niwSp(iw,rng);
+				niwSp.S_ = Sphere<T>(north);
+				niwSp.normalS_ = NormalSphere<T>(mu,sigma,rng);
 				
 
 				//set 
-				//thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(niwSp.copy()));
-				boost::shared_ptr<NiwSphere<T> > baseIter( new NiwSphere<T>(iw,rng));
-				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
+				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(niwSp.copy()));
+				//boost::shared_ptr<NiwSphere<T> > baseIter( new NiwSphere<T>(iw,rng));
+				//thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(baseIter));
 				
 			}
 
