@@ -27,6 +27,8 @@ int main(int argc, char **argv){
     ("params,p", po::value<string>(), 
       "path to file containing parameters (see class definition) "
       "datapoints)")
+	("nu,n", po::value<std::vector<double> >()->multitoken(), "nu to use for distributions")
+	("deltaOffset,dO", po::value<std::vector<double> >()->multitoken(), "delta offset to use for distributions")
     ("input,i", po::value<string>(), 
       "path to input dataset .csv file (rows: dimensions; cols: different "
       "datapoints)")
@@ -56,7 +58,9 @@ int main(int argc, char **argv){
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
 	vector<uint> D(NumObs, 2);  //dimention of data 
-
+	vector<double> nuIn; //nu
+	vector<double> deltaOffsetIn; //delta offset
+	
 	//use the params provided 
 	string paramsF="";
 	if (vm.count("params"))
@@ -75,7 +79,10 @@ int main(int argc, char **argv){
 		pathIn = vm["input"].as<string>();
 	if(vm.count("output")) 
 		pathOut= vm["output"].as<string>();
-
+	if(vm.count("nu"))
+		nuIn = vm["nu"].as<vector<double> >();
+	if(vm.count("deltaOffset")) 	
+		deltaOffsetIn = vm["deltaOffset"].as<vector<double> >();
 	
 	vector<vector< Matrix<double, Dynamic, Dynamic> > > x;
 	x.reserve(NumObs);
@@ -157,7 +164,20 @@ int main(int argc, char **argv){
 
 
 
-
+	if(uint(nuIn.size())!=NumObs && !nuIn.empty()) { 
+		cerr << "Error specified number nu parameters does not equal number of data components" << endl;
+		cerr << "#N nu=" << nuIn.size() << ", #data components=" << NumObs <<  "." << endl;
+		cerr << "exiting" << endl;
+		return(-1); 
+	}
+	if(uint(deltaOffsetIn.size())!=NumObs && !deltaOffsetIn.empty()) { 
+		cerr << "Error specified number delta offset parameters does not equal number of data components" << endl;
+		cerr << "#N nu=" << deltaOffsetIn.size() << ", #data components=" << NumObs <<  "." << endl;
+		cerr << "exiting" << endl;
+		return(-1); 
+	}
+	
+	
 	boost::mt19937 rndGen(9191);
 	DirMultiNaiveBayes<double> *naive_samp; 
 	
@@ -200,10 +220,22 @@ int main(int argc, char **argv){
 		for(uint m=0;m<NumObs ; ++m) 
 		{
 			if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
-				double nu = D[m]+1;
+				double nu;
+				if(nuIn.empty()) {
+					nu = D[m]+1;
+				}else {
+					nu = nuIn[m];
+				}
 				double kappa = D[m]+1;
-				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m],D[m]);
+				
+				MatrixXd Delta = MatrixXd::Identity(D[m],D[m]);
+				if(deltaOffsetIn.empty()) {
+					Delta *= 0.1; 
+				} else {
+					Delta *= deltaOffsetIn[m]; 
+				}
 				Delta *= nu;
+				
 				VectorXd theta = VectorXd::Zero(D[m]);
 
 				NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
@@ -212,10 +244,23 @@ int main(int argc, char **argv){
 
 			} else if(iequals(baseDist[m], "NiwSphere")) {
 				//IW is one dimention smaller (makes sense since it's on tangent space)
-				double nu = D[m];
+				//double nu = D[m];
+				double nu;
+				if(nuIn.empty()) {
+					nu = D[m]+1;
+				}else {
+					nu = nuIn[m];
+				}
 				double kappa = D[m];
-				MatrixXd Delta = 0.1*MatrixXd::Identity(D[m]-1,D[m]-1);
+				
+				MatrixXd Delta = MatrixXd::Identity(D[m]-1,D[m]-1);
+				if(deltaOffsetIn.empty()) {
+					Delta *= pow(15.0*M_PI/180.0,2); 
+				} else {
+					Delta *= deltaOffsetIn[m]; 
+				}
 				Delta *= nu;
+				
 				IW<double> iw(Delta,nu,&rndGen);
 				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));
 				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
