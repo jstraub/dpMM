@@ -614,7 +614,11 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 			//Sigma (D-1)x(D-1)
 		//--sphere--- (Sphere)
 			//north 1x(D-1)
-	
+	//this fixes issues with eigen matrices printing (eg, 00-0.7 )
+	int curPres = cout.precision(); 
+	cout.precision(10); 
+	IOFormat fullPresPrint(FullPrecision,DontAlignCols); 
+
 	//prints headers
 	cout << M_ << endl 
 		 << K_ << endl
@@ -639,8 +643,8 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 
 	//print mixture parameters
 	cout << this->dir_.alpha_.transpose() << endl;
-	cout << this->pi_.pdf_.transpose() << endl;
-	cout << this->pdfs_.transpose() << endl; 
+	cout << this->pi_.pdf_.transpose().format(fullPresPrint) << endl;
+	cout << this->pdfs_.transpose().format(fullPresPrint) << endl; 
 
 	//print parameters
 	for(uint32_t m=0; m<M_; ++m) {
@@ -655,12 +659,12 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 					cout << prior.nu_				 << endl << 
 						    prior.kappa_			 << endl <<
 						    prior.theta_.transpose() << endl <<
-						    prior.Delta_	<<	endl;
+						    prior.Delta_.format(fullPresPrint)	<<	endl;
 
 					//printing posterior
 					Normal<T> norm = theta_iter->get()->normal_; 
 					cout << norm.mu_.transpose() << endl;
-					cout << norm.Sigma() << endl;
+					cout << norm.Sigma().format(fullPresPrint) << endl;
 			} else if(type==NIW_SPHERE) {
 				boost::shared_ptr<NiwSphere<T> >  *theta_iter = 
 						reinterpret_cast<boost::shared_ptr<NiwSphere<T> >* >( &theta_base[k]); 
@@ -669,13 +673,13 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 				cout << prior.nu_ 				 << endl 
 					 << prior.count()			 << endl
 				 	 << prior.mean().transpose() << endl
-					 << prior.scatter()			 << endl 
-					 << prior.Delta_			 << endl;
+					 << prior.scatter().format(fullPresPrint)			 << endl 
+					 << prior.Delta_.format(fullPresPrint)			 << endl;
 
 				//posterior 	
 				NormalSphere<T> norm = theta_iter->get()->normalS_; 
-				cout << norm.getMean().transpose() << endl;
-				cout << norm.Sigma() << endl;
+				cout << norm.getMean().transpose().format(fullPresPrint) << endl;
+				cout << norm.Sigma().format(fullPresPrint) << endl;
 				//sphere 	
 				Sphere<T> sp = theta_iter->get()->S_; 
 				cout << sp.north().transpose() << endl; 
@@ -686,6 +690,8 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 		}
 	}
 
+
+	cout.precision(curPres);
 }
 
 template <typename T>
