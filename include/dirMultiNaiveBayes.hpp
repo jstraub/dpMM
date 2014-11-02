@@ -396,9 +396,10 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 	//assumes pdfs_ is updated 
 	#pragma omp parallel for
 	 for(int32_t d=0; d<int32_t(Nd_); ++d) {
-		 int r,c,maxVal; 
-		 maxVal = pdfs_.col(d).maxCoeff(&r, &c);
-		 z_(d) = r; 
+		 int r,c;
+		 T maxVal; 
+		 maxVal = pdfs_.row(d).maxCoeff(&r, &c);
+		 z_(d) = c; 
 	 }
 
 };
@@ -412,7 +413,7 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 	MatrixXu dim(M_,K_); 
 	for(uint32_t m=0; m<M_; ++m) {
 		#pragma omp parallel for
-		for(int32_t k=0; k<K_; ++k) {
+		for(int32_t k=0; k<int32_t(K_); ++k) {
 			VectorXu temp = (z_.array()==k).select(dataDim[m],0); 
 			dim(m,k) = temp.sum();	
 		}
@@ -420,14 +421,14 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 
 	for(uint32_t m=0; m<M_; ++m) {
 		#pragma omp parallel for
-		for(int32_t k=0; k<K_; ++k) {
+		for(int32_t k=0; k<int32_t(K_); ++k) {
 			if(dim(m,k)!=0) {
 				Matrix<T,Dynamic,Dynamic> dataIn(x_[m].front().rows(),dim(m,k)); 
 
 				uint32_t count=0;
 				for(uint32_t d=0; d<Nd_; ++d) {
 					if(z_[d]==k) {
-						int add_size =x_[m][d].cols(); 
+						int add_size =int(x_[m][d].cols()); 
 						dataIn.middleCols(count,add_size) = x_[m][d]; 
 						count+=add_size;
 
@@ -741,7 +742,7 @@ VectorXd logPdf_z = pi_.pdf().array().log();
 for(int32_t m=0; m<comp2eval.size(); ++m)
 {
 	#pragma omp parallel for
-	for(int32_t k=0; k<K_; ++k)
+	for(int32_t k=0; k<int32_t(K_); ++k)
 	{
 		for(uint32_t w=0; w<xnew[m].cols(); ++w)
 		{
@@ -759,9 +760,10 @@ VectorXu zout = VectorXu(1);
 
 if(return_MAP_labels) {
 	// return MAP label
-	int r,c,maxVal; 
+	int r,c; 
+	T maxVal; 
 	maxVal = pdfLocal.maxCoeff(&r, &c);
-	zout(1) = r; 
+	zout(1) = c; 
 } else {
 	// sample z_i
 	sampler_->sampleDiscPdf(pdfLocal,zout);

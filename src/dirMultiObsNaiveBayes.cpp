@@ -28,7 +28,7 @@ int main(int argc, char **argv){
       "path to file containing parameters (see class definition) "
       "datapoints)")
 	("nu,n", po::value<std::vector<double> >()->multitoken(), "nu to use for distributions")
-	("deltaOffset,dO", po::value<std::vector<double> >()->multitoken(), "delta offset to use for distributions")
+	("deltaOffset,d", po::value<std::vector<double> >()->multitoken(), "delta offset to use for distributions")
     ("input,i", po::value<string>(), 
       "path to input dataset .csv file (rows: dimensions; cols: different "
       "datapoints)")
