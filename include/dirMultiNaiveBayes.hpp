@@ -36,8 +36,9 @@ public:
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();
+  virtual void MAPLabel();
   virtual void sampleParameters();
-
+  
   virtual T logJoint(bool verbose=false);
   virtual const VectorXu& labels(){return z_;};
   virtual const VectorXu& getLabels(){return z_;};
@@ -65,10 +66,14 @@ public:
 
   virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint32_t clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual vector<T> evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
+  
   virtual uint32_t sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual vector<uint32_t> sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual uint32_t MAPLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<uint32_t> MAPLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
 
 protected: 
+  virtual uint32_t labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels=false);
   uint32_t Nd_;  
   uint32_t K_; //num cluseters
   uint32_t M_; //num data sources
@@ -384,6 +389,23 @@ VectorXd logPdf_z_value = pi_.pdf().array().log();
 
 
 template<typename T>
+void DirMultiNaiveBayes<T>::MAPLabel()
+{
+	/* it chooses the MAP label rather than sampling */
+
+	//assumes pdfs_ is updated 
+	#pragma omp parallel for
+	 for(int32_t d=0; d<int32_t(Nd_); ++d) {
+		 int r,c,maxVal; 
+		 maxVal = pdfs_.col(d).maxCoeff(&r, &c);
+		 z_(d) = r; 
+	 }
+
+};
+
+
+
+template<typename T>
 void DirMultiNaiveBayes<T>::sampleParameters()
 {
 //unpacks the contains here vector<vector<Matrix>> into what the posterior expects Matrix
@@ -522,7 +544,8 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
       	<< " [joint= " << std::setw(6) << this->logJoint(false) << "]"<< endl;
     }
   }
-
+  //keeps the MAP label in memory
+  this->MAPLabel();
 }
 
 
@@ -709,7 +732,7 @@ vector<T> DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > x
 
 
 template <typename T>
-uint32_t DirMultiNaiveBayes<T>::sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) 
+uint32_t DirMultiNaiveBayes<T>::labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels)
 {
 	/* xnew in the form x[docs][m][words] */
 
@@ -734,12 +757,26 @@ pdfLocal.row(1) = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpos
 
 VectorXu zout = VectorXu(1);
 
-// sample z_i
-sampler_->sampleDiscPdf(pdfLocal,zout);
+if(return_MAP_labels) {
+	// return MAP label
+	int r,c,maxVal; 
+	maxVal = pdfLocal.maxCoeff(&r, &c);
+	zout(1) = r; 
+} else {
+	// sample z_i
+	sampler_->sampleDiscPdf(pdfLocal,zout);
+}
 
   return(zout(1)); 
 };
 
+
+
+
+template <typename T>
+uint32_t DirMultiNaiveBayes<T>::sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) {
+	return(this->labels_sample_max(xnew, comp2eval, false)); 
+}
 
 template <typename T>
 vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval) 
@@ -748,6 +785,23 @@ vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(vector<vector<Matrix<T,Dyna
 	vector<uint32_t> out; 
 	for(uint32_t d=0; d<xnew.size(); ++d) {
 		out.push_back(this->sampleLabels(xnew[d],comp2eval)); 
+	}
+	return(out); 
+}
+
+
+template <typename T>
+uint32_t DirMultiNaiveBayes<T>::MAPLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) {
+	return(this->labels_sample_max(xnew, comp2eval, true)); 
+}
+
+
+template <typename T>
+vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval) {
+	/* xnew in the form x[docs][m][words] */
+	vector<uint32_t> out; 
+	for(uint32_t d=0; d<xnew.size(); ++d) {
+		out.push_back(this->MAPLabels(xnew[d],comp2eval)); 
 	}
 	return(out); 
 }
