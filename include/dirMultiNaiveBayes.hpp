@@ -64,6 +64,9 @@ public:
   };
 
   virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint32_t clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<T> evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual uint32_t sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<uint32_t> sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
 
 protected: 
   uint32_t Nd_;  
@@ -692,4 +695,59 @@ T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew,
 	}
     
   return logJoint;
+}
+
+
+template <typename T>
+vector<T> DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> clusterInd, vector<uint32_t> comp2eval) {
+	vector<T> out; 
+	for(uint32_t k=0; k<uint32_t(clusterInd.size()); ++k) {
+		out.push_back(this->evalLogLik(xnew,clusterInd[k],comp2eval)); 
+	}
+	return(out);
+}
+
+
+template <typename T>
+uint32_t DirMultiNaiveBayes<T>::sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) 
+{
+	/* xnew in the form x[docs][m][words] */
+
+VectorXd logPdf_z = pi_.pdf().array().log();
+
+for(int32_t m=0; m<comp2eval.size(); ++m)
+{
+	#pragma omp parallel for
+	for(int32_t k=0; k<K_; ++k)
+	{
+		for(uint32_t w=0; w<xnew[m].cols(); ++w)
+		{
+			logPdf_z[k] += thetas_[comp2eval[m]][k]->logLikelihood(xnew[m],w);
+		}
+	}
+}
+
+// make pdf sum to 1. and exponentiate
+Matrix<T,Dynamic,Dynamic> pdfLocal =  Matrix<T,Dynamic,Dynamic>(1,K_);
+
+pdfLocal.row(1) = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
+
+VectorXu zout = VectorXu(1);
+
+// sample z_i
+sampler_->sampleDiscPdf(pdfLocal,zout);
+
+  return(zout(1)); 
+};
+
+
+template <typename T>
+vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval) 
+{
+	/* xnew in the form x[docs][m][words] */
+	vector<uint32_t> out; 
+	for(uint32_t d=0; d<xnew.size(); ++d) {
+		out.push_back(this->sampleLabels(xnew[d],comp2eval)); 
+	}
+	return(out); 
 }
