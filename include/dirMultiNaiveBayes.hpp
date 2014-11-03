@@ -760,7 +760,7 @@ for(int32_t m=0; m<comp2eval.size(); ++m)
 // make pdf sum to 1. and exponentiate
 Matrix<T,Dynamic,Dynamic> pdfLocal =  Matrix<T,Dynamic,Dynamic>(1,K_);
 
-pdfLocal.row(1) = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
+pdfLocal = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
 
 VectorXu zout = VectorXu(1);
 
@@ -769,13 +769,13 @@ if(return_MAP_labels) {
 	int r,c; 
 	T maxVal; 
 	maxVal = pdfLocal.maxCoeff(&r, &c);
-	zout(1) = c; 
+	zout(0) = c; 
 } else {
 	// sample z_i
 	sampler_->sampleDiscPdf(pdfLocal,zout);
 }
 
-  return(zout(1)); 
+  return(zout(0)); 
 };
 
 
