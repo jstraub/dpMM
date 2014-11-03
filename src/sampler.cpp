@@ -216,3 +216,4 @@ void SamplerGpu<T>::addTopLevel(const Matrix<T,Dynamic,1>& pi,uint32_t dk)
 template class SamplerGpu<double>;
 template class SamplerGpu<float>;
 
+#endif 

@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "sphere.hpp"
-#include "clusterer.hpp"
+#include "dpmeans.hpp"
 #include "dir.hpp"
 #include "cat.hpp"
 

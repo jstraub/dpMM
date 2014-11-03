@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
   boost::shared_ptr<ClSphereGpu<myFlt> > clsp(
-      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
+      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
 
   Matrix<myFlt,Dynamic,1> mu(D);
   mu<<0.0,0.0,1.0;

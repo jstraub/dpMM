@@ -211,27 +211,28 @@ ${Boost_LIBRARIES}
   #boost_unit_test_framework
 )
 
-cuda_add_executable(testNaiveBayes 
-	./test/naiveBayes.cpp
-	./src/dir.cpp
-	./src/cat.cpp
-	./src/mult.cpp
-	./src/niw.cpp
-	./src/iw.cpp
-	./src/normal.cpp
-	./src/niwSphere.cpp
-	./src/sampler.cpp
-	./src/sphere.cpp
-  ./cuda/choiceMult_kernel.cu
-  ./cuda/log_p_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/gmmPdf_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-)
-target_link_libraries(testNaiveBayes
-	${Boost_LIBRARIES}
-)
+# js: broken by default by Randi
+#cuda_add_executable(testNaiveBayes 
+#	./test/naiveBayes.cpp
+#	./src/dir.cpp
+#	./src/cat.cpp
+#	./src/mult.cpp
+#	./src/niw.cpp
+#	./src/iw.cpp
+#	./src/normal.cpp
+#	./src/niwSphere.cpp
+#	./src/sampler.cpp
+#	./src/sphere.cpp
+#  ./cuda/choiceMult_kernel.cu
+#  ./cuda/log_p_kernel.cu
+#  ./cuda/karcherMeans_kernel.cu
+#  ./cuda/gmmPdf_kernel.cu
+#  ./cuda/sufficientStatistics_kernel.cu
+#  ./cuda/sphereMixturePdf_kernel.cu
+#)
+#target_link_libraries(testNaiveBayes
+#	${Boost_LIBRARIES}
+#)
 
 cuda_add_executable(testSphere ./test/sphere.cpp
 	./src/normal.cpp
@@ -263,21 +264,21 @@ ${Boost_LIBRARIES}
   #boost_unit_test_framework
 )
 
-cuda_add_executable(testClData ./test/clData.cpp
-  ./src/gpuMatrix.cpp
-  ./src/normal.cpp
-  ./src/sphere.cpp
-  ./cuda/log_p_kernel.cu
-  ./cuda/sphereMixturePdf_kernel.cu
-  ./cuda/karcherMeans_kernel.cu
-  ./cuda/sufficientStatistics_kernel.cu
-)
-target_link_libraries(testClData
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-)
+#cuda_add_executable(testClData ./test/clData.cpp
+#  ./src/gpuMatrix.cpp
+#  ./src/normal.cpp
+#  ./src/sphere.cpp
+#  ./cuda/log_p_kernel.cu
+#  ./cuda/sphereMixturePdf_kernel.cu
+#  ./cuda/karcherMeans_kernel.cu
+#  ./cuda/sufficientStatistics_kernel.cu
+#)
+#target_link_libraries(testClData
+#${Boost_LIBRARIES}
+#  #boost_system
+#  #boost_random
+#  #boost_unit_test_framework
+#)
 
 cuda_add_executable(testSPKM ./test/spkm.cpp
   ./src/sphere.cpp

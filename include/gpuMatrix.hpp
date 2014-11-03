@@ -8,10 +8,10 @@
 #include <cuda_runtime.h>
 #include <nvidia/helper_cuda.h> 
 
-#include "global.hpp"
+//#include "global.hpp"
 
 using namespace Eigen;
-//using boost::shared_ptr;
+using boost::shared_ptr;
 using std::cout;
 using std::endl;
 
@@ -34,15 +34,18 @@ struct GpuMatrix
   ~GpuMatrix();
 
   void set(T A);
+  void set(const T* A, uint32_t rows, uint32_t cols);
   void set(const std::vector<T>& A);
   void set(const Matrix<T,Dynamic,Dynamic>& A);
   void set(const Matrix<T,Dynamic,1>& A);
   void set(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A);
   void set(const boost::shared_ptr<Matrix<T,Dynamic,1> >& A);
   void setZero();
+  void setAsync(const T* A, uint32_t rows, uint32_t cols, cudaStream_t& stream);
 
   void get(T& a);
   void get(Matrix<T,Dynamic,Dynamic>& A);
+  void get(T* A, uint32_t rows, uint32_t cols);
   void get(Matrix<T,Dynamic,1>& A);
   void get(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& A);
   void get(const boost::shared_ptr<Matrix<T,Dynamic,1> >& A);
@@ -51,6 +54,8 @@ struct GpuMatrix
     Matrix<T,Dynamic,Dynamic> d(rows_,cols_);
     this->get(d); return d;
   };
+  void getAsync(T* A, uint32_t rows, uint32_t cols, cudaStream_t& stream);
+
   void copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offset, uint32_t rows);
 
   void resize(uint32_t rows, uint32_t cols);
@@ -61,6 +66,17 @@ struct GpuMatrix
   bool isInit(){return initialized_;};
 
   void print(){cout<<rows_<<";"<<cols_<<" init="<<(initialized_?'y':'n')<<endl;};
+
+  static cudaStream_t createStream() 
+  {
+    cudaStream_t stream;
+    checkCudaErrors(cudaStreamCreate(&stream));
+    return stream;
+  };
+  static void deleteStream(cudaStream_t& stream) 
+  {
+    checkCudaErrors(cudaStreamDestroy(stream));
+  };
 
 private: 
   uint32_t rows_;
@@ -146,6 +162,16 @@ template <class T>
 };
 
 template <class T>
+  void GpuMatrix<T>::set(const T* A, uint32_t rows, uint32_t cols)
+{
+  resize(rows,cols);
+  assert(rows == rows_);
+  assert(cols == cols_);
+  checkCudaErrors(cudaMemcpy(data_, A, cols_*rows_* sizeof(T),
+        cudaMemcpyHostToDevice));
+  initialized_ = true;
+}
+template <class T>
   void GpuMatrix<T>::set(const std::vector<T>& A)
 {
   resize(A.size(),1);
@@ -218,6 +244,16 @@ template <class T>
   checkCudaErrors(cudaMemcpy(&a,data_, cols_*rows_*sizeof(T),
                 cudaMemcpyDeviceToHost));
 }
+
+template <class T>
+void GpuMatrix<T>::get(T* A, uint32_t rows, uint32_t cols)
+{
+  assert(cols == cols_);
+  assert(rows == rows_);
+  checkCudaErrors(cudaMemcpy(A,data_, cols_*rows_*sizeof(T),
+                cudaMemcpyDeviceToHost));
+};
+
 template <class T>
 void GpuMatrix<T>::get(Matrix<T,Dynamic,Dynamic>& A)
 {
@@ -276,4 +312,26 @@ void GpuMatrix<T>::copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offse
 
   initialized_ = true;
 };
+
+
+template <class T>
+void GpuMatrix<T>::setAsync(const T* A, uint32_t rows, uint32_t cols, cudaStream_t& stream)
+{
+  resize(rows,cols);
+  assert(rows == rows_);
+  assert(cols == cols_);
+  checkCudaErrors(cudaMemcpyAsync(data_, A, cols_*rows_* sizeof(T),
+        cudaMemcpyHostToDevice,stream));
+  initialized_ = true;
+};
+
+template <class T>
+void GpuMatrix<T>::getAsync(T* A, uint32_t rows, uint32_t cols, cudaStream_t& stream)
+{
+  assert(cols == cols_);
+  assert(rows == rows_);
+  checkCudaErrors(cudaMemcpyAsync(A,data_, cols_*rows_*sizeof(T),
+                cudaMemcpyDeviceToHost,stream));
+};
+
 

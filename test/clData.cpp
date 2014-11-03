@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( clSphereGpu_test)
 //    cout << x->col(i) <<endl;
   }
 
-  ClSphereGpu<float> data(x,z,&rndGen,K);
+  ClSphereGpu<float> data(x,z,K);
   data.update(K);
 
   cout<<"Ns="<<endl<<data.counts()<<endl;

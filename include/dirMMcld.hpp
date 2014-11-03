@@ -120,7 +120,7 @@ void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
     pdfs_.row(i) = pi_.pdf();
   sampler_->sampleDiscPdf(pdfs_,(cld_->z()));
 //  cout<<z->transpose()<<endl;
-  assert((cld->z()->array() < K_).all());
+  assert((cld->z().array() < K_).all());
 
   // init the parameters
   if(thetas_.size() == 0)
@@ -129,9 +129,9 @@ void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
     for (uint32_t k=0; k<K_; ++k)
       thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
   }
-  cld_->update(K_);
-  for(uint32_t k=0; k<K_; ++k)
-    thetas_[k]->posterior(cld_,k);
+//  cld_->update(K_);
+//  for(uint32_t k=0; k<K_; ++k)
+//    thetas_[k]->posterior(cld_,k);
 //  for (uint32_t k=0; k<K_; ++k)
 //    thetas_[k].initialize(x_,z_);
 };

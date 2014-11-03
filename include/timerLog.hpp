@@ -2,9 +2,9 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <vector>
 
-#include <Eigen/Dense>
 #include <timer.hpp>
 
 using std::string;
@@ -29,6 +29,13 @@ public:
       for(int32_t i=0; i<static_cast<int32_t>(t0s_.size()); ++i) t0s_[i] = t0;
     } else if( 0<= id && id < static_cast<int32_t>(t0s_.size()))
       t0s_[id] = t0;
+    else{  // add a new timer
+      t0s_.push_back(t0);
+      dts_.push_back(0.);
+      tSums_.push_back(0.);
+      tSquareSums_.push_back(0.);
+      Ns_.push_back(0.);
+    }
   };
 
   virtual void toc(int32_t id=-1)
@@ -70,12 +77,18 @@ public:
   virtual void printStats()
   {
     cout<<name_<<": stats over timer cycles (mean +- 3*std):\t";
+    std::cout.precision(2);
+    double meanTotal =0.;
+    double varTotal =0.;
     for(int32_t i=0; i<static_cast<int32_t>(dts_.size()); ++i) 
     {
       double mean = tSums_[i]/Ns_[i];
       double var = tSquareSums_[i]/Ns_[i] - mean*mean;
-      cout<<mean<<"+- "<<3.*sqrt(var)<<"\t";
-    } cout<<endl; 
+      meanTotal += mean;
+      varTotal += var;
+      cout<<mean<<" +- "<<3.*sqrt(var)<<"\t";
+    } 
+    cout<<endl<<" => total/cycle: "<<meanTotal<<" +- "<<3.*sqrt(varTotal)<<endl;
   };
 
 private:

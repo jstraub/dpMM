@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( sphereGpu_test)
   
 //  assert(false);
 
-  ClSphereGpu<myFlt> sphere(sq,sz,&rndGen,K);
+  ClSphereGpu<myFlt> sphere(sq,sz,K);
   //sphere.updateClusters(ps,z);
   Matrix<myFlt,Dynamic,Dynamic> karcherMeans = sphere.karcherMeans(ps);
   cout<< karcherMeans <<endl;

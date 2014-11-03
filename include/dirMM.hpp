@@ -35,7 +35,10 @@ public:
   virtual T logJoint();
   virtual const VectorXu& labels(){return z_;};
   virtual const VectorXu& getLabels(){return z_;};
+  virtual void setLabels(const VectorXu& z){z_ = z;};
   virtual uint32_t getK() const { return K_;};
+  virtual shared_ptr<BaseMeasure<T> > getTheta(uint32_t k) 
+    { return this->thetas_[k];};
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
@@ -64,7 +67,8 @@ protected:
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta) :
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >&
+    theta) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
   theta0_(theta)
 {};
