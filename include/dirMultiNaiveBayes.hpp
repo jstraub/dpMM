@@ -54,7 +54,6 @@ public:
   virtual void inferAll(uint32_t nIter, bool verbose=false);
   
   virtual void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs); 
-  virtual void dump_clean();
   virtual void dump_clean(std::ofstream &out);
   
   virtual vector<boost::shared_ptr<BaseMeasure<T> > > getThetas(uint32_t m) {
@@ -579,8 +578,8 @@ void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCo
 
 
 template <typename T>
-void DirMultiNaiveBayes<T>::dump_clean() {
-//clean dump, only data with specific format
+void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
+	//clean dump, only data with specific format
 //FORMAT:
 	//M 1x1
 	//K	1x1
@@ -615,12 +614,12 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 		//--sphere--- (Sphere)
 			//north 1x(D-1)
 	//this fixes issues with eigen matrices printing (eg, 00-0.7 )
-	int curPres = cout.precision(); 
-	cout.precision(10); 
+	int curPres = out.precision(); 
+	out.precision(10); 
 	IOFormat fullPresPrint(FullPrecision,DontAlignCols); 
 
 	//prints headers
-	cout << M_ << endl 
+	out << M_ << endl 
 		 << K_ << endl
 		 << Nd_ << endl;
 
@@ -628,23 +627,23 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 	for(uint m=0; m<M_; ++m) {
 		vector<boost::shared_ptr<BaseMeasure<T> > >  theta_base = this->getThetas(m); 
 		uint temp = theta_base.front()->getDim();
-		cout << temp << " "; 
-		//cout << x_[m].front().rows() << " "; 
+		out << temp << " "; 
+		//out << x_[m].front().rows() << " "; 
 	}
-	cout << endl;
+	out << endl;
 	//print type
 	for(uint m=0; m<M_; ++m) {
-		cout << thetas_[m].front()->getBaseMeasureType() << " "; 
+		out << thetas_[m].front()->getBaseMeasureType() << " "; 
 	}
-	cout << endl;
+	out << endl;
 
 	//print labels
-	cout << this->labels().transpose() << endl; 
+	out << this->labels().transpose() << endl; 
 
 	//print mixture parameters
-	cout << this->dir_.alpha_.transpose() << endl;
-	cout << this->pi_.pdf_.transpose().format(fullPresPrint) << endl;
-	cout << this->pdfs_.transpose().format(fullPresPrint) << endl; 
+	out << this->dir_.alpha_.transpose() << endl;
+	out << this->pi_.pdf_.transpose().format(fullPresPrint) << endl;
+	out << this->pdfs_.transpose().format(fullPresPrint) << endl; 
 
 	//print parameters
 	for(uint32_t m=0; m<M_; ++m) {
@@ -656,21 +655,21 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 						reinterpret_cast<boost::shared_ptr<NiwSampled<T> >* >( &theta_base[k]); 
 					//printing prior 
 					NIW<T> prior = theta_iter->get()->niw0_;
-					cout << prior.nu_				 << endl << 
+					out << prior.nu_				 << endl << 
 						    prior.kappa_			 << endl <<
 						    prior.theta_.transpose() << endl <<
 						    prior.Delta_.format(fullPresPrint)	<<	endl;
 
 					//printing posterior
 					Normal<T> norm = theta_iter->get()->normal_; 
-					cout << norm.mu_.transpose() << endl;
-					cout << norm.Sigma().format(fullPresPrint) << endl;
+					out << norm.mu_.transpose() << endl;
+					out << norm.Sigma().format(fullPresPrint) << endl;
 			} else if(type==NIW_SPHERE) {
 				boost::shared_ptr<NiwSphere<T> >  *theta_iter = 
 						reinterpret_cast<boost::shared_ptr<NiwSphere<T> >* >( &theta_base[k]); 
 				//prior
 				IW<T> prior = theta_iter->get()->iw0_; 
-				cout << prior.nu_ 				 << endl 
+				out << prior.nu_ 				 << endl 
 					 << prior.count()			 << endl
 				 	 << prior.mean().transpose() << endl
 					 << prior.scatter().format(fullPresPrint)			 << endl 
@@ -678,11 +677,11 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 
 				//posterior 	
 				NormalSphere<T> norm = theta_iter->get()->normalS_; 
-				cout << norm.getMean().transpose().format(fullPresPrint) << endl;
-				cout << norm.Sigma().format(fullPresPrint) << endl;
+				out << norm.getMean().transpose().format(fullPresPrint) << endl;
+				out << norm.Sigma().format(fullPresPrint) << endl;
 				//sphere 	
 				Sphere<T> sp = theta_iter->get()->S_; 
-				cout << sp.north().transpose() << endl; 
+				out << sp.north().transpose() << endl; 
 			} else {
 					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
 					return;
@@ -691,16 +690,18 @@ void DirMultiNaiveBayes<T>::dump_clean() {
 	}
 
 
-	cout.precision(curPres);
+	out.precision(curPres);
+
 }
 
-template <typename T>
-void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
-	streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
-	cout.rdbuf(out.rdbuf()); //redirect std::cout to fout1 buffer
-	this->dump_clean(); //write using cout to the specified buffer
-	std::cout.rdbuf(coutbuf); //reset to standard output again
-}
+
+//template <typename T>
+//void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
+//	streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+//	cout.rdbuf(out.rdbuf()); //redirect std::cout to fout1 buffer
+//	this->dump_clean(); //write using cout to the specified buffer
+//	std::cout.rdbuf(coutbuf); //reset to standard output again
+//}
 
 
 template <typename T>
