@@ -53,11 +53,11 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
   boost::mt19937 rndGen(9191);
   NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 
-  boost::shared_ptr<NiwMarginalized<double> > niwMargBase(
+  shared_ptr<NiwMarginalized<double> > niwMargBase(
       new NiwMarginalized<double>(niw));
   VectorXd alpha(2);
   alpha << 10.,10.;
-  Dir<Catd,double> dir(alpha,&rndGen); 
+  Dir<Cat<double>, double> dir(alpha,&rndGen); 
   DirMM<double> dirGMM_marg(dir,niwMargBase);
   
   uint32_t N=20;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
       <<" logJoint="<<dirGMM_marg.logJoint()<<endl;
   }
 
-  boost::shared_ptr<NiwSampled<double> > niwSampled(
+  shared_ptr<NiwSampled<double> > niwSampled(
       new NiwSampled<double>(niw));
   DirMM<double> dirGMM_samp(dir,niwSampled);
   
@@ -97,6 +97,7 @@ BOOST_AUTO_TEST_CASE(dirMM_test)
 
 BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
 {
+  cout<<"------ sampling -- NIW sphere"<<endl;
 
   double nu = 20.0;
   MatrixXd Delta(2,2);
@@ -106,25 +107,32 @@ BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
 
   boost::mt19937 rndGen(9191);
   IW<double> iw(Delta,nu,&rndGen);
-  boost::shared_ptr<NiwSphere<double> > niwSp( new NiwSphere<double>(iw,&rndGen));
+  shared_ptr<NiwSphere<double> > niwSp( new NiwSphere<double>(iw,&rndGen));
 
   VectorXd alpha(2);
   alpha << 10.,10.;
-  Dir<Catd,double> dir(alpha,&rndGen); 
+  Dir<Cat<double>, double> dir(alpha,&rndGen); 
   DirMM<double> dirGMM_sp(dir,niwSp);
   
   uint32_t N=20;
   uint32_t K=2;
   MatrixXd x(3,N);
-  sampleClustersOnSphere<double>(x, K);
+  MatrixXd mus = sampleClustersOnSphere<double>(x, K);
+
   dirGMM_sp.initialize(x);
-  cout<<"------ sampling -- NIW sphere"<<endl;
+
+  cout<<"true means: "<<endl<<mus<<endl;
   cout<<dirGMM_sp.labels().transpose()<<endl;
   for(uint32_t t=0; t<10; ++t)
   {
-    dirGMM_sp.sampleLabels();
     dirGMM_sp.sampleParameters();
-    cout<<dirGMM_sp.labels().transpose()
+//    for(uint32_t k=0; k<dirGMM_sp.getK(); ++k)
+//    {
+//      cout<<"  k: "<<k<<" "<<endl; 
+//      dirGMM_sp.getTheta(k)->print();
+//    }
+    dirGMM_sp.sampleLabels();
+    cout<<"@t="<<t<<" "<<dirGMM_sp.labels().transpose()
       <<" logJoint="<<dirGMM_sp.logJoint()<<endl;
   }
   MatrixXd logLikes;
@@ -138,13 +146,14 @@ typedef double myFlt;
 
 BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 {
+  cout<<"------ sampling -- NIW sphere using CLD"<<endl;
 
   uint32_t N=30; //640*480;
   uint32_t K=6;
   uint32_t D=3;
   boost::mt19937 rndGen(9191);
   // sample datapoints
-  boost::shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sx(new 
+  shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sx(new 
       Matrix<myFlt,Dynamic,Dynamic>(D,N));
   Matrix<myFlt,Dynamic,Dynamic> mus =  sampleClustersOnSphere(*sx, 3);
 
@@ -161,16 +170,22 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
   Delta *= nu;
 
   IW<myFlt> iw(Delta,nu,&rndGen);
-  boost::shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
-//  boost::shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
+  shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
+//  shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
 
   Dir<Cat<myFlt>, myFlt> dir(alpha,&rndGen); 
   DirMMcld<NiwSphere<myFlt>,myFlt> dirGMM_sp(dir,niwSp);
 
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
-  boost::shared_ptr<ClSphereGpu<myFlt> > clsp(
+  shared_ptr<ClSphereGpu<myFlt> > clsp(
       new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
+
+  MatrixXd ps(D,K);
+  Sphere<double> sphere(D);
+  for(uint32_t k=0; k<K; ++k)
+    ps.col(k) = sphere.sampleUnif(&rndGen);
+  clsp->init(ps);
 
   Matrix<myFlt,Dynamic,1> mu(D);
   mu<<0.0,0.0,1.0;
@@ -178,7 +193,6 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 
   dirGMM_sp.initialize(clsp);
 //  dirGMM_cpu.initialize(*sx);
-  cout<<"------ sampling -- NIW sphere"<<endl;
   cout<<counts<myFlt,uint32_t>(dirGMM_sp.labels(),K).transpose()<<endl;
   Timer t;
   for(uint32_t i=0; i<5; ++i)
@@ -189,8 +203,8 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 //    cout<<dirGMM_cpu.labels().transpose()<<endl;
 //    t.toctic(" -----------------CPU------------------- fullIteration");
     t.tic();
-    dirGMM_sp.sampleLabels();
     dirGMM_sp.sampleParameters();
+    dirGMM_sp.sampleLabels();
     cout<<dirGMM_sp.z().transpose()<<endl;
     cout<<dirGMM_sp.counts().transpose()<<endl;
     cout<<dirGMM_sp.means()<<endl;
