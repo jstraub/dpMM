@@ -73,6 +73,7 @@ public:
 
 protected: 
   virtual uint32_t labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels=false);
+  virtual void updatePDF();
   uint32_t Nd_;  
   uint32_t K_; //num cluseters
   uint32_t M_; //num data sources
@@ -350,10 +351,17 @@ void DirMultiNaiveBayes<T>::helper_setDims()
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleLabels()
 {
-// obtain posterior categorical under labels
-pi_ = dir_.posterior(z_).sample();
-//  cout<<pi_.pdf().transpose()<<endl;
-  
+	// obtain posterior categorical under labels
+	pi_ = dir_.posterior(z_).sample();
+	//  cout<<pi_.pdf().transpose()<<endl;
+	this->updatePDF();
+	// sample z_i
+	sampler_->sampleDiscPdf(pdfs_,z_);
+};
+
+
+template<typename T>
+void DirMultiNaiveBayes<T>::updatePDF() {
 // compute categorical distribution over label z_i 
 // no need to re-compute the array and log every iteration)
 VectorXd logPdf_z_value = pi_.pdf().array().log();
@@ -381,23 +389,19 @@ VectorXd logPdf_z_value = pi_.pdf().array().log();
 //    cout<<" z_i="<<z_[d]<<endl;
   }
 
-
-  // sample z_i
-  sampler_->sampleDiscPdf(pdfs_,z_);
-};
+}
 
 
 template<typename T>
 void DirMultiNaiveBayes<T>::MAPLabel()
 {
 	/* it chooses the MAP label rather than sampling */
+	this->updatePDF();
 
-	//assumes pdfs_ is updated 
 	#pragma omp parallel for
 	 for(int32_t d=0; d<int32_t(Nd_); ++d) {
 		 int r,c;
-		 T maxVal; 
-		 maxVal = pdfs_.row(d).maxCoeff(&r, &c);
+		 pdfs_.row(d).maxCoeff(&r, &c);
 		 z_(d) = c; 
 	 }
 
@@ -773,8 +777,7 @@ VectorXu zout = VectorXu(1);
 if(return_MAP_labels) {
 	// return MAP label
 	int r,c; 
-	T maxVal; 
-	maxVal = pdfLocal.maxCoeff(&r, &c);
+	pdfLocal.maxCoeff(&r, &c);
 	zout(0) = c; 
 } else {
 	// sample z_i
