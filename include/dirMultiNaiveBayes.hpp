@@ -538,10 +538,15 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
   {
     this->sampleLabels();
     this->sampleParameters();
-    if(verbose){
-		cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] label: " 
-    	<< this->labels().transpose()
-      	<< " [joint= " << std::setw(6) << this->logJoint(false) << "]"<< endl;
+    if(verbose || t%100==0){
+		if(Nd_<=10) {
+			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] label: " 
+    		<< this->labels().transpose()
+      		<< " [joint= " << std::setw(6) << this->logJoint(false) << "]"<< endl;
+		} else {
+			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] joint= " 
+				 << std::setw(6) << this->logJoint(false) << endl;
+		}
     }
   }
   //keeps the MAP label in memory
