@@ -724,13 +724,19 @@ T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew,
 
 	//T logJoint = pi_.pdf_(clusterInd);
 	T logJoint  = 0; 
- 
 	for (int32_t m=0; m<int32_t(comp2eval.size()); ++m) 
 	{
-		#pragma omp parallel for reduction(+:logJoint)  
-		for(int32_t w=0; w<xnew[m].cols(); ++w)
-		{
-			logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
+		if(xnew[m].cols()<24) { //use a single core if num words is small		
+			for(int32_t w=0; w<xnew[m].cols(); ++w)
+			{
+				logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
+			}
+		} else { //switch to multi-core if lots of words. 
+			#pragma omp parallel for reduction(+:logJoint)  
+			for(int32_t w=0; w<xnew[m].cols(); ++w)
+			{
+				logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
+			}
 		}
 	}
     
