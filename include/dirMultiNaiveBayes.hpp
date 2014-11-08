@@ -70,10 +70,11 @@ public:
   virtual vector<uint32_t> sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual uint32_t MAPLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual vector<uint32_t> MAPLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual void updatePDF();
 
 protected: 
   virtual uint32_t labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels=false);
-  virtual void updatePDF();
+
   uint32_t Nd_;  
   uint32_t K_; //num cluseters
   uint32_t M_; //num data sources
@@ -147,10 +148,10 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 		in >> pi(k); 
 
 	pdfs_ = Matrix<T,Dynamic,Dynamic>(Nd_,K_);
-	for(uint n=0; n<Nd_*K_; ++n)
-		in >> pdfs_(n%Nd_, (n-(n%Nd_))/Nd_); 
-		//in >> pdfs_((n-(n%Nd_))/Nd_, n%Nd_); 
-	//pdfs_ = pdfs_.transpose();
+	//for(uint n=0; n<Nd_*K_; ++n)
+	//	in >> pdfs_(n%Nd_, (n-(n%Nd_))/Nd_); 
+	//	//in >> pdfs_((n-(n%Nd_))/Nd_, n%Nd_); 
+	////pdfs_ = pdfs_.transpose();
 
 	//get parameters
 	for(uint32_t m=0; m<M_; ++m) {
@@ -241,7 +242,6 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 		}
 		thetas_.push_back(thetaM);
 	}
-
 
 	dir_ =  Dir<Cat<T>, T>(alpha,rng);
 	pi_ = Cat<T>(pi,rng); 
@@ -652,7 +652,7 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 	//print mixture parameters
 	out << this->dir_.alpha_.transpose() << endl;
 	out << this->pi_.pdf_.transpose().format(fullPresPrint) << endl;
-	out << this->pdfs_.transpose().format(fullPresPrint) << endl; 
+	//out << this->pdfs_.transpose().format(fullPresPrint) << endl; 
 
 	//print parameters
 	for(uint32_t m=0; m<M_; ++m) {
