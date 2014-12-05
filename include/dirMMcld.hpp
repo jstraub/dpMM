@@ -121,7 +121,6 @@ void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
   sampler_->sampleDiscPdf(pdfs_,(cld_->z()));
 //  cout<<z->transpose()<<endl;
   assert((cld->z().array() < K_).all());
-
   // init the parameters
   if(thetas_.size() == 0)
   {

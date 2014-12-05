@@ -24,6 +24,8 @@ public:
   uint32_t D_;
 
   IW(const Matrix<T,Dynamic,Dynamic>& Delta, T nu, boost::mt19937 *pRndGen);
+  IW(const Matrix<T,Dynamic,Dynamic>& Delta, T nu, const Matrix<T,Dynamic,Dynamic>& scatter, 
+	 const Matrix<T,Dynamic,1>& mean, T counts, boost::mt19937 *pRndGen);
   IW(const IW& iw);
   ~IW();
 

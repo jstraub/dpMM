@@ -120,7 +120,7 @@ T NormalSphere<T>::logPdf(const Matrix<T,Dynamic,1>& q_i) const
   ASSERT(fabs(x_i.transpose()*mu_)<1e-6, x_i.transpose()*mu_);
 
   Matrix<T,Dynamic,1> xNorth = (northR_*x_i);
-  ASSERT(fabs(xNorth(D_-1) < 1e-6), 
+  ASSERT(fabs( xNorth(D_-1)) < 1e-6, 
       xNorth.transpose() << endl
       << " northR_ "<<endl<<northR_<<endl
       << " recomputed"<<endl<<S_.north_R_TpS2(mu_)<<endl);
@@ -169,7 +169,7 @@ Matrix<T,Dynamic,1> NormalSphere<T>::sample()
   while(xNorth.norm() > PI)
   {
     cout<<"wrapping around! ---------------------------------------------"<<endl;
-    xNorth -= 2*PI*(xNorth/xNorth.norm());
+    xNorth -= (T(2*PI))*(xNorth/xNorth.norm());
   }
 //  cout<<"xNorth = "<<xNorth.transpose()<<endl;
 //  cout<<"mu = "<<mu_.transpose()<<endl;

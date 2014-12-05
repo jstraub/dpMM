@@ -17,6 +17,8 @@ public:
   UnifSphere(uint32_t D);
   ~UnifSphere();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(UNIF_SPHERE); }
+
   virtual BaseMeasure<T>* copy();
 
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
@@ -26,7 +28,7 @@ public:
       const VectorXu& z, uint32_t k);
   virtual T logPdfUnderPrior() const;
   void print() const {cout<<"Unif Sphere in D="<<D_<<endl;};
-
+  virtual uint32_t getDim() const {return(D_);};
 private:
 
 };

@@ -36,6 +36,8 @@ public:
   virtual BaseMeasure<T>* copy();
   virtual NiwSphere<T>* copyNative();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SPHERE); }
+
   /* for any point on the sphere; maps into T_muS and rotates north first */
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const ;
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
@@ -57,6 +59,7 @@ public:
   T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSphere<T> >& other) const;
 
   void print() const;
+  virtual uint32_t getDim() const {return(uint32_t(normalS_.D_));}; 
 
   virtual NiwSphere<T>* merge(const NiwSphere<T>& other);
   void fromMerge(const NiwSphere<T>& niwA, const NiwSphere<T>& niwB);

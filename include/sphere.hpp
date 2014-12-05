@@ -30,6 +30,10 @@ class Sphere
 public:
   Sphere(uint32_t D) : D_(D), north_(Matrix<T,Dynamic,1>::Zero(D))
   {north_(D_-1) = 1.0;};
+  
+  //assumes north is size D and last entry is 1
+  Sphere(Matrix<T,Dynamic,1> north) : D_(north.rows()), north_(north)
+  {};
   virtual ~Sphere() {};
 
   /* 
@@ -96,8 +100,10 @@ protected:
 
   T invSincDot(T dot) const;
 
-  static const double MIN_DOT = -0.95;
-  static const double MAX_DOT = 0.95;
+  //static const double MIN_DOT = -0.95;
+  //static const double MAX_DOT = 0.95;
+  static double const MIN_DOT;
+  static double const MAX_DOT;
   uint32_t D_; // dimension of ambient space; sphere is D-1 dimensional.
   Matrix<T,Dynamic,1> north_;
 };
@@ -146,8 +152,10 @@ inline Matrix<T,Dynamic,Dynamic> rotationFromAtoB(const Matrix<T,Dynamic,1>& a,
     c /= c.norm();
     Matrix<T,Dynamic,Dynamic> A = b*c.transpose() - c*b.transpose();
 
+	Matrix<T,Dynamic,Dynamic> temp = b*b.transpose() + c*c.transpose(); 
+	T temp2 = cos(alpha)-1.; 
     bRa = Matrix<T,Dynamic,Dynamic>::Identity(D_,D_) + sin(alpha)*A + 
-      (cos(alpha)-1.)*(b*b.transpose() + c*c.transpose());
+      (temp2)*(temp);
   }
   return bRa;
 }

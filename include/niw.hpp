@@ -16,6 +16,7 @@
 using namespace Eigen;
 using std::endl;
 using std::cout;
+using std::vector;
 
 template<typename T>
 class NIW : public Distribution<T>
@@ -36,9 +37,13 @@ public:
 
   NIW<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
+  NIW<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
+    uint32_t k);
   NIW<T> posterior() const;
   void resetSufficientStatistics();
-  void getSufficientStatistics(const Matrix<T,Dynamic,Dynamic>& x, 
+  void getSufficientStatistics(const Matrix<T,Dynamic,Dynamic> &x, 
+    const VectorXu& z, uint32_t k);
+  void getSufficientStatistics(const vector<Matrix<T,Dynamic,Dynamic> > &x, 
     const VectorXu& z, uint32_t k);
   T logProb(const Matrix<T,Dynamic,Dynamic>& x_i) const;
   T logPosteriorProb(const Matrix<T,Dynamic,Dynamic>& x, VectorXu& z, uint32_t k, 

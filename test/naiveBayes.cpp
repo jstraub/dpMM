@@ -1,196 +1,167 @@
 #include <iostream>
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE dirMM test
-#include <boost/test/unit_test.hpp>
+
+#include <boost/program_options.hpp>
 
 #include "dirNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
-#include "niwSphere.hpp"
-#include "dirMMcld.hpp"
-#include "clSphereGpu.hpp"
-#include "distribution.hpp"
+#include "typedef.h"
+#include "timer.hpp"
 
-//BOOST_AUTO_TEST_CASE(niwBaseMeasure_test)
-//{
-  //MatrixXd Delta(3,3);
-  //Delta << 1.0,0.0,0.0,
-        //0.0,1.0,0.0,
-        //0.0,0.0,1.0;
-  //VectorXd theta(3);
-  //theta << 1.0,1.0,1.0;
-  //double nu = 100.0;
-  //double kappa = 100.0;
+namespace po = boost::program_options;
 
-  //boost::mt19937 rndGen(1);
-  //NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+int main(int argc, char **argv){
 
-  //NiwMarginalized<double> niwMargBase(niw);
+	
+  // Declare the supported options.
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help,h", "produce help message")
+	("K,K", po::value<int>(), "number of initial clusters ")
+	("T,T", po::value<int>(), "iterations")
+	("v,v", po::value<bool>(), "verbose output")
+    ("input,i", po::value<string>(), 
+      "path to input dataset .csv file (rows: dimensions; cols: different "
+      "datapoints)")
+    ("output,o", po::value<string>(), 
+      "path to output labels .csv file (rows: time; cols: different "
+      "datapoints)")
+    ;
 
-  //VectorXd x(3);
-  //x << 1.0,1.0,1.0;
-  //cout<< niwMargBase.logLikelihood(x)<< endl;
+    po::variables_map vm;
+	po::store(po::parse_command_line(argc, argv, desc), vm);
+	po::notify(vm);    
 
-  //NiwSampled<double> niwSampledBase(niw);
+	if (vm.count("help")) {
+		cout << desc << "\n";
+		return 1;
+	}
 
-  //x << 1.0,1.0,1.0;
-  //cout<< niwSampledBase.logLikelihood(x)<< endl;
-//};
+	uint K=2;
+	uint T=100;
+	uint N=100;
+	uint D=2;
+	uint M=2;
+	uint NumObs = 1; 
+	bool verbose = false; 
+	vector<uint> Mword; 
+	if (vm.count("K")) 
+		K = vm["K"].as<int>();
+	if (vm.count("T")) 
+		T = vm["T"].as<int>();
+	if (vm.count("v"))
+		verbose = vm["v"].as<bool>();
 
-BOOST_AUTO_TEST_CASE(dirNaiveBayes_test)
-{
+	string pathIn ="";
+	string pathOut ="";
+	if(vm.count("input")) 
+		pathIn = vm["input"].as<string>();
+	if(vm.count("output")) 
+		pathOut= vm["output"].as<string>();
+	
+	vector< Matrix<double, Dynamic, Dynamic> > x;
+	x.reserve(N);
+	if (!pathIn.compare(""))
+	{
+		cout<<"making some data up " <<endl;
+		uint Ndoc=M;
+		uint Nword=int(N/M); 
+		for(uint i=0; i<Ndoc; ++i) {
+			MatrixXd  xdoc(D,Nword);  
+			for(uint w=0; w<Nword; ++w) {
+				if(i<Ndoc/2)
+					xdoc.col(w) <<  VectorXd::Zero(D);
+				else
+					xdoc.col(w) <<  2.0*VectorXd::Ones(D);
+			}
 
-  double nu = 4.0;
-  double kappa = 4.0;
-  MatrixXd Delta(3,3);
-  Delta << .1,0.0,0.0,
-        0.0,.1,0.0,
-        0.0,0.0,.1;
-  Delta *= nu;
-  VectorXd theta(3);
-  theta << 0.0,0.0,0.0;
+			x.push_back(xdoc); 
+		}
+	}else{
 
-  boost::mt19937 rndGen(9191);
-  NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+		cout<<"loading data from "<<pathIn<<endl;
+		ifstream fin(pathIn.data(),ifstream::in);
+		
+		//read parameters from file (tired of passing them in)
+		fin>>NumObs; 
+		fin>>N;
+		fin>>M;
+		fin>>D; 
 
-  boost::shared_ptr<NiwMarginalized<double> > niwMargBase(
-      new NiwMarginalized<double>(niw));
-  VectorXd alpha(2);
-  alpha << 10.,10.;
-  Dir<Catd,double> dir(alpha,&rndGen); 
+		MatrixXd data(D,N);
+		VectorXu words(M);
+
+		for (uint j=0; j<M; ++j) 
+			fin>>words(j); 
+		
+		for (uint j=1; j<(D+1); ++j) 
+			for (uint i=0; i<N; ++i) 
+				fin>>data(j-1,i);
+		
+		uint count = 0;
+		for (uint j=0; j<M; ++j)
+		{
+			x.push_back(data.middleCols(count,words[j]));
+			count+=words[j];
+		}
+		fin.close();
+	}
+
+	
+	double nu = D+1;
+	double kappa = D+1;
+	MatrixXd Delta = 0.1*MatrixXd::Identity(D,D);
+	Delta *= nu;
+	VectorXd theta = VectorXd::Zero(D);
+	VectorXd alpha = 10.0*VectorXd::Ones(K);
+
+	boost::mt19937 rndGen(9191);
+	NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+
+	Dir<Catd,double> dir(alpha,&rndGen); 
 
   
-  uint32_t N=20;
-  MatrixXd x(3,N);
-  for(uint32_t i=0; i<N; ++i)
-    if(i<N/2)
-      x.col(i) << 0.0,0.0,0.0;
-    else
-      x.col(i) << 10.0,10.0,10.0;
+	//cout<<"------ marginalized ---- NIW "<<endl;
+	//DirNaiveBayes<double> naive_marg(dir,niwMargBase);
+	//naive_marg.initialize(x);
+	//cout<<naive_marg.labels().transpose()<<endl;
+	//for(uint t=0; t<30; ++t)
+	//{
+	//naive_marg.sampleLabels();
+	//naive_marg.sampleParameters();
+	//cout<<naive_marg.labels().transpose()
+		//<<" logJoint="<<naive_marg.logJoint()<<endl;
+	//}
+	Timer tlocal;
+	tlocal.tic();
 
-
-  //cout<<"------ marginalized ---- NIW "<<endl;
-  //DirNaiveBayes<double> naive_marg(dir,niwMargBase);
-  //naive_marg.initialize(x);
-  //cout<<naive_marg.labels().transpose()<<endl;
-  //for(uint32_t t=0; t<30; ++t)
-  //{
-    //naive_marg.sampleLabels();
-    //naive_marg.sampleParameters();
-    //cout<<naive_marg.labels().transpose()
-      //<<" logJoint="<<naive_marg.logJoint()<<endl;
-  //}
-
-  boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
-  DirNaiveBayes<double> naive_samp(dir,niwSampled);
+	boost::shared_ptr<NiwSampled<double> > niwSampled( new NiwSampled<double>(niw));
+	DirNaiveBayes<double> naive_samp(dir,niwSampled);
   
-  naive_samp.initialize(x);
-  naive_samp.inferAll(30,true);
+	cout << "naiveBayesian Clustering:" << endl; 
+	cout << "Ndocs=" << M << endl; 
+	cout << "Ndata=" << N << endl; 
+	cout << "dim=" << D << endl;
+	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
+
+	naive_samp.initialize( (const vector< Matrix<double, Dynamic, Dynamic> >) x );
+	naive_samp.inferAll(T,verbose);
+
+
+	if (pathOut.compare(""))
+	{
+		ofstream fout(pathOut.data(),ofstream::out);
+		
+		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
+
+			naive_samp.dump(fout,fout);
+
+		std::cout.rdbuf(coutbuf); //reset to standard output again
+
+		fout.close();
+	}
+
+	tlocal.displayElapsedTimeAuto();
+	return(0); 
+	
 };
-
-
-//BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
-//{
-
-  //double nu = 20.0;
-  //MatrixXd Delta(2,2);
-  //Delta << .01,0.0,
-        //0.0,.01;
-  //Delta *= nu;
-
-  //boost::mt19937 rndGen(9191);
-  //IW<double> iw(Delta,nu,&rndGen);
-  //boost::shared_ptr<NiwSphere<double> > niwSp( new NiwSphere<double>(iw,&rndGen));
-
-  //VectorXd alpha(2);
-  //alpha << 10.,10.;
-  //Dir<Catd,double> dir(alpha,&rndGen); 
-  //DirMM<double> dirGMM_sp(dir,niwSp);
-  
-  //uint32_t N=20;
-  //uint32_t K=2;
-  //MatrixXd x(3,N);
-  //sampleClustersOnSphere<double>(x, K);
-  //dirGMM_sp.initialize(x);
-  //cout<<"------ sampling -- NIW sphere"<<endl;
-  //cout<<dirGMM_sp.labels().transpose()<<endl;
-  //for(uint32_t t=0; t<10; ++t)
-  //{
-    //dirGMM_sp.sampleLabels();
-    //dirGMM_sp.sampleParameters();
-    //cout<<dirGMM_sp.labels().transpose()
-      //<<" logJoint="<<dirGMM_sp.logJoint()<<endl;
-  //}
-  //MatrixXd logLikes;
-  //MatrixXu inds = dirGMM_sp.mostLikelyInds(5,logLikes);
-  //cout<<"most likely indices"<<endl;
-  //cout<<inds<<endl;
-  //cout<<"----------------------------------------"<<endl;
-//};
-
-//typedef double myFlt;
-
-//BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
-//{
-
-  //uint32_t N=30; //640*480;
-  //uint32_t K=6;
-  //uint32_t D=3;
-  //boost::mt19937 rndGen(9191);
-  //// sample datapoints
-  //boost::shared_ptr<Matrix<myFlt,Dynamic,Dynamic> > sx(new 
-      //Matrix<myFlt,Dynamic,Dynamic>(D,N));
-  //Matrix<myFlt,Dynamic,Dynamic> mus =  sampleClustersOnSphere(*sx, 3);
-
-  //// alpha
-  //Matrix<myFlt,Dynamic,1> alpha(K);
-  //alpha << 1.,1.,.1,.1,.1,.1;
-  //alpha *= 1;
-  
-  //// niw
-  //double nu = (1.0)+D+N/100.;
-  //Matrix<myFlt,Dynamic,Dynamic> Delta(2,2);
-  //Delta << .01,0.0,
-        //0.0,.01;
-  //Delta *= nu;
-
-  //IW<myFlt> iw(Delta,nu,&rndGen);
-  //boost::shared_ptr<NiwSphere<myFlt> > niwSp( new NiwSphere<myFlt>(iw,&rndGen));
-////  boost::shared_ptr<NiwSphere<double> > niwSp2( new NiwSphere<double>(iw,&rndGen));
-
-  //Dir<Cat<myFlt>, myFlt> dir(alpha,&rndGen); 
-  //DirMMcld<NiwSphere<myFlt>,myFlt> dirGMM_sp(dir,niwSp);
-
-////  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
-
-  //boost::shared_ptr<ClSphereGpu<myFlt> > clsp(
-      //new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
-
-  //Matrix<myFlt,Dynamic,1> mu(D);
-  //mu<<0.0,0.0,1.0;
-  //Matrix<myFlt,Dynamic,Dynamic> Sigma = Matrix<myFlt,Dynamic,Dynamic>::Identity(D,D);
-
-  //dirGMM_sp.initialize(clsp);
-////  dirGMM_cpu.initialize(*sx);
-  //cout<<"------ sampling -- NIW sphere"<<endl;
-  //cout<<counts<myFlt,uint32_t>(dirGMM_sp.labels(),K).transpose()<<endl;
-  //Timer t;
-  //for(uint32_t i=0; i<5; ++i)
-  //{
-////    t.tic();
-////    dirGMM_cpu.sampleLabels();
-////    dirGMM_cpu.sampleParameters();
-////    cout<<dirGMM_cpu.labels().transpose()<<endl;
-////    t.toctic(" -----------------CPU------------------- fullIteration");
-    //t.tic();
-    //dirGMM_sp.sampleLabels();
-    //dirGMM_sp.sampleParameters();
-    //cout<<dirGMM_sp.z().transpose()<<endl;
-    //cout<<dirGMM_sp.counts().transpose()<<endl;
-    //cout<<dirGMM_sp.means()<<endl;
-    //t.toctic(" -----------------GPU------------------- fullIteration");
-////        <<" logJoint="<<dirGMM_sp.logJoint()<<endl;
-  //}
-  //cout<<"true mus: "<<endl;
-  //cout <<mus<<endl;
-//};
-

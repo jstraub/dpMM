@@ -22,6 +22,8 @@ public:
   DirSampled(const Dir<Disc,T>& dir);
   ~DirSampled();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(DIR_SAMPLED); }
+
   virtual BaseMeasure<T>* copy();
   virtual DirSampled<Disc,T>* copyNative();
 
@@ -41,6 +43,7 @@ public:
   void fromMerge(const DirSampled<Disc,T>& dirA, const DirSampled<Disc,T>& dirB);
 
   void print() const;
+  virtual uint32_t getDim() const {return(dir0_.alpha_.size());};
 
 //  const Matrix<T,Dynamic,Dynamic>& scatter() const {return dir0_.scatter();};
 //  const Matrix<T,Dynamic,1>& mean() const {return dir0_.mean();};

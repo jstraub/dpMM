@@ -32,6 +32,8 @@ public:
   NiwTangent(const NIW<T>& niw, boost::mt19937* pRndGen);
   ~NiwTangent();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_TANGENT); }
+
   virtual BaseMeasure<T>* copy();
   virtual NiwTangent<T>* copyNative();
 
@@ -81,7 +83,7 @@ public:
   T sumAngleSq_; // \sum theta_{q_i \mu}^2
 
   Matrix<T,Dynamic,Dynamic> scatterCorrection1(const Matrix<T,Dynamic,1>& p) const;
-
+  virtual uint32_t getDim() const {return(normalS_.D_);};
 private:
 
   void computeMergedSS( const NiwTangent<T>& niwA, 

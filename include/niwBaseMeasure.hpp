@@ -18,6 +18,8 @@ public:
   NiwMarginalized(const NIW<T>& niw);
   ~NiwMarginalized();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_MARGINALIZED); }
+
   virtual BaseMeasure<T>* copy();
 
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
@@ -28,6 +30,7 @@ public:
   T logPdfUnderPrior() const;
 
   void print() const ;
+  virtual uint32_t getDim() const {return(uint32_t(niw_.D_));}; 
 };
 
 /*
@@ -41,8 +44,11 @@ public:
   Normal<T> normal_;
 
   NiwSampled(const NIW<T>& niw);
+  NiwSampled(const NIW<T>& niw, const Normal<T> &normal);
   ~NiwSampled();
 
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SAMPLED); }
+  
   virtual BaseMeasure<T>* copy();
   virtual NiwSampled<T>* copyNative();
 
@@ -51,7 +57,8 @@ public:
     {return logLikelihood(x.col(i));};
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-
+  void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
+    uint32_t k);
   void sample();
 
   T logPdfUnderPrior() const;
@@ -62,6 +69,7 @@ public:
   void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
 
   void print() const;
+  virtual uint32_t getDim() const {return(uint32_t(normal_.D_));}; 
 
   const Matrix<T,Dynamic,Dynamic>& scatter() const {return niw0_.scatter();};
   const Matrix<T,Dynamic,1>& mean() const {return niw0_.mean();};
@@ -84,6 +92,11 @@ template<typename T>
 NiwSampled<T>::NiwSampled(const NIW<T>& niw)
   : niw0_(niw), normal_(niw0_.sample())
 {};
+
+template<typename T>
+NiwSampled<T>::NiwSampled(const NIW<T>& niw, const Normal<T> &normal)
+ : niw0_(niw), normal_(normal)
+{}; 
 
 template<typename T>
 NiwSampled<T>::~NiwSampled()
@@ -115,12 +128,20 @@ T NiwSampled<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
   return logLike;
 };
 
+
 template<typename T>
 void NiwSampled<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k)
 {
   normal_ = niw0_.posterior(x,z,k).sample();
 };
+
+template<typename T>
+void NiwSampled<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, 
+	const VectorXu& z, uint32_t k) 
+{
+	normal_ = niw0_.posterior(x,z,k).sample();
+}
 
 template<typename T>
 T NiwSampled<T>::logPdfUnderPrior() const

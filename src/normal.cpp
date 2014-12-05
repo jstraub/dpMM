@@ -48,7 +48,7 @@ Normal<T>::Normal(uint32_t D, boost::mt19937 *pRndGen)
 
 template<typename T>
 Normal<T>::Normal(const Normal<T>& other)
-  : Distribution<T>(other.pRndGen_),D_(mu_.size()), mu_(other.mu_), 
+  : Distribution<T>(other.pRndGen_),mu_(other.mu_), D_(other.mu_.size()),  
   Sigma_(other.Sigma_), logDetSigma_(other.logDetSigma_), SigmaLDLT_(Sigma_)
 {};
 

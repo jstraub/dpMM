@@ -24,11 +24,11 @@ class DirNaiveBayes : public DpMM<T>{
 
 public:
   DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const boost::shared_ptr<BaseMeasure<T> >& theta);
-  DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >& thetas);
+  DirNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >&thetas);
   virtual ~DirNaiveBayes();
 
-  virtual void initialize(const vector< vector<T> > &x);
-  virtual void initialize(const boost::shared_ptr<ClData<T> >& cld)
+  virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >&x);
+  virtual void initialize(const boost::shared_ptr<ClData<T> >&cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();
@@ -45,6 +45,7 @@ public:
   Matrix<T,Dynamic,1> getCounts();
 
   virtual void inferAll(uint32_t nIter, bool verbose=false);
+  virtual void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs); 
 
 protected: 
   uint32_t K_;
@@ -59,7 +60,7 @@ protected:
 //  Cat cat_;
   vector<boost::shared_ptr<BaseMeasure<T> > > thetas_;
 
-  vector<vector<T> > x_;
+  vector<Matrix<T,Dynamic,Dynamic> > x_;
   VectorXu z_;
 };
 
@@ -99,7 +100,7 @@ Matrix<T,Dynamic,1> DirNaiveBayes<T>::getCounts()
 
 
 template<typename T>
-void DirNaiveBayes<T>::initialize(const vector< vector<T> > &x)
+void DirNaiveBayes<T>::initialize(const vector< Matrix<T,Dynamic,Dynamic> > &x)
 {
   cout<<"init"<<endl;
   x_ = x;
@@ -112,13 +113,13 @@ void DirNaiveBayes<T>::initialize(const vector< vector<T> > &x)
 
   pdfs_.setZero(x.size(),K_);
 #ifdef CUDA
-  sampler_ = new SamplerGpu<T>(x.size(),K_,dir_.pRndGen_);
+  sampler_ = new SamplerGpu<T>(uint32_t(x.size()),K_,dir_.pRndGen_);
 #else 
   sampler_ = new Sampler<T>(dir_.pRndGen_);
 #endif
 
 #pragma omp parallel for
-  for(uint32_t k=0; k<K_; ++k)
+  for(int32_t k=0; k<int32_t(K_); ++k)
     thetas_[k]->posterior(x_,z_,k);
 };
 
@@ -130,7 +131,7 @@ void DirNaiveBayes<T>::sampleLabels()
 //  cout<<pi_.pdf().transpose()<<endl;
   
 #pragma omp parallel for
-  for(uint32_t i=0; i<z_.size(); ++i)
+  for(int32_t i=0; i<z_.size(); ++i)
   {
     //TODO: could buffer this better
     // compute categorical distribution over label z_i
@@ -138,7 +139,10 @@ void DirNaiveBayes<T>::sampleLabels()
     for(uint32_t k=0; k<K_; ++k)
     {
 //      cout<<thetas_[k].logLikelihood(x_.col(i))<<" ";
-      logPdf_z[k] += thetas_[k]->logLikelihood(x_.col(i));
+		for(uint32_t w=0; w<x_[i].cols(); ++w)
+		{
+			logPdf_z[k] += thetas_[k]->logLikelihood(x_[i],w);
+		}
     }
 //    cout<<endl;
     // make pdf sum to 1. and exponentiate
@@ -156,7 +160,7 @@ template<typename T>
 void DirNaiveBayes<T>::sampleParameters()
 {
 #pragma omp parallel for 
-  for(uint32_t k=0; k<K_; ++k)
+  for(int32_t k=0; k<int32_t(K_); ++k)
   {
     thetas_[k]->posterior(x_,z_,k);
 //    cout<<"k:"<<k<<endl;
@@ -173,14 +177,15 @@ T DirNaiveBayes<T>::logJoint(bool verbose)
   	cout<<"log p(pi)="<<logJoint<<" -> ";
 
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<int32_t(K_); ++k)
     logJoint = logJoint + thetas_[k]->logPdfUnderPrior();
 	if(verbose)
 		cout<<"log p(pi)*p(theta)="<<logJoint<<" -> ";
 
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t i=0; i<z_.size(); ++i)
-    logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_.col(i));
+  for (int32_t i=0; i<z_.size(); ++i)
+	  for(int32_t w=0; w<x_[i].cols(); ++w)
+		logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_[i],w);
   if(verbose)
   	cout<<"log p(phi)*p(theta)*p(x|z,theta)="<<logJoint<<"]"<<endl;
   
@@ -196,12 +201,12 @@ MatrixXu DirNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>&
   logLikes *= -99999.0;
   
 #pragma omp parallel for 
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<int32_t(K_); ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
       {
-        T logLike = thetas_[z_[i]]->logLikelihood(x_.col(i));
+        T logLike = thetas_[z_[i]]->logLikelihood(x_[i]);
         for (uint32_t j=0; j<n; ++j)
           if(logLikes(j,k) < logLike)
           {
@@ -246,4 +251,26 @@ void DirNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
       	<< " [joint= " << std::setw(6) << this->logJoint(false) << "]"<< endl;
     }
   }
+}
+
+
+template <typename T>
+void DirNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
+{
+	cout << "dumping naiveBayes" << endl; 
+	cout << "doc index: " << endl;  
+	cout << this->labels().transpose() << endl; 
+
+	cout << "printing cluster params: " << endl; 
+	cout << K_ << endl;
+	for(uint32_t k=0; k<K_; ++k)
+	{
+		cout << "theta: " << k << endl;
+		thetas_[k]->print();
+	}
+
+	cout << "printing mixture params: " << endl;
+	pi_.print();
+
+
 }
