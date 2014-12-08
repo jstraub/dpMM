@@ -300,6 +300,7 @@ if( COMPILE_TEST )
 	  ./cuda/sphereMixturePdf_kernel.cu
 	  ./cuda/karcherMeans_kernel.cu
 	  ./cuda/sufficientStatistics_kernel.cu
+	  ./cuda/gmmPdf_kernel.cu
 	)
 	target_link_libraries(testClData
 	${Boost_LIBRARIES}
