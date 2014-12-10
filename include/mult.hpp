@@ -13,6 +13,10 @@ using namespace Eigen;
 using std::cout;
 using std::endl;
 
+#ifdef WIN32
+	using boost::math::lgamma; 
+#endif
+
 template<typename T>
 class Mult : public Distribution<T>
 {

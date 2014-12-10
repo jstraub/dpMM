@@ -22,6 +22,10 @@ using boost::gamma_distribution;
 using boost::random::gamma_distribution;
 #endif
 
+#ifdef WIN32
+	using boost::math::lgamma; 
+#endif
+
 template<class Disc, typename T>
 class Dir : public Distribution<T>
 {
