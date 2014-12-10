@@ -117,7 +117,7 @@ int main(int argc, char **argv){
 
 	}else{
 		cout<<"loading data from "<<pathIn<<endl;
-		ifstream fin(pathIn.data(),ifstream::in);
+		std::ifstream fin(pathIn.data(),std::ifstream::in);
 
 		if (!fin.good()) {
 			cout << "could not open file...returning" << endl;
@@ -183,7 +183,7 @@ int main(int argc, char **argv){
 	
 	if(paramsF.compare("")){
 		//initialize from file 
-		ifstream fin(paramsF.data(),ifstream::in);
+		std::ifstream fin(paramsF.data(),std::ifstream::in);
 			naive_samp = new DirMultiNaiveBayes<double>(fin,&rndGen);
 			naive_samp->loadData(x); 
 		fin.close();
@@ -297,7 +297,7 @@ int main(int argc, char **argv){
 
 	if (pathOut.compare(""))
 	{
-		ofstream fout(pathOut.data(),ofstream::out);
+		std::ofstream fout(pathOut.data(),std::ofstream::out);
 		
 		//streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
 		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer

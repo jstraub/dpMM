@@ -8,7 +8,7 @@
 #include "normalSphere.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::string; 
 
 namespace po = boost::program_options;
 
@@ -83,8 +83,8 @@ int main(int argc, char** argv)
       return 0;
     }
 
-  ofstream fout;
-  fout.open((pathOut+".csv").data(),ofstream::out);
+  std::ofstream fout;
+  fout.open((pathOut+".csv").data(),std::ofstream::out);
   for(uint32_t d=0; d<D; ++d)
   {
     for(uint32_t i=0; i<N-1; ++i)
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     fout<<x(d,N-1)<<endl;
   }
   fout.close();
-  fout.open((pathOut+"_gt.lbl").data(),ofstream::out);
+  fout.open((pathOut+"_gt.lbl").data(),std::ofstream::out);
     for(uint32_t i=0; i<N-1; ++i)
       fout<<z(i)<<" ";
     fout<<z(N-1)<<endl;

@@ -10,7 +10,7 @@
 #include "niwSphere.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::string;
 namespace po = boost::program_options;
 
 int main(int argc, char **argv)
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
       }
   }else{
     cout<<"loading data from "<<pathIn<<endl;
-    ifstream fin(pathIn.data(),ifstream::in);
+    std::ifstream fin(pathIn.data(),std::ifstream::in);
     for (uint32_t j=0; j<D; ++j)
       for (uint32_t i=0; i<N; ++i)
       {
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   cout<<"-- init"<<endl;
   dpmm->initialize();
 
-  ofstream fout(pathOut.data(),ofstream::out);
+  std::ofstream fout(pathOut.data(),std::ofstream::out);
   for (uint32_t t=0; t<T; ++t)
   {
     cout<<"------------ t="<<t<<" -------------"<<endl;

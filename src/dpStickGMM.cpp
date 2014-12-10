@@ -20,7 +20,9 @@
 #include "timer.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::string; 
+using std::ofstream; 
+using std::ifstream; 
 namespace po = boost::program_options;
 
 typedef double flt;

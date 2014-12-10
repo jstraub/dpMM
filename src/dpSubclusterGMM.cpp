@@ -9,7 +9,9 @@
 #include "dpSubclustersMM.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::string;
+using std::ofstream; 
+using std::ifstream; 
 namespace po = boost::program_options;
 
 int main(int argc, char **argv)

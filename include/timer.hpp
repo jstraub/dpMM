@@ -10,7 +10,12 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+using std::cout; 
+using std::cerr;
+using std::setw;
+using std::setfill;
+using std::endl;
+using std::string;
 
 #ifdef WIN32
 	
@@ -334,7 +339,7 @@ using namespace std;
 
 
 
-	inline ostream& operator<<(ostream &out, const Timer& t)
+	inline std::ostream& operator<<(std::ostream &out, const Timer& t)
 	{
 	  out << t.lastDt() << "ms";
 	  return out;

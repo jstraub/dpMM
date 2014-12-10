@@ -79,7 +79,7 @@ int main(int argc, char **argv){
 	}else{
 
 		cout<<"loading data from "<<pathIn<<endl;
-		ifstream fin(pathIn.data(),ifstream::in);
+		std::ifstream fin(pathIn.data(),std::ifstream::in);
 		
 		//read parameters from file (tired of passing them in)
 		fin>>NumObs; 
@@ -149,9 +149,9 @@ int main(int argc, char **argv){
 
 	if (pathOut.compare(""))
 	{
-		ofstream fout(pathOut.data(),ofstream::out);
+		std::ofstream fout(pathOut.data(),std::ofstream::out);
 		
-		streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
+		std::streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
 		cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
 
 			naive_samp.dump(fout,fout);

@@ -8,7 +8,7 @@
 #include "dirBaseMeasure.hpp"
 
 using namespace Eigen;
-using namespace std;
+using std::string; 
 namespace po = boost::program_options;
 
 typedef double flt;
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
     cout<<x<<endl;
   }else{
     cout<<"loading data from "<<pathIn<<endl;
-    ifstream fin(pathIn.data(),ifstream::in);
+    std::ifstream fin(pathIn.data(),std::ifstream::in);
     for (uint32_t j=0; j<D; ++j)
       for (uint32_t i=0; i<N; ++i)
         fin>>x(j,i);
@@ -160,10 +160,10 @@ int main(int argc, char **argv)
   assert(dpmm!=NULL);
   dpmm->initialize(x);
 
-  ofstream fout(pathOut.data(),ofstream::out);
-  ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
-  ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
-  ofstream foutCovs((pathOut+"_covs.csv").data(),ofstream::out);
+  std::ofstream fout(pathOut.data(),std::ofstream::out);
+  std::ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),std::ofstream::out);
+  std::ofstream foutMeans((pathOut+"_means.csv").data(),std::ofstream::out);
+  std::ofstream foutCovs((pathOut+"_covs.csv").data(),std::ofstream::out);
 
   const VectorXu& z = dpmm->getLabels().transpose();
   for (uint32_t i=0; i<z.size()-1; ++i) 
@@ -212,10 +212,10 @@ int main(int argc, char **argv)
   cout<<inds<<endl;
   cout<<"----------------------------------------"<<endl;
 
-  fout.open((pathOut+"mlInds.csv").data(),ofstream::out);
+  fout.open((pathOut+"mlInds.csv").data(),std::ofstream::out);
   fout<<inds<<endl;
   fout.close();
-  fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
+  fout.open((pathOut+"mlLogLikes.csv").data(),std::ofstream::out);
   fout<<logLikes<<endl;
   fout.close();
 };
