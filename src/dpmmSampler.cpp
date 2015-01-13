@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 
-#include "dpSubclusterSphereMMnew.hpp"
+#include "dpSubclusterMM.hpp"
 #include "dpmmSampler.hpp"
 #include "dirMM.hpp"
 #include "dirMMcld.hpp"

@@ -4,7 +4,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 
-#include "dpSubclusterSphereMMnew.hpp"
+#include "dpSubclusterMM.hpp"
 #include "dirBaseMeasure.hpp"
 
 using namespace Eigen;

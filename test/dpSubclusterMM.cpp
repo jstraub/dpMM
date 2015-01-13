@@ -11,7 +11,7 @@
 #include "niwSphereFull.hpp"
 #include "distribution.hpp"
 #include "normalSphere.hpp"
-#include "dpSubclusterSphereMMnew.hpp"
+#include "dpSubclusterMM.hpp"
 
 #include <Eigen/Dense>
 

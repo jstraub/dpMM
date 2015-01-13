@@ -95,16 +95,6 @@ private:
 
   Matrix<T,Dynamic,1> meanKarch_;
 
-  Matrix<T,Dynamic,Dynamic> qqTSum_; // \sum q_i q_i^T
-  Matrix<T,Dynamic,Dynamic> qqTAngSum_; // \sum q_i q_i^T * theta_{q_i \mu}
-  Matrix<T,Dynamic,Dynamic> qqTAngSqSum_; // \sum q_i q_i^T * theta_{q_i \mu}^2
-  Matrix<T,Dynamic,1> qSum_; // \sum q_i
-  Matrix<T,Dynamic,1> qSumAngle_; // \sum q_i* theta_{q_i \mu}
-  Matrix<T,Dynamic,1> qSumAngleSq_; // \sum q_i* theta_{q_i \mu}^2
-  T sumAngle_; // \sum theta_{q_i \mu}
-  T sumAngleSq_; // \sum theta_{q_i \mu}^2
-
-  Matrix<T,Dynamic,Dynamic> scatterCorrection1(const Matrix<T,Dynamic,1>& p) const;
 };
 
 typedef NiwSphereFull<double> NiwSphereFulld;
