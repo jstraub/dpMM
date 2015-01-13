@@ -9,7 +9,7 @@
 #include "cat.hpp"
 #include "niwSphere.hpp"
 #include "niwSphereFull.hpp"
-#include "niwTangent.hpp"
+//#include "niwTangent.hpp"
 
 using namespace Eigen;
 using std::cout;
@@ -226,23 +226,23 @@ void LrCluster<NiwSphereFull<double> ,double>::posterior(
   posteriorSticks();
 }
 
-template<>
-void LrCluster<NiwTangent<double> ,double>::posterior(
-    const Matrix<double,Dynamic,Dynamic>& x, const VectorXu& z, uint32_t k)
-{
-//  cout<<"::posterior posteriorFromPtsInTpS"<<endl;
-  /* assumes that x is already correctly in T_northS */
-  thetaL_->posteriorFromPtsInTpS(x,z,k);
-  thetaR_->posteriorFromPtsInTpS(x,z,k+1);
-  // TODO: make sure that from merge works well if both L and R have exactly 
-  // the same linearization point
-  theta_->fromMerge(*thetaL_,*thetaR_);
-
-//  thetaL_->sample();
-//  thetaR_->sample();
-//  theta_->sample();
-  posteriorSticks();
-}
+//template<>
+//void LrCluster<NiwTangent<double> ,double>::posterior(
+//    const Matrix<double,Dynamic,Dynamic>& x, const VectorXu& z, uint32_t k)
+//{
+////  cout<<"::posterior posteriorFromPtsInTpS"<<endl;
+//  /* assumes that x is already correctly in T_northS */
+//  thetaL_->posteriorFromPtsInTpS(x,z,k);
+//  thetaR_->posteriorFromPtsInTpS(x,z,k+1);
+//  // TODO: make sure that from merge works well if both L and R have exactly 
+//  // the same linearization point
+//  theta_->fromMerge(*thetaL_,*thetaR_);
+//
+////  thetaL_->sample();
+////  thetaR_->sample();
+////  theta_->sample();
+//  posteriorSticks();
+//}
 
 template<>
 void LrCluster<NiwSphere<float> , float>::posterior(

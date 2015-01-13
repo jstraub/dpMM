@@ -150,7 +150,7 @@ cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
   ./src/dir.cpp
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
-  ./src/niwTangent.cpp
+#  ./src/niwTangent.cpp
   ./src/sphere.cpp
   ./src/sampler.cpp
   ./cuda/choiceMult_kernel.cu
@@ -172,7 +172,7 @@ cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
   ./src/normal.cpp
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
-  ./src/niwTangent.cpp
+#  ./src/niwTangent.cpp
   ./src/sphere.cpp
   ./src/sampler.cpp
 #  ./src/gpuMatrix.cpp
@@ -332,7 +332,7 @@ if( COMPILE_TEST )
 		./src/normal.cpp
 		./src/niwSphere.cpp
 		./src/niwSphereFull.cpp
-		./src/niwTangent.cpp
+#		./src/niwTangent.cpp
 		./src/sphere.cpp
 	  ./src/sampler.cpp
 	  ./src/gpuMatrix.cpp

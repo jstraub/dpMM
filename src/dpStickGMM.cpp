@@ -11,7 +11,7 @@
 #include "clSphereGpu.hpp"
 #include "niwSphere.hpp"
 #include "niwSphereFull.hpp"
-#include "niwTangent.hpp"
+//#include "niwTangent.hpp"
 #include "niwBaseMeasure.hpp"
 #include "unifSphere.hpp"
 #include "sphericalKMeans.hpp"
@@ -309,48 +309,48 @@ int main(int argc, char **argv)
     dpmm = new DpSubclusterMM<NiwSphereFulld,double>(alpha(0), lrTheta, 
         K, &rndGen);
 
-  }else if(!base.compare("DpNiwTangent")){
-    cout<<"D="<<D<<endl;
-    MatrixXd Delta(D-1,D-1);
-    double nu = 10.0;
-    //    Delta << nu,0.0,0.0,nu;
-    //    theta << 0.0,0.0;
-    if(vm.count("params"))
-    {
-      vector<double> params = vm["params"].as< vector<double> >();
-      cout<<"params length="<<params.size()<<" D="<<D<<endl;
-      nu = params[0];
-#pragma omp parallel for
-      for(uint32_t i=0; i<D-1; ++i)
-        for(uint32_t j=0; j<D-1; ++j)
-          Delta(i,j) = params[1+i+(D-1)*j];
-      if (D<30){
-        cout <<"nu="<<nu<<endl;
-        cout <<"Delta="<<Delta<<endl;
-      }
-    }else if(vm.count("brief"))
-    {
-      vector<double> params = vm["brief"].as< vector<double> >();
-      nu = params[0];
-      Delta = params[1]*MatrixXd::Identity(D-1,D-1);
-      cout <<"nu="<<nu<<endl;
-      cout <<"Delta="<<params[1]<<"I_"<<(D-1)<<endl;
-      if (D<30){
-        cout <<"nu="<<nu<<endl;
-        cout <<"Delta="<<Delta<<endl;
-      }
-    }
-    VectorXd mu(D-1); mu.setZero();
-    double kappa = .01;
-    cout<<"theta = "<<mu.transpose()<<endl;
-    cout<<"kappa = "<<kappa<<endl;
-    NIWd niw(Delta, mu, nu, kappa, &rndGen);
-    shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
-    shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
-      LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
-    dpmm = new DpSubclusterMM<NiwTangentd,double>(alpha(0), lrTheta, 
-        K, &rndGen);
-
+//  }else if(!base.compare("DpNiwTangent")){
+//    cout<<"D="<<D<<endl;
+//    MatrixXd Delta(D-1,D-1);
+//    double nu = 10.0;
+//    //    Delta << nu,0.0,0.0,nu;
+//    //    theta << 0.0,0.0;
+//    if(vm.count("params"))
+//    {
+//      vector<double> params = vm["params"].as< vector<double> >();
+//      cout<<"params length="<<params.size()<<" D="<<D<<endl;
+//      nu = params[0];
+//#pragma omp parallel for
+//      for(uint32_t i=0; i<D-1; ++i)
+//        for(uint32_t j=0; j<D-1; ++j)
+//          Delta(i,j) = params[1+i+(D-1)*j];
+//      if (D<30){
+//        cout <<"nu="<<nu<<endl;
+//        cout <<"Delta="<<Delta<<endl;
+//      }
+//    }else if(vm.count("brief"))
+//    {
+//      vector<double> params = vm["brief"].as< vector<double> >();
+//      nu = params[0];
+//      Delta = params[1]*MatrixXd::Identity(D-1,D-1);
+//      cout <<"nu="<<nu<<endl;
+//      cout <<"Delta="<<params[1]<<"I_"<<(D-1)<<endl;
+//      if (D<30){
+//        cout <<"nu="<<nu<<endl;
+//        cout <<"Delta="<<Delta<<endl;
+//      }
+//    }
+//    VectorXd mu(D-1); mu.setZero();
+//    double kappa = .01;
+//    cout<<"theta = "<<mu.transpose()<<endl;
+//    cout<<"kappa = "<<kappa<<endl;
+//    NIWd niw(Delta, mu, nu, kappa, &rndGen);
+//    shared_ptr<NiwTangentd> theta (new NiwTangentd(niw,&rndGen));
+//    shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
+//      LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
+//    dpmm = new DpSubclusterMM<NiwTangentd,double>(alpha(0), lrTheta, 
+//        K, &rndGen);
+//
   }else if(!base.compare("NiwSphereUnifNoise")){
 
     MatrixXd Delta(D-1,D-1);

@@ -250,63 +250,63 @@ BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwSphereFull_split_test)
   }
 }
 
-BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
-{
-  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
-  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
-  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
-  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
-
-  boost::mt19937 rndGen(91);
-  
-  uint32_t N=80;
-  uint32_t D=3;
-  uint32_t K=2;
-  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
-  cout<<"true mus:"<<endl<<sampleClustersOnSphere<double>(*spx, K)<<endl;
-  
-  uint32_t K0=1;
-  double alpha = 1.;
-  double nu = D+1.0;
-  double kappa = 1.0;
-  VectorXd mu(D-1); mu.setZero();
-  MatrixXd Delta(D-1,D-1);
-  Delta.setIdentity();
-  Delta *= nu*(1.*PI)/180.0;
-  cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
-
-  NIWd niw(Delta,mu,nu,kappa,&rndGen);
-  shared_ptr<NiwTangentd> theta(new NiwTangentd(niw,&rndGen));
-  shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
-    LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
-  DpSubclusterMM<NiwTangentd,double> dp(alpha, lrTheta, K0, &rndGen);
-   
-  dp.initialize(spx);
-  cout<<"z:  "<<dp.getLabels().transpose()<<endl;
-  uint32_t T=30;
-  for(uint32_t t=0; t<T; ++t)
-  {
-    cout<<" -------- sample params ("<<t<<")"<<endl;
-    dp.sampleParameters_();
-    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
-
-    cout<<" -------- sample labels ("<<t<<")"<<endl;
-    dp.sampleLabels();
-    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
-    cout<<"log Joint = "<<dp.logJoint()<<endl;
-
-    cout<<" -------- propose merges ("<<t<<")"<<endl;
-    dp.proposeMerges();
-    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
-   
-    cout<<" -------- propose splits ("<<t<<")"<<endl;
-    dp.proposeSplits();
-    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
-    for(uint32_t k=0; k<dp.getK(); ++k)
-      dp.get(k)->print();
-  }
-}
-
+//BOOST_AUTO_TEST_CASE(dpSubclusterMM_NiwTangent_split_test)
+//{
+//  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
+//  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
+//  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
+//  cout<<" ----------------- dpSubclusterMM_NiwTangent_split_test -------------"<<endl;
+//
+//  boost::mt19937 rndGen(91);
+//  
+//  uint32_t N=80;
+//  uint32_t D=3;
+//  uint32_t K=2;
+//  shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
+//  cout<<"true mus:"<<endl<<sampleClustersOnSphere<double>(*spx, K)<<endl;
+//  
+//  uint32_t K0=1;
+//  double alpha = 1.;
+//  double nu = D+1.0;
+//  double kappa = 1.0;
+//  VectorXd mu(D-1); mu.setZero();
+//  MatrixXd Delta(D-1,D-1);
+//  Delta.setIdentity();
+//  Delta *= nu*(1.*PI)/180.0;
+//  cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
+//
+//  NIWd niw(Delta,mu,nu,kappa,&rndGen);
+//  shared_ptr<NiwTangentd> theta(new NiwTangentd(niw,&rndGen));
+//  shared_ptr<LrCluster<NiwTangentd,double> > lrTheta(new 
+//    LrCluster<NiwTangentd,double>(theta,1.0,&rndGen));
+//  DpSubclusterMM<NiwTangentd,double> dp(alpha, lrTheta, K0, &rndGen);
+//   
+//  dp.initialize(spx);
+//  cout<<"z:  "<<dp.getLabels().transpose()<<endl;
+//  uint32_t T=30;
+//  for(uint32_t t=0; t<T; ++t)
+//  {
+//    cout<<" -------- sample params ("<<t<<")"<<endl;
+//    dp.sampleParameters_();
+//    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
+//
+//    cout<<" -------- sample labels ("<<t<<")"<<endl;
+//    dp.sampleLabels();
+//    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
+//    cout<<"log Joint = "<<dp.logJoint()<<endl;
+//
+//    cout<<" -------- propose merges ("<<t<<")"<<endl;
+//    dp.proposeMerges();
+//    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
+//   
+//    cout<<" -------- propose splits ("<<t<<")"<<endl;
+//    dp.proposeSplits();
+//    cout<<"z:  "<<dp.getLabels().transpose()<<endl;
+//    for(uint32_t k=0; k<dp.getK(); ++k)
+//      dp.get(k)->print();
+//  }
+//}
+//
 
 //BOOST_AUTO_TEST_CASE(dpSubclusterMM_niw_split_test)
 //{ 

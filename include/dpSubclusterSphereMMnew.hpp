@@ -343,34 +343,35 @@ void DpSubclusterMM<NiwSphereFulld, double>::relinearize(uint32_t k)
   S.rotate_p2north(pR,*spxMu_,*spx_,z_,2*k+1);
 }
 
-template <>
-void DpSubclusterMM<NiwTangentd, double>::relinearize(uint32_t k)
-{
-  if(spx_.get() == NULL)
-  {
-    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
-        new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
-        new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
-  }
-  assert(spx_.get() != NULL);
-  //TODO: find the karcher mean of both L and R at the same time (from union of 
-  // point sets).
-  // find karcher means  for left and right
-  Matrix<double,Dynamic,1> p = thetas_[k]->getUpper()->getMean();
-  p = karcherMean<double>(p,*spq_, *spxMu_, z_, k,100,2); 
-  cout<<"p upper "<<p.transpose()<<endl;
-  // set all means to the same value
-  thetas_[k]->getL()->setMean(p);
-  thetas_[k]->getR()->setMean(p);
-  thetas_[k]->getUpper()->setMean(p);
-  // linearize around the mean and rotate to tangent plane
-  Sphere<double> S(D_);
-  S.Log_p(p,*spq_,z_,2*k,*spxMu_);
-  S.Log_p(p,*spq_,z_,2*k+1,*spxMu_);
-  S.rotate_p2north(p,*spxMu_,*spx_,z_,2*k);
-  S.rotate_p2north(p,*spxMu_,*spx_,z_,2*k+1);
-}
+//template <>
+//void DpSubclusterMM<NiwTangentd, double>::relinearize(uint32_t k)
+//{
+//  if(spx_.get() == NULL)
+//  {
+//    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+//        new Matrix<double,Dynamic,Dynamic>(D_,N_));
+//    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+//        new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
+//  }
+//  assert(spx_.get() != NULL);
+//  //TODO: find the karcher mean of both L and R at the same time (from union of 
+//  // point sets).
+//  // find karcher means  for left and right
+//  Matrix<double,Dynamic,1> p = thetas_[k]->getUpper()->getMean();
+//  p = karcherMean<double>(p,*spq_, *spxMu_, z_, k,100,2); 
+//  cout<<"p upper "<<p.transpose()<<endl;
+//  // set all means to the same value
+//  thetas_[k]->getL()->setMean(p);
+//  thetas_[k]->getR()->setMean(p);
+//  thetas_[k]->getUpper()->setMean(p);
+//  // linearize around the mean and rotate to tangent plane
+//  Sphere<double> S(D_);
+//  S.Log_p(p,*spq_,z_,2*k,*spxMu_);
+//  S.Log_p(p,*spq_,z_,2*k+1,*spxMu_);
+//  S.rotate_p2north(p,*spxMu_,*spx_,z_,2*k);
+//  S.rotate_p2north(p,*spxMu_,*spx_,z_,2*k+1);
+//}
+
 template <>
 void DpSubclusterMM<NiwSphered, double>::relinearize()
 {
@@ -410,45 +411,45 @@ void DpSubclusterMM<NiwSphered, double>::relinearize()
   }
 }
 
-template <>
-void DpSubclusterMM<NiwTangentd, double>::relinearize()
-{
-  cout<<" ------ linearizing ----------"<<endl;
-  Sphere<double> S(D_);
-  if(spx_.get() == NULL)
-  {
-    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
-        new Matrix<double,Dynamic,Dynamic>(D_,N_));
-    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
-        new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
-  }
-//  Matrix<double,Dynamic,Dynamic> p0s(D_,2*K_);
-  Matrix<double,Dynamic,Dynamic> ps(D_,2*K_);
-
-  for(uint32_t k=0; k<K_; ++k)
-  {
-    ps.col(2*k)   = thetas_[k]->getL()->getMean();
-    ps.col(2*k+1) = thetas_[k]->getR()->getMean();
-  }
-#ifndef NDEBUG
-  cout<< ps<<endl;
-#endif
-//  ps = karcherMeanMultiple(p0s, *spq_, *spxMu_, z_, 2*K_, 100);
-//#ifndef NDEBUG
-//  for(uint32_t i=0; i<N_; ++i)
+//template <>
+//void DpSubclusterMM<NiwTangentd, double>::relinearize()
+//{
+//  cout<<" ------ linearizing ----------"<<endl;
+//  Sphere<double> S(D_);
+//  if(spx_.get() == NULL)
 //  {
-//    assert((ps.col(z_(i)).transpose() * spxMu_->col(i)).sum()<1e6);
+//    spxMu_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+//        new Matrix<double,Dynamic,Dynamic>(D_,N_));
+//    spx_ = shared_ptr<Matrix<double,Dynamic,Dynamic> >(
+//        new Matrix<double,Dynamic,Dynamic>(D_-1,N_));
 //  }
-//  cout<< ps<<endl;
-//#endif
-  S.rotate_p2north(ps, *spxMu_, *spx_, z_, 2*K_);
-  // only bring points to that 
+////  Matrix<double,Dynamic,Dynamic> p0s(D_,2*K_);
+//  Matrix<double,Dynamic,Dynamic> ps(D_,2*K_);
+//
 //  for(uint32_t k=0; k<K_; ++k)
 //  {
-//    thetas_[k]->getL()->setMean(ps.col(2*k));
-//    thetas_[k]->getR()->setMean(ps.col(2*k+1));
+//    ps.col(2*k)   = thetas_[k]->getL()->getMean();
+//    ps.col(2*k+1) = thetas_[k]->getR()->getMean();
 //  }
-}
+//#ifndef NDEBUG
+//  cout<< ps<<endl;
+//#endif
+////  ps = karcherMeanMultiple(p0s, *spq_, *spxMu_, z_, 2*K_, 100);
+////#ifndef NDEBUG
+////  for(uint32_t i=0; i<N_; ++i)
+////  {
+////    assert((ps.col(z_(i)).transpose() * spxMu_->col(i)).sum()<1e6);
+////  }
+////  cout<< ps<<endl;
+////#endif
+//  S.rotate_p2north(ps, *spxMu_, *spx_, z_, 2*K_);
+//  // only bring points to that 
+////  for(uint32_t k=0; k<K_; ++k)
+////  {
+////    thetas_[k]->getL()->setMean(ps.col(2*k));
+////    thetas_[k]->getR()->setMean(ps.col(2*k+1));
+////  }
+//}
 
 template <>
 void DpSubclusterMM<NiwSpheref, float>::relinearize()
