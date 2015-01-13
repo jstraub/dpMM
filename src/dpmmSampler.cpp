@@ -16,7 +16,7 @@
 #include "unifSphere.hpp"
 #include "sphericalKMeans.hpp"
 #include "kmeans.hpp"
-#include "dpvMFmeans.hpp"
+//#include "dpvMFmeans.hpp"
 #include "timer.hpp"
 
 using namespace Eigen;
@@ -429,15 +429,15 @@ int main(int argc, char **argv)
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
     dpmmf = new DirMMcld<NiwSphered,double>(dir, niwSp);
-  }else if(!base.compare("DPvMFmeans")){
-    double lambda = cos(5.0*M_PI/180.0);
-    if(vm.count("params"))
-    {
-      vector<double> params = vm["params"].as< vector<double> >();
-      cout<<"params length="<<params.size()<<endl;
-      lambda = params[0];
-    }
-    spkm = new DPvMFMeans<double>(spx, K, lambda, &rndGen);
+//  }else if(!base.compare("DPvMFmeans")){
+//    double lambda = cos(5.0*M_PI/180.0);
+//    if(vm.count("params"))
+//    {
+//      vector<double> params = vm["params"].as< vector<double> >();
+//      cout<<"params length="<<params.size()<<endl;
+//      lambda = params[0];
+//    }
+//    spkm = new DPvMFMeans<double>(spx, K, lambda, &rndGen);
   }else if(!base.compare("spkm")){
     spkm = new SphericalKMeans<double>(spx, K, &rndGen);
   }else if(!base.compare("spkmKarcher")){
