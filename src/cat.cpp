@@ -1,11 +1,13 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #include "cat.hpp"
 
 // ---------------------------------------------------------------------------
 
 template<typename T>
+Cat<T>::Cat(const Matrix<T,Dynamic,1>& pdf, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), K_(pdf.size()), pdf_(pdf)
 {
   updateCdf();

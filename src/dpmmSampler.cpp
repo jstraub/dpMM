@@ -30,6 +30,7 @@ namespace po = boost::program_options;
 
 typedef double flt;
 
+int main(int argc, char **argv)
 {
 
   // Declare the supported options.

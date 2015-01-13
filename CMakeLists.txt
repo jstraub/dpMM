@@ -1,4 +1,7 @@
-project(DpGMMs)
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+# Licensed under the MIT license. See the license file LICENSE.                
+
+project(DpMM)
 cmake_minimum_required(VERSION 2.4.6)
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)

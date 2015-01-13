@@ -1,6 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #pragma once
 
 #include <iostream>
@@ -35,6 +36,7 @@ class DpSubclusterMM : public DpMM<T>
 {
 public:
   DpSubclusterMM(const T alpha, const shared_ptr<LrCluster<B,T> >& theta,
+    uint32_t K0, boost::mt19937 *pRndGen);
   virtual ~DpSubclusterMM();
 
   virtual void initialize(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx);

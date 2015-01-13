@@ -1,6 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #pragma once
 
 #include <Eigen/Dense>
@@ -32,6 +33,7 @@ public:
 
   NIW(const Matrix<T,Dynamic,Dynamic>& Delta, 
     const Matrix<T,Dynamic,Dynamic>& theta, T nu,  T kappa, 
+    boost::mt19937 *pRndGen);
   NIW(const NIW& niw);
   ~NIW();
 

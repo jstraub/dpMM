@@ -1,6 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #include "sampler.hpp"
 
 // ------------------------ impl ---------------------------------------------
@@ -114,6 +115,7 @@ void SamplerGpu<T>::sampleUnif(Matrix<T,Dynamic,1>& r)
 };
 
 template<typename T>
+void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool logScale)
 {
   if(logScale)
     choiceMultLogPdfGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),

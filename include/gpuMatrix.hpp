@@ -1,6 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #pragma once
 
 #include <iostream>
@@ -18,6 +19,7 @@ using boost::shared_ptr;
 using std::cout;
 using std::endl;
 
+extern void copy_gpu( double *d_from, double *d_to , uint32_t N, 
     uint32_t step, uint32_t offset, uint32_t D);
 extern void copy_gpu( float *d_from, float *d_to , uint32_t N, 
     uint32_t step, uint32_t offset, uint32_t D);

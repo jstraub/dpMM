@@ -2,7 +2,6 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
  
-
 #include "cuda_global.h"
 
 // executions per thread

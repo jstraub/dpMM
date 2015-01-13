@@ -1,5 +1,5 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
 
 #include <iostream>
@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE( sphere_test)
   Matrix<double,Dynamic,Dynamic> mus = sampleClustersOnSphere<double>(*sq, z, K);
 
   Matrix<double,Dynamic,Dynamic> muEst = karcherMeanMultiple(
+      p0s, *sq, xMu, z, K, 100); 
 
   cout<<"muTrue="<<endl<<mus<<endl;
   cout<<"muEst ="<<endl<<muEst<<endl;

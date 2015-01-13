@@ -1,6 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
- * Licensed under the MIT license. See the license file LICENSE.
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>                    
+ * Licensed under the MIT license. See the license file LICENSE.                
  */
+
 #pragma once
 
 #include <Eigen/Dense>
@@ -36,6 +37,7 @@ public:
   uint32_t K_;
   Matrix<T,Dynamic,1> alpha_;
 
+  Dir(const Matrix<T,Dynamic,1>& alpha, boost::mt19937 *pRndGen);
   Dir(const Dir& other);
   ~Dir();
 
