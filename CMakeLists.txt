@@ -162,7 +162,7 @@ ${Boost_LIBRARIES}
   #boost_program_options
 )
 
-cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
+cuda_add_executable(dpmmSampler ./src/dpmmSampler.cpp
   ./src/distribution.cpp
   ./src/cat.cpp
   ./src/mult.cpp
@@ -183,7 +183,7 @@ cuda_add_executable(dpStickGMM ./src/dpStickGMM.cpp
   ./cuda/gmmPdf_kernel.cu
   ./cuda/sufficientStatistics_kernel.cu
 )
-target_link_libraries(dpStickGMM
+target_link_libraries(dpmmSampler
 ${Boost_LIBRARIES}
 #boost_system
   #boost_random

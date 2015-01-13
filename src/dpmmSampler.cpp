@@ -5,7 +5,7 @@
 #include <boost/program_options.hpp>
 
 #include "dpSubclusterSphereMMnew.hpp"
-#include "dpStickMM.hpp"
+#include "dpmmSampler.hpp"
 #include "dirMM.hpp"
 #include "dirMMcld.hpp"
 #include "clSphereGpu.hpp"
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     ("K,K", po::value<int>(), "number of initial clusters ")
     ("base", po::value<string>(), 
       "which base measure to use (only NIW, DpNiw, DpNiwSphereFull, "
-      " DpNiwSphere, DpNiwTangent, NiwSphere,"
+      " DpNiwSphere, NiwSphere,"
       " NiwSphereUnifNoise, spkm, spkmKarcher, kmeansright now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
