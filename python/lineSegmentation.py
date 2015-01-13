@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 from numpy import sin,cos
 from scipy.linalg import  norm, det, qr, expm, eig
@@ -8,7 +10,6 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
 from manifold.sphere import *
-#from manhattanClustering import *
 
 import time
 import ipdb

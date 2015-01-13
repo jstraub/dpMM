@@ -1,10 +1,12 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include "normal.hpp"
 
 
 // ---------------------------------------------------------------------------
 
 template<typename T>
-Normal<T>::Normal(const Matrix<T,Dynamic,1>& mu, const Matrix<T,Dynamic,Dynamic>& Sigma,boost::mt19937 *pRndGen)
   : Distribution<T>(pRndGen), D_(mu.size()), mu_(mu), Sigma_(Sigma), 
     SigmaLDLT_(Sigma_)
 {

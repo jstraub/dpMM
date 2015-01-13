@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 from scipy.linalg import det
 import matplotlib.pyplot as plt
@@ -12,7 +14,6 @@ def covEllipse(mean,cov,sigmaMult=3.0):
   return Ellipse(xy=(mean[0],mean[1]),width=sigmaMult*np.sqrt(e[imax]),height=sigmaMult*np.sqrt(e[imin]),angle=ang/np.pi*180.0)
 
 def conditionalGauss(mu,S,a):
-  # conditional moments
   S_xGy  = S[0,0] - S[0,1]**2 / S[1,1]
   mu_xGy = mu[0] + S[0,1]/S[1,1] *(a-mu[1]) 
   return mu_xGy, S_xGy

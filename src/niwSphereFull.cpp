@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include "niwSphereFull.hpp"
 // ----------------------------------------------------------------------------
 
@@ -287,7 +290,6 @@ void NiwSphereFull<T>::posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x,
   // get to \sum x x^T
 //  iw0_.scatter() += iw0_.count()*iw0_.mean()*iw0_.mean().transpose()
 //  // add in the correction
-//    + iw0_.count() * meanNew*meanNew.transpose();
 //  // remove the new mean
 //    - iw0_.count() * meanNew*meanNew.transpose();
   iw0_.mean() = meanNew;

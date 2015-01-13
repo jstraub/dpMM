@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #pragma once
 
@@ -266,7 +269,6 @@ void DDPvMFMeans<T>::reInstantiatedOldCluster(const Matrix<T,Dynamic,1>& xSum, u
   // rotate point from mean_k towards previous mean by angle eta?
   this->ps_.col(k) = rotationFromAtoB<T>(xSum/xSum.norm(), 
       this->psPrev_.col(k), eta/(phi*this->ts_[k]+theta+eta)) 
-    * xSum/xSum.norm(); 
 };
 
 template<class T>

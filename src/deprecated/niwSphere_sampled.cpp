@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 // =============================================================================
 // == niwSphere_sampled.cpp
 // == --------------------------------------------------------------------------
@@ -45,7 +48,6 @@ niwSphere_sampled& niwSphere_sampled::operator=(const niwSphere_sampled& that)
       cleanup();
       copy(that);
    }
-   return *this;
 }
 // --------------------------------------------------------------------------
 // -- copy

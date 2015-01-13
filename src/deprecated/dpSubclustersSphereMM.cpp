@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 // =============================================================================
 // == clusters.h
 // == --------------------------------------------------------------------------
@@ -62,7 +65,6 @@ DpSubclustersSphereMM& DpSubclustersSphereMM::operator=(const DpSubclustersSpher
       gsl_rng_free(rand_gen);
       copy(that);
    }
-   return *this;
 }
 // --------------------------------------------------------------------------
 // -- copy

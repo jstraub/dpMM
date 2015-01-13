@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include "niwSphere.hpp"
 // ----------------------------------------------------------------------------
 
@@ -129,7 +132,6 @@ T NiwSphere<T>::logPdfUnderPriorMarginalizedMerged(
   Matrix<T,Dynamic,Dynamic> scatterMerged(iw0_.D_,iw0_.D_);
   Matrix<T,Dynamic,1> muMerged(iw0_.D_);
   T countMerged=0;
-  this->computeMergedSS(*this, *other, scatterMerged, muMerged, countMerged);
   return iw0_.logLikelihoodMarginalized(scatterMerged, countMerged) 
     - S_.logSurfaceArea();
 };

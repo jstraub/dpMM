@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 import subprocess as subp
 
@@ -14,7 +16,6 @@ from js.utils.config import Config2String
 from vpCluster.manifold.karcherMean import karcherMeanSphere_propper
 from vpCluster.manifold.sphere import Sphere
 
-dataPath = './allSignalsV5.csv' #data from temperature sensor of cellphone
 dataPath = None;
 dataPath = './sphericalAssociatedPress.csv';
 dataPath = '/data/vision/fisher/data1/wikipediaWordVectors/vectors_wiki.normalized_OnlyVect_colVects.csv'; # 200D

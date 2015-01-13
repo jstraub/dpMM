@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 import subprocess as subp
 
@@ -35,7 +37,6 @@ def mutualInfo(z,zGt):
       Nj = (z==j).sum()
       Nk = (zGt==k).sum()
       if Njk > 0:
-#        print '{} {} {} {} {} -> += {}'.format(N, Njk,Nj,Nk, N*Njk/(Nj*Nk), Njk/N * np.log(N*Njk/(Nj*Nk)))
         mi += Njk/N * np.log(N*Njk/(Nj*Nk))
   return mi
 def entropy(z):

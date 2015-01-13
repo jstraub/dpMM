@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 
 import numpy as np
 from scipy.linalg import eig, logm
@@ -22,7 +24,6 @@ import matplotlib as mpl
 mpl.rc('font',size=20)                                                          
 mpl.rc('lines',linewidth=3.)
 
-dataPath = '/data/vision/fisher/data1/wikipediaWordVectors/vectors_wiki.20_prune100_onlyVects_colVects.csv'; #20D
 
 x=np.loadtxt(dataPath,delimiter=' ')
 N = x.shape[1]

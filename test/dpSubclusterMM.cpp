@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 
 #include <iostream>
@@ -37,7 +40,6 @@ BOOST_AUTO_TEST_CASE(lrCluster_merge_test)
   double nu = D+1.0;
   MatrixXd Delta(D-1,D-1);
   Delta.setIdentity();
-  Delta *= nu*(4.*PI)/180.0;
   cout<<"Delta/nu"<<endl<<(Delta/nu)<<endl;
 
   IWd iw(Delta,nu,&rndGen);

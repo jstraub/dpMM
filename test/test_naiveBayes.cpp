@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE dirMM test
@@ -46,7 +49,6 @@ BOOST_AUTO_TEST_CASE(dirNaiveBayes_test)
 	Delta << .1,0.0,0.0,
 		0.0,.1,0.0,
 		0.0,0.0,.1;
-	Delta *= nu;
 	VectorXd theta(3);
 	theta << 0.0,0.0,0.0;
 

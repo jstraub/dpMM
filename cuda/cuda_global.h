@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once
 
 #include <stdint.h>
@@ -16,7 +19,6 @@
 
 #if DIM==3
 template<typename T>
-__device__ inline void Log_p(T *p, T *q, T *x)
 {
   T dot = min(1.0,max(-1.0,q[0]*p[0] + q[1]*p[1] + q[2]*p[2]));
   // 2nd order taylor expansions for the limit cases obtained via mathematica

@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 from scipy.linalg import eig, logm
 import subprocess as subp
@@ -16,7 +18,6 @@ from vpCluster.manifold.karcherMean import karcherMeanSphere_propper
 from vpCluster.manifold.sphere import Sphere
 
 import matplotlib as mpl                                                        
-mpl.rc('font',size=24) #20)                                                          
 mpl.rc('lines',linewidth=3.)
 
 dataPath = './allSignalsV5.csv' #data from temperature sensor of cellphone

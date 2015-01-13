@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,7 +24,6 @@ D = 2
 M = Sphere(2-1)
 
 N=100
-#gauss = Gaussian(np.zeros(1),Sigma);
 
 angles = np.linspace(-np.pi,np.pi,N)
 anglesEval = np.linspace(-np.pi,np.pi,N)

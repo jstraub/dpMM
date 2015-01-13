@@ -1,10 +1,12 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include "niw.hpp"
 
 // ---------------------------------------------------------------------------
 
 template<typename T>
 NIW<T>::NIW(const Matrix<T,Dynamic,Dynamic>& Delta, 
-  const Matrix<T,Dynamic,Dynamic>& theta, T nu,  T kappa, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), Delta_(Delta), theta_(theta), nu_(nu), kappa_(kappa), 
   D_(theta.size()), 
   scatter_(Matrix<T,Dynamic,Dynamic>::Zero(Delta_.rows(),Delta_.cols())),

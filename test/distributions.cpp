@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
@@ -139,7 +142,6 @@ BOOST_AUTO_TEST_CASE(iw_test)
         0.0,1.0,0.0,
         0.0,0.0,1.0;
   double nu = 100.0;
-  Delta *= nu;
 
   boost::mt19937 rndGen(1);
   IW<double> iw(Delta,nu,&rndGen);

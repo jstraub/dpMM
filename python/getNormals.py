@@ -1,3 +1,6 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
+
 import numpy as np
 from js.data.rgbd.rgbdframe import RgbdFrame
 

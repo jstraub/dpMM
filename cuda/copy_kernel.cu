@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include "cuda_global.h"
 
@@ -6,7 +9,6 @@
 #define BLOCK_SIZE 256
 
 template<typename T, uint32_t D, uint32_t BLK_SIZE>
-__global__ void copy_kernel(T *d_from, T *d_to,
     uint32_t N, uint32_t step, uint32_t offset) 
 {
 //  const int tid = threadIdx.x;

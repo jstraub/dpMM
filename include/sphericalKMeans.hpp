@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once
 #include <Eigen/Dense>
 #include <iostream>
@@ -94,7 +97,6 @@ template<class T>
 uint32_t SphericalKMeans<T>::indOfClosestCluster(int32_t i)
 {
   // use cosine similarity because it is faster since acos is not computed
-  T sim_closest = this->ps_.col(0).transpose() * this->spx_->col(i);
   uint32_t z_i = 0;
   for(uint32_t k=1; k<this->K_; ++k)
   {

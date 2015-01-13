@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 // =============================================================================
 // == clusters.cpp
 // == --------------------------------------------------------------------------
@@ -86,7 +89,6 @@ public:
    vector< linkedListNode<int>* > alive_ptrs;
 
    // random number generation
-   gsl_rng *rand_gen;
 
    // temporary space for parallel processing
    vector< vector<double> > probsArr;

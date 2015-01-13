@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once
 #include <iostream>
 #include <stdint.h>
@@ -24,7 +27,6 @@ template<typename T=double>
 class DirMultiNaiveBayes : public DpMM<T>{
 
 public:
-  DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng);
   DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector<boost::shared_ptr<BaseMeasure<T> > >&thetas);
   DirMultiNaiveBayes(const Dir<Cat<T>, T>& alpha, const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >&thetas);
   virtual ~DirMultiNaiveBayes();

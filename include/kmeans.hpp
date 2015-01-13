@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once
 
 #include <Eigen/Dense>
@@ -140,7 +143,6 @@ MatrixXu KMeans<T>::mostLikelyInds(uint32_t n,
 {
   MatrixXu inds = MatrixXu::Zero(n,this->K_);
   deviates = Matrix<T,Dynamic,Dynamic>::Ones(n,this->K_);
-  deviates *= 99999.0;
   
 #pragma omp parallel for 
   for (uint32_t k=0; k<this->K_; ++k)

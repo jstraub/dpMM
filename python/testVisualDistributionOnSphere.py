@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import eig
@@ -32,7 +34,6 @@ for i in range(N):
   x = M.Log_p(mu,q[:,i][:,np.newaxis])
   xn = Rnorth.dot(x)
   print xn
-  pdf[i] += zeroMeanGauss1D(xn[1],Sigma) #/ (2*np.pi)
   pdfPlt[:,i] = q[:,i]* (1.+pdf[i])
 print pdf 
 plt.figure()

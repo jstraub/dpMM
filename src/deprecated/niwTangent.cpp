@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include "niwTangent.hpp"
 // ----------------------------------------------------------------------------
@@ -202,7 +205,6 @@ T NiwTangent<T>::logPdfUnderPriorMarginalizedMerged(
   Matrix<T,Dynamic,1> pMerged(niw0_.D_+1);
   Matrix<T,Dynamic,1> meanMerged(niw0_.D_);
   T countMerged=0;
-  this->computeMergedSS(*this, *other, scatterMerged, meanMerged, pMerged, 
       countMerged);
   return niw0_.logLikelihoodMarginalized(scatterMerged, meanMerged, countMerged);
 };

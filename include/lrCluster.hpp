@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once 
 
 #include <Eigen/Dense>
@@ -19,7 +22,6 @@ template<class B, typename T>
 class LrCluster // : public BaseMeasure<T>
 {
 protected:
-  boost::mt19937 *pRndGen_;
   T alpha_; 
   T logLikeSubClSplit_;
   T avgLogLikeData_; // data log likelihood in subclusters

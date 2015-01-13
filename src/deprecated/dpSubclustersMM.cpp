@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 // =============================================================================
 // == clusters.h
 // == --------------------------------------------------------------------------
@@ -65,7 +68,6 @@ clusters& clusters::operator=(const clusters& that)
       gsl_rng_free(rand_gen);
       copy(that);
    }
-   return *this;
 }
 // --------------------------------------------------------------------------
 // -- copy

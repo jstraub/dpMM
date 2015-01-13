@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +16,6 @@ using namespace Eigen;
 using std::string;
 namespace po = boost::program_options;
 
-int main(int argc, char **argv)
 {
 
   // Declare the supported options.

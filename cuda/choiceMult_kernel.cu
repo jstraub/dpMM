@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include <stdint.h>
 #include "typedef.h"
 #include <cuda_runtime.h>
@@ -6,7 +9,6 @@
 __device__ uint wang_hash(uint seed)
 {
   seed = (seed ^ 61) ^ (seed >> 16);
-  seed *= 9;
   seed = seed ^ (seed >> 4);
   seed *= 0x27d4eb2d;
   seed = seed ^ (seed >> 15);

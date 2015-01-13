@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include <Eigen/Dense>
 #include <iostream>
@@ -66,7 +69,6 @@ int main(int argc, char** argv)
 
   MatrixXd Delta(D-1,D-1);
   Delta = MatrixXd::Identity(D-1,D-1);
-  Delta *= nu*(delta*PI/180.)*(delta*PI/180.);
 
 //  double nu = D+0.1
 //  MatrixXd Delta(D,D);

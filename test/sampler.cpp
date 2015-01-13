@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include <iostream>
 #define BOOST_TEST_DYN_LINK
@@ -43,7 +46,6 @@ BOOST_AUTO_TEST_CASE( sampler_cpu_test)
   cout<<s.sampleDiscLogPdfUnNormalized(logPdfs).transpose()<<endl;
 
   pdfs.setOnes(N,M);
-  pdfs *= 1.0/M;
   
   t.tic();
   VectorXu z = s.sampleDiscPdf(pdfs);

@@ -1,8 +1,10 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #include "iw.hpp"
 
 
 template<typename T>
-IW<T>::IW(const Matrix<T,Dynamic,Dynamic>& Delta, T nu, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), Delta_(Delta), nu_(nu), D_(Delta.cols()),
   scatter_(Matrix<T,Dynamic,Dynamic>::Zero(Delta_.rows(),Delta_.cols())),
   mean_(Matrix<T,Dynamic,1>::Zero(Delta_.rows())), count_(0)

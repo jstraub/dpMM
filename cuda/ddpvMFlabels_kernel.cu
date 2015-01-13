@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include "cuda_global.h"
 #include <stdio.h>
@@ -20,7 +23,6 @@ __device__ inline T distToUninstantiated( T zeta, T age, T beta, T w, T Q, T thr
   {
     T sinPhi = sin(phi);
     T cosPhi = cos(phi);
-    T f = -zeta + asin(beta*sinPhi) + age * phi + asin(beta/w *sinPhi);
     T df = age + (beta*cosPhi)/sqrt(1.-beta*beta*sinPhi*sinPhi) 
       + (beta*cosPhi)/sqrt(w*w - beta*beta*sinPhi*sinPhi); 
 

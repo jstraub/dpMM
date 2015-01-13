@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 import numpy as np
 from scipy.linalg import eig
 from vpCluster.manifold.sphere import Sphere
@@ -7,7 +9,6 @@ from vpCluster.manifold.karcherMean import karcherMeanSphere_propper
 D = 3
 M = Sphere(D-1)
 N = 100
-# generate data
 q = np.random.normal(size=(D,N))*0.1 + np.ones((D,N))
 q /= np.sqrt((q**2).sum(axis=0))
 # around which point we linearize

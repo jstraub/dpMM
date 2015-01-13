@@ -1,3 +1,5 @@
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 
 import mayavi.mlab as mlab
 import numpy as np
@@ -7,7 +9,6 @@ from vpCluster.manifold.sphere import *
 
 
 def plotGaussianTpS2(R):
-  # plot the tangent space
   Rr,Th = np.meshgrid(np.linspace(0,0.5,100),np.linspace(-np.pi,np.pi,100))
 #  X,Y = np.meshgrid(np.linspace(-0.5,0.5,100),np.linspace(-.5,.5,100))
   X,Y = Rr*np.cos(Th),Rr*np.sin(Th)

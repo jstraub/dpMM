@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 #pragma once
 #include <iostream>
 #include <stdint.h>
@@ -193,7 +196,6 @@ MatrixXu DirMM<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLike
 {
   MatrixXu inds = MatrixXu::Zero(n,K_);
   logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
-  logLikes *= -99999.0;
   
 #pragma omp parallel for 
   for (uint32_t k=0; k<K_; ++k)

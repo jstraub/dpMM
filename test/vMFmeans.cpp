@@ -1,3 +1,6 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 
 #include <iostream>
@@ -67,7 +70,6 @@ BOOST_AUTO_TEST_CASE(spkm_test)
       boost::shared_ptr<MatrixXd> spx3(new MatrixXd(D,N*2));
       //      boost::shared_ptr<MatrixXd> spxTmp(new MatrixXd(D,N));
       //      sampleClustersOnSphere<double>(*spxTmp, 1);
-      spx3->leftCols(N) = *spx;
       spx3->rightCols(N) = - (*spx);
       spx = spx3;
     }

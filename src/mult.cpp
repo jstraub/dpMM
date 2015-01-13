@@ -1,10 +1,12 @@
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
+ * Licensed under the MIT license. See the license file LICENSE.
+ */
 
 #include "mult.hpp"
 
 // ---------------------------------------------------------------------------
 
 template<typename T>
-Mult<T>::Mult(const Matrix<T,Dynamic,1>& pdf, boost::mt19937 *pRndGen)
 : Distribution<T>(pRndGen), K_(pdf.size()), pdf_(pdf)
 {
 };
