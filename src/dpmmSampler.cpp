@@ -40,15 +40,15 @@ int main(int argc, char **argv)
     ("seed", po::value<int>(), "seed for random number generator")
     ("N,N", po::value<int>(), "number of input datapoints")
     ("D,D", po::value<int>(), "number of dimensions of the data")
-    ("T,T", po::value<int>(), "iterations")
+    ("T,T", po::value<int>(), "number of iterations")
     ("alpha,a", po::value< vector<double> >()->multitoken(), 
       "alpha parameter of the DP (if single value assumes all alpha_i are the "
       "same")
     ("K,K", po::value<int>(), "number of initial clusters ")
     ("base", po::value<string>(), 
-      "which base measure to use (only NIW, DpNiw, DpNiwSphereFull, "
+      "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere,"
-      " NiwSphereUnifNoise, spkm, spkmKarcher, kmeansright now)")
+      " NiwSphereUnifNoise, spkm, spkmKarcher, kmeans right now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
     ("brief", po::value< vector<double> >()->multitoken(), 
@@ -501,7 +501,7 @@ int main(int argc, char **argv)
     fout.close();
 
   }else if(!base.compare("spkm") || !base.compare("spkmKarcher") 
-      || !base.compare("DPvMFmeans") || !base.compare("kmeans"))
+      || !base.compare("kmeans"))
   {
     ofstream fout(pathOut.data(),ofstream::out);
     ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
