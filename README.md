@@ -1,11 +1,12 @@
+## DpMM
 A set of Dirichlet Process Mixture Model (DPMM) sampling-based inference algorithms.
 
 This is research code and builds on the following two papers (please cite them appropriately):
-- Jason Chang and John W. Fisher III
-  Parallel Sampling of DP Mixture Models using Sub-Clusters Splits
+- Jason Chang and John W. Fisher III.
+  Parallel Sampling of DP Mixture Models using Sub-Clusters Splits,
   NIPS 2013.
-- Julian Straub, Jason Chang, Oren Freifeld, John W. Fisher III
-  Dirichlet Process Mixture Model for Spherical Data
+- Julian Straub, Jason Chang, Oren Freifeld and John W. Fisher III.
+  Dirichlet Process Mixture Model for Spherical Data,
   AISTATS 2015.
  
 ### Dependencies
