@@ -45,6 +45,7 @@ int main(int argc, char **argv)
       "alpha parameter of the DP (if single value assumes all alpha_i are the "
       "same")
     ("K,K", po::value<int>(), "number of initial clusters ")
+    ("nopropose,n", "flag to disable the propsal of splits and merges")
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere,"
@@ -85,6 +86,13 @@ int main(int argc, char **argv)
   uint32_t D=2;
   if (vm.count("D")) D = vm["D"].as<int>();
   cout << "T="<<T<<endl;
+  bool proposeSplitMerge = true;
+  if (vm.count("nopropose")) proposeSplitMerge = false; 
+  if(proposeSplitMerge)
+    cout<<"Propose splits and merges"<<endl;
+  else
+    cout<<"DO not propose splits or merges"<<endl;
+
   // DP alpha parameter
   VectorXd alpha(K);
   alpha.setOnes(K);
@@ -585,14 +593,16 @@ int main(int argc, char **argv)
       cout<<"    K="<<dpmm->getK();
       cout<<"    logJoint= "<<dpmm->logJoint()<<endl;
 
-      dpmm->proposeMerges();
-//      Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
-//      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
+      if(proposeSplitMerge)
+      {
+        dpmm->proposeMerges();
+        //      Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
+        //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
 
-      dpmm->proposeSplits();
-//      Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
-//      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
-
+        dpmm->proposeSplits();
+        //      Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
+        //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
+      }
     }
     fout.close();
     foutJointLike.close();
