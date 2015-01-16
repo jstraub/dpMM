@@ -62,6 +62,9 @@ public:
   void proposeSplits();
   void proposeMerges();
 
+  // call this right before sampleParameters()
+  void resampleFromBase(uint32_t Kmax);
+
   void proposeRandomSplits();
 
   virtual double logJoint();
@@ -552,6 +555,9 @@ void DpSubclusterMM<B,T>::sampleParameters_()
       sticks_(k) = gamma(*pRndGen_); 
     }else{
       sticks_(k) = 0.0;
+      // I think this is propper:
+      boost::random::gamma_distribution<> gamma(alpha_);
+      sticks_(k) = gamma(*pRndGen_); 
     }
     totalCount += thetas_[k]->count();
   }
@@ -567,6 +573,19 @@ void DpSubclusterMM<B,T>::sampleParameters_()
   assert(fabs(logSumExp(sticks_)) <1e-6);
 
 //  dump();
+};
+
+template <class B, typename T>
+void DpSubclusterMM<B,T>::resampleFromBase(uint32_t Kmax)
+{
+  for(uint32_t k=K_; k<Kmax; ++k)
+  {
+    thetas_.push_back(shared_ptr<LrCluster<B,T> >(theta0_->copy()));
+//    thetas_[k]->posterior(*spx_,z_,2*k);
+  }
+  K_ = Kmax;
+  sticks_.conservativeResize(K_);
+  logLikeZcls_.conservativeResize(K_,K_);
 };
 
 template <class B, typename T>

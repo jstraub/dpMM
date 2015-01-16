@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     ("nopropose,n", "flag to disable the propsal of splits and merges")
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
-      " DpNiwSphere, NiwSphere,"
+      " DpNiwSphere, NiwSphere, DirNiwSphereFull"
       " NiwSphereUnifNoise, spkm, spkmKarcher, kmeans right now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
@@ -320,6 +320,42 @@ int main(int argc, char **argv)
     dpmm = new DpSubclusterMM<NiwSphereFulld,double>(alpha(0), lrTheta, 
         K, &rndGen);
 
+  }else if(!base.compare("DirNiwSphereFull")){
+    cout<<"D="<<D<<endl;
+    MatrixXd Delta(D-1,D-1);
+    double nu = 10.0;
+    //    Delta << nu,0.0,0.0,nu;
+    //    theta << 0.0,0.0;
+    if(vm.count("params"))
+    {
+      vector<double> params = vm["params"].as< vector<double> >();
+      cout<<"params length="<<params.size()<<" D="<<D<<endl;
+      nu = params[0];
+#pragma omp parallel for
+      for(uint32_t i=0; i<D-1; ++i)
+        for(uint32_t j=0; j<D-1; ++j)
+          Delta(i,j) = params[1+i+(D-1)*j];
+      if (D<30){
+        cout <<"nu="<<nu<<endl;
+        cout <<"Delta="<<Delta<<endl;
+      }
+    }else if(vm.count("brief"))
+    {
+      vector<double> params = vm["brief"].as< vector<double> >();
+      nu = params[0];
+      Delta = params[1]*MatrixXd::Identity(D-1,D-1);
+      cout <<"nu="<<nu<<endl;
+      cout <<"Delta="<<params[1]<<"I_"<<(D-1)<<endl;
+      if (D<30){
+        cout <<"nu="<<nu<<endl;
+        cout <<"Delta="<<Delta<<endl;
+      }
+    }
+    DirCatd dir(alpha,&rndGen); 
+    IWd iw(Delta, nu, &rndGen);
+    shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
+    dpmm = new DirMM<double>(dir, theta);
+
 //  }else if(!base.compare("DpNiwTangent")){
 //    cout<<"D="<<D<<endl;
 //    MatrixXd Delta(D-1,D-1);
@@ -574,6 +610,11 @@ int main(int argc, char **argv)
     for (uint32_t t=0; t<T; ++t)
     {
       cout<<"------------ t="<<t<<" -------------"<<endl;
+      // sample clusters from the base measure to fill up to K clusters 
+      // only if we are not proposing splits and merges to make sure that the
+      // number of clusters stays the originally intended one
+//      if(!proposeSplitMerge)  dpmm->resampleFromBase(K);
+
 //      VectorXd Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
 //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
       dpmm->sampleParameters();

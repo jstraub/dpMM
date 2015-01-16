@@ -33,6 +33,8 @@ public:
   virtual void sampleParameters() = 0;
   virtual void proposeSplits() {};
   virtual void proposeMerges() {};
+  // call this right before sampleParameters()
+  virtual void resampleFromBase(uint32_t Kmax) {};
   virtual const VectorXu & getLabels() = 0;
   virtual Matrix<T,Dynamic,1> getCounts() = 0;
   virtual uint32_t getK() const = 0;
