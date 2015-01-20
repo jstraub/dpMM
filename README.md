@@ -2,10 +2,10 @@
 A set of Dirichlet Process Mixture Model (DPMM) sampling-based inference algorithms.
 
 This is research code and builds on the following two papers (please cite them appropriately):
-- Jason Chang and John W. Fisher III.
+- [1] Jason Chang and John W. Fisher III.
   Parallel Sampling of DP Mixture Models using Sub-Clusters Splits,
   NIPS 2013.
-- Julian Straub, Jason Chang, Oren Freifeld and John W. Fisher III.
+- [2] Julian Straub, Jason Chang, Oren Freifeld and John W. Fisher III.
   Dirichlet Process Mixture Model for Spherical Data,
   AISTATS 2015.
  
@@ -19,6 +19,18 @@ This code depends on the following other libraries and was tested under Ubuntu
 
 Optional
 - OpenMP
+
+### Getting Started
+Get started quickly by looking at `python/dpmmSampler.py`. It simply loads a
+dataset and runs the sub-cluster split/merge algorithm with different base
+measures:
+```
+python ./python/dpmmSampler.py -i ./data/rndSphereDataIwUncertain.csv -b DpNiwSphereFull -T 400
+python ./python/dpmmSampler.py -i ./data/rndSphereDataIwUncertain.csv -b DpNiw -T 400
+```
+Where DpNiwSphereFull is for the DP-TGMM [2] and DpNiw for the standard DP-GMM
+[1]. Make sure you compiled the cpp code beforehand since the python script
+just wraps the call to dpmmSampler.
 
 ### Executables
 - *dpmmSampler*: Sampler for Dirichlet process mixture model (DPMM) inference using different algorithms

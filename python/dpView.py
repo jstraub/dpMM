@@ -140,7 +140,7 @@ for ind in rndInds:
     params = np.r_[params,Delta.ravel()]
 
   #args = ['../build/dpSubclusterSphereGMM',
-  args = ['~/workspace/research/dpMM/build/dpStickGMM',
+  args = ['../build/dpmmSampler',
     '-N {}'.format(N),
     '-D {}'.format(D),
     '-K {}'.format(cfg['K']),

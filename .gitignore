@@ -6,4 +6,5 @@ tags
 *.swp
 *.swo
 *.lbl
+*.png
 .DS_Store

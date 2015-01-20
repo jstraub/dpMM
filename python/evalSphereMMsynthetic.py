@@ -146,8 +146,7 @@ for i,base in enumerate(bases):
   
   outName,_ = os.path.splitext(dataPath)
   outName += '_'+Config2String(cfg).toString()
-  #args = ['../build/dpSubclusterSphereGMM',
-  args = ['../build/dpStickGMM',
+  args = ['../build/dpmmSampler',
     '--seed {}'.format(int(time.time()*100000) - 100000*int(time.time())),
     '-N {}'.format(N),
     '-D {}'.format(D),
