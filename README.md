@@ -30,7 +30,7 @@ python ./python/dpmmSampler.py -i ./data/rndSphereDataIwUncertain.csv -b DpNiw -
 ```
 Where DpNiwSphereFull is for the DP-TGMM [2] and DpNiw for the standard DP-GMM
 [1]. 
-After finishing the specified number of iterations (via `-T`) the log
+After finishing the specified number of iterations (via the `-T` option) the log
 likelihood as well as the number of clusters over the iterations is shown.
 Make sure you compiled the cpp code beforehand since the python script
 just wraps the call to dpmmSampler.
