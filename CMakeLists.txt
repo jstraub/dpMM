@@ -112,13 +112,13 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include
   #/usr/include/eigen3
-  $ENV{WORKSPACE_HOME}/3rdparty/include
+#  $ENV{WORKSPACE_HOME}/3rdparty/include
   ${Boost_INCLUDE_DIR}
   /usr/include
 )
 
 link_directories(
-  $ENV{WORKSPACE_HOME}/3rdparty/lib
+#  $ENV{WORKSPACE_HOME}/3rdparty/lib
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
   ${Boost_LIBRARY_DIRS}
 )
