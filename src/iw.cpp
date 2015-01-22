@@ -114,6 +114,7 @@ Matrix<T,Dynamic,Dynamic> IW<T>::sample()
 {
   // do the cholesky decomposition
 // TODO: do I have to divide by nu or not?
+  //LLT<Matrix<T,Dynamic,Dynamic> > myLlt(Delta_);
   LLT<Matrix<T,Dynamic,Dynamic> > myLlt(Delta_/nu_);
   Matrix<T,Dynamic,Dynamic> chol = myLlt.matrixL();
 
