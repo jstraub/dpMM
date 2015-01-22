@@ -113,8 +113,6 @@ template<typename T>
 Matrix<T,Dynamic,Dynamic> IW<T>::sample()
 {
   // do the cholesky decomposition
-// TODO: do I have to divide by nu or not?
-  //LLT<Matrix<T,Dynamic,Dynamic> > myLlt(Delta_);
   LLT<Matrix<T,Dynamic,Dynamic> > myLlt(Delta_/nu_);
   Matrix<T,Dynamic,Dynamic> chol = myLlt.matrixL();
 
@@ -138,12 +136,6 @@ Matrix<T,Dynamic,Dynamic> IW<T>::sample()
   Sigma = Sigma*Sigma.transpose();
   return Sigma;
 };
-
-//template<typename T>
-//Normal<T> IW<T>::sample()
-//{
-//  return Normal<T>(this->sample(),this->pRndGen_);
-//};
 
 template<typename T>
 T IW<T>::logPdf(const Normal<T>& normal) const
