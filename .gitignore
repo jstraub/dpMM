@@ -8,3 +8,6 @@ tags
 *.lbl
 *.png
 .DS_Store
+results
+copyrightSnipped*
+*json
