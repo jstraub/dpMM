@@ -111,14 +111,11 @@ include_directories(
   ./cuda
   ${EIGEN3_INCLUDE_DIR}
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include
-  #/usr/include/eigen3
-#  $ENV{WORKSPACE_HOME}/3rdparty/include
   ${Boost_INCLUDE_DIR}
   /usr/include
 )
 
 link_directories(
-#  $ENV{WORKSPACE_HOME}/3rdparty/lib
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
   ${Boost_LIBRARY_DIRS}
 )
@@ -137,9 +134,6 @@ cuda_add_executable(testSphere ./test/sphere.cpp
 
 target_link_libraries(testSphere
 ${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
 )
 
 
@@ -153,16 +147,12 @@ cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
   ./src/dir.cpp
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
-#  ./src/niwTangent.cpp
   ./src/sphere.cpp
   ./src/sampler.cpp
   ./cuda/choiceMult_kernel.cu
 )
 target_link_libraries(dpDirMM
 ${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_program_options
 )
 
 cuda_add_executable(dpmmSampler ./src/dpmmSampler.cpp
@@ -175,10 +165,8 @@ cuda_add_executable(dpmmSampler ./src/dpmmSampler.cpp
   ./src/normal.cpp
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
-#  ./src/niwTangent.cpp
   ./src/sphere.cpp
   ./src/sampler.cpp
-#  ./src/gpuMatrix.cpp
   ./cuda/choiceMult_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
   ./cuda/karcherMeans_kernel.cu
@@ -188,9 +176,6 @@ cuda_add_executable(dpmmSampler ./src/dpmmSampler.cpp
 )
 target_link_libraries(dpmmSampler
 ${Boost_LIBRARIES}
-#boost_system
-  #boost_random
-  #boost_program_options
 )
 
 
@@ -201,11 +186,8 @@ add_executable(generateSphericalData ./src/generateSphericalData.cpp
   ./src/sphere.cpp
 )
 target_link_libraries(generateSphericalData
-${Boost_LIBRARIES}
-  #boost_system
-  #boost_random
-  #boost_program_options
-)
+  ${Boost_LIBRARIES}
+  )
 
 cuda_add_executable(myNaiveBayes 
 	./test/naiveBayes.cpp
@@ -275,9 +257,6 @@ if( COMPILE_TEST )
 	)
 	target_link_libraries(testDirMM
 	${Boost_LIBRARIES}
-	  #boost_system
-	  #boost_random
-	  #boost_unit_test_framework
 	)
 
 
@@ -289,9 +268,6 @@ if( COMPILE_TEST )
 	)
 	target_link_libraries(testSampler
 	${Boost_LIBRARIES}
-	  #boost_system
-	  #boost_random
-	  #boost_unit_test_framework
 	)
 
 
@@ -307,9 +283,6 @@ if( COMPILE_TEST )
 	)
 	target_link_libraries(testClData
 	${Boost_LIBRARIES}
-	  #boost_system
-	  #boost_random
-	  #boost_unit_test_framework
 	)
 
 	cuda_add_executable(testSPKM ./test/spkm.cpp
@@ -321,9 +294,6 @@ if( COMPILE_TEST )
 	)
 	target_link_libraries(testSPKM
 	${Boost_LIBRARIES}
-	  #boost_system
-	  #boost_random
-	  #boost_unit_test_framework
 	)
 
 	cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
@@ -335,7 +305,6 @@ if( COMPILE_TEST )
 		./src/normal.cpp
 		./src/niwSphere.cpp
 		./src/niwSphereFull.cpp
-#		./src/niwTangent.cpp
 		./src/sphere.cpp
 	  ./src/sampler.cpp
 	  ./src/gpuMatrix.cpp
@@ -343,9 +312,6 @@ if( COMPILE_TEST )
 	)
 	target_link_libraries(testDpSubclusterMM
 	${Boost_LIBRARIES}
-	  #boost_system
-	  #boost_random
-	  #boost_unit_test_framework
 	)
 
 	cuda_add_executable(testNaiveBayes 
@@ -371,53 +337,6 @@ if( COMPILE_TEST )
 	)
 
 endif() 
-
-
-
-#add_executable(dpSubclusterGMM ./src/dpSubclusterGMM.cpp
-  #./src/dpSubclustersMM.cpp
-  #./include/dpmmSubclusters/cluster_sampledT.cpp
-  #./include/dpmmSubclusters/normal.cpp
-  #./include/dpmmSubclusters/niw_sampled.cpp
-#)
-#target_link_libraries(dpSubclusterGMM
-  #boost_system
-  #boost_random
-  #boost_program_options
-  #gsl gslcblas m rt
-#)
-
-#add_executable(dpSubclusterSphereGMM ./src/dpSubclusterSphereGMM.cpp
-#  ./src/dpSubclustersSphereMM.cpp
-#  ./include/dpmmSubclusters/cluster_sampledT.cpp
-#  ./include/dpmmSubclusters/normal.cpp
-#  ./src/niwSphere_sampled.cpp
-#)
-#target_link_libraries(dpSubclusterSphereGMM
-#  boost_system
-#  boost_random
-#  boost_program_options
-#  gsl gslcblas m rt
-#)
-
-#cuda_add_executable(realtimeMF_openni
-#  ./src/realtimeMF_openni.cpp
-#  ./src/cv_helpers.cpp
-#  ./src/pcl_helpers.cpp
-#  ./src/realtimeMF.cpp
-#  ./src/optimizationSO3.cpp
-#  ./src/optimizationSO3_approx.cu
-#  ./src/convolutionSeparable.cu
-#  ./src/convolutionSeparable_small.cu
-#  ./src/cuda_pcl_helpers.cu
-#  ./src/optimizationSO3.cu)
-#target_link_libraries (realtimeMF_openni
-#  boost_system boost_thread
-#  pcl_common pcl_io pcl_visualization pcl_filters
-#  OpenNI XnVNite
-#  vtkCommon vtkFiltering vtkRendering vtkGraphics
-#  opencv_core opencv_highgui)
-
 
 #add_executable(testDist ./test/distributions.cpp
     #./src/dir.cpp
