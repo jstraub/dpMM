@@ -94,16 +94,20 @@ int main(int argc, char **argv)
     cout<<"DO not propose splits or merges"<<endl;
 
   // DP alpha parameter
-  VectorXd alpha(K);
-  alpha.setOnes(K);
+  VectorXd alpha;
   if (vm.count("alpha"))
   {
     vector<double> params = vm["alpha"].as< vector<double> >();
     if(params.size()==1)
+    {
+      alpha.setOnes(K);
       alpha *= params[0];
-    else
-      for (uint32_t k=0; k<K; ++k)
+    }else{
+      cout<<"Warning: alpha.size = "<<params.size()<<" K0 = "<<K<<endl;
+      alpha.setOnes(params.size());
+      for (uint32_t k=0; k<params.size(); ++k)
         alpha(k) = params[k];
+    }
   }
   cout << "alpha="<<alpha.transpose()<<endl;
 
@@ -243,7 +247,7 @@ int main(int argc, char **argv)
     shared_ptr<NiwSphered> niwSp (new NiwSphered(iw, &rndGen));
 //    alphaV[K-1] *=0.1;
     DirCatd dir(alpha,&rndGen); 
-    dpmm = new DirMM<double>(dir, niwSp);
+    dpmm = new DirMM<double>(dir, niwSp, K);
 
   }else if(!base.compare("DpNiwSphere")){
     cout<<"D="<<D<<endl;
@@ -354,7 +358,7 @@ int main(int argc, char **argv)
     DirCatd dir(alpha,&rndGen); 
     IWd iw(Delta, nu, &rndGen);
     shared_ptr<NiwSphereFulld> theta (new NiwSphereFulld(iw,&rndGen));
-    dpmm = new DirMM<double>(dir, theta);
+    dpmm = new DirMM<double>(dir, theta, K);
 
 //  }else if(!base.compare("DpNiwTangent")){
 //    cout<<"D="<<D<<endl;

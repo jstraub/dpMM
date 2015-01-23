@@ -24,7 +24,7 @@ template<typename T>
 class DirMM : public DpMM<T>
 {
 public:
-  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
+  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta, uint32_t K0);
   DirMM(const Dir<Cat<T>, T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirMM();
 
@@ -49,6 +49,7 @@ public:
   Matrix<T,Dynamic,1> getCounts();
 
 protected: 
+  uint32_t K0_;  // that is the number of clusters that are initialized with data at the beginning (K0_ <= K_)
   uint32_t K_;
   Dir<Cat<T>, T> dir_;
   Cat<T> pi_;
@@ -71,17 +72,15 @@ protected:
 
 template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >&
-    theta) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
-  theta0_(theta)
+    theta, uint32_t K0) :
+  K0_(K0), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), theta0_(theta)
 {};
 
 
 template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), //cat_(dir_.sample()),
-  thetas_(thetas)
+  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), thetas_(thetas)
 {};
 
 
@@ -107,6 +106,13 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
   z_.setZero(x.cols());
   cout<<"sample pi"<<endl;
   pi_ = dir_.sample(); 
+  if (K0_ < K_)
+  {
+    Matrix<T,Dynamic,1> pdf = pi_.pdf();
+    pdf.bottomRows(K_-K0_).setZero();
+    pdf = pdf / pdf.sum(); // renormalize
+    pi_.pdf(pdf);
+  } 
   cout<<"init pi="<<pi_.pdf().transpose()<<endl;
   pi_.sample(z_);
 
