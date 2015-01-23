@@ -2,7 +2,6 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
  
-
 #pragma once
 
 #include <Eigen/Dense>
