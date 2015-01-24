@@ -25,12 +25,14 @@ class vMF : public Distribution<T>
 {
 public:
   uint32_t  D_;
-  Matrix<T,Dynamic,1> mu_;
+  Matrix<T,Dynamic,1> m0_;
+  T t0_;
 
-  vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen);
+  vMF(const Matrix<T,Dynamic,1>& m0, T t0, boost::mt19937 *pRndGen);
   ~vMF();
 
   T logPdf(const Matrix<T,Dynamic,Dynamic>& x) const;
+  vMF<T> posterior(const Matrix<T,Dynamic,1>& xSum) const;
 
   Matrix<T,Dynamic,1> sample();
 
@@ -41,6 +43,7 @@ public:
 
 private 
   T tau_;
+  Matrix<T,Dynamic,1> mu_;
   
 // as a proposal distribution
 //  normal_distribution<> gauss_;
@@ -50,7 +53,8 @@ typedef vMF<double> vMFd;
 typedef vMF<float> vMFf;
 
 template<class T>
-vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
+vMF<T>::vMF(const Matrix<T,Dynamic,1>& m0, T t0, boost::mt19937 *pRndGen)
+  : D_(m0_.rows()), m0_(m0), t0_(t0)
 {};
 
 template<class T>
@@ -78,4 +82,10 @@ Matrix<T,Dynamic,1> vMF<T>::sample()
   return mu_;
 };
 
-
+template<class T>
+vMF<T> vMF<T>::posterior(const Matrix<T,Dynamic,1>& xSum)
+{
+  const Matrix<T,Dynamic,1> xi = t0_*m0_ + mu_.transpose()*xSum_;
+  const T t = xi.norm();
+  
+};

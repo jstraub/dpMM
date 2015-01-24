@@ -15,8 +15,6 @@
 #include "distribution.hpp"
 #include "normal.hpp"
 
-#define PI 3.141592653589793
-
 using namespace Eigen;
 using std::endl;
 using std::cout;
