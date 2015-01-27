@@ -98,6 +98,7 @@ void vMFbase<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z
     uint32_t k)
 { 
   vmfPrior_.getSufficientStatistics(x,z,k);
+  vmf_ = vmfPrior_.sampleFromPosterior(vmf_);
   // compute posterior parameters
   const Matrix<T,Dynamic,1> xi = t0_*m0_ + vmfData_.mu_.transpose()*xSum_;
   const T t = xi.norm();

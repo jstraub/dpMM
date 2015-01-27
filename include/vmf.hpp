@@ -26,10 +26,9 @@ class vMF : public Distribution<T>
 {
 public:
   uint32_t  D_;
-  Matrix<T,Dynamic,1> mu_;
-  T tau_;
 
   vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen);
+  vMF(const vMF<T>& vmf);
   ~vMF();
 
   T logPdf(const Matrix<T,Dynamic,Dynamic>& x) const;
@@ -62,6 +61,13 @@ vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
   : D_(mu_.rows()), mu_(mu), tau_(tau), 
   q_(Matrix<T,Dynamic,1>::Zero(D_),Matrix<T,Dynamic,Dynamic>::Identity(D_),pRndGen),
   pRndGen_(pRndGen)
+{};
+
+template<class T>
+vMF<T>::vMF(const vMF<T>& vmf)
+  : D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()), 
+  q_(Matrix<T,Dynamic,1>::Zero(D_),Matrix<T,Dynamic,Dynamic>::Identity(D_),vmf.pRndGen_),
+  pRndGen_(vmf.pRndGen_)
 {};
 
 template<class T>

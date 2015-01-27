@@ -149,14 +149,19 @@ vMF<T> vMFpriorFull<T>::sample()
 template<typename T>
 vMF<T> vMFpriorFull<T>::sampleFromPosterior(const vMF<T>& vmf)
 {
+  // posterior concentration prior parameters
   const T a = a0_ + count_;
   const T b = b0_ + vmf.mu().transpose()*xSum_;
+  // sample concentration form this posterior
   const T tau = sampleConcentration(a,b);
-
-  Matrix<T,Dynamic,1> xi = t0_*m0_ + tau*xSum_;
-  Matrix<T,Dynamic,1> mu = vmf0_.sample();
-
-  return vMF<T>(mu, tau,pRndGen_);
+  // posterior mean (m_N) and concentration (t_N) for vMF
+  Matrix<T,Dynamic,1> m_k = vmf0_.tau()*vmf0_.mu() + tau*xSum_;
+  T t_N = xi.norm();
+  m_k /= t_N;
+  // sample mean mu from posterior vMF
+  Matrix<T,Dynamic,1> mu = vMF<T>(m_N,t_N, pRndGen_).sample();
+  // return sampled posterior vMF
+  return vMF<T>(mu, tau, pRndGen_);
 };
 
 
