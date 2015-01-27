@@ -96,6 +96,7 @@ public:
   Matrix<T,Dynamic,1> sampleUnif(mt19937* pRndGen);
  
   // http://en.wikipedia.org/wiki/N-sphere
+  // http://keisan.casio.com/exec/system/1223381019
   T logSurfaceArea() const {
     return (LOG_2+0.5*D_*LOG_PI - boost::math::lgamma(0.5*D_));};
 

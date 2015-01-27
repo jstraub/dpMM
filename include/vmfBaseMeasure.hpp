@@ -53,8 +53,8 @@ public:
   const Matrix<T,Dynamic,Dynamic>& Sigma() const {return normal_.Sigma();};
 
 private:
-  vMF<T> vmfData_;
-  vMF<T> vmfPrior_;
+  vMF<T> vmf_;
+  vMFpriorFull<T> vmfPrior_;
 
 };
 
@@ -97,7 +97,7 @@ template<typename T>
 void vMFbase<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k)
 { 
-  getSufficientStatistics(x,z,k);
+  vmfPrior_.getSufficientStatistics(x,z,k);
   // compute posterior parameters
   const Matrix<T,Dynamic,1> xi = t0_*m0_ + vmfData_.mu_.transpose()*xSum_;
   const T t = xi.norm();
@@ -108,6 +108,7 @@ void vMFbase<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z
   // sample new mean on the sphere
   vmfData_.mu(vmfPrior_.posterior(xSum_).sample());
   
+
 };
 
 template<typename T>

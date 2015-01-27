@@ -12,6 +12,7 @@
 
 #include <boost/special_functions/bessel.hpp>
 #include "distribution.hpp"
+#include "normal.hpp"
 
 using namespace Eigen;
 using std::cout;
@@ -25,36 +26,42 @@ class vMF : public Distribution<T>
 {
 public:
   uint32_t  D_;
-  Matrix<T,Dynamic,1> m0_;
-  T t0_;
+  Matrix<T,Dynamic,1> mu_;
+  T tau_;
 
-  vMF(const Matrix<T,Dynamic,1>& m0, T t0, boost::mt19937 *pRndGen);
+  vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen);
   ~vMF();
 
   T logPdf(const Matrix<T,Dynamic,Dynamic>& x) const;
-  vMF<T> posterior(const Matrix<T,Dynamic,1>& xSum) const;
 
   Matrix<T,Dynamic,1> sample();
 
   void print() const;
 
-  const Matrix<T,Dynamic,Dynamic>& tau() const {return tau_;};
-  void tau(T tau) {tau_ = tau;};
+  const Matrix<T,Dynamic,1>& mu() const {return mu_;};
+  void mu(const Matrix<T,Dynamic,1>& mu) const {mu_ = mu;};
+
+  T tau() const {return tau_;};
+  void tau(const T tau) {tau_ = tau;};
 
 private 
   T tau_;
   Matrix<T,Dynamic,1> mu_;
   
-// as a proposal distribution
-//  normal_distribution<> gauss_;
+// Gaussian as a proposal distribution
+  Normal<T> q_;
+  boost::mt19937 *pRndGen_;
+  boost::uniform_01<> unif_;
 };
 
 typedef vMF<double> vMFd;
 typedef vMF<float> vMFf;
 
 template<class T>
-vMF<T>::vMF(const Matrix<T,Dynamic,1>& m0, T t0, boost::mt19937 *pRndGen)
-  : D_(m0_.rows()), m0_(m0), t0_(t0)
+vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
+  : D_(mu_.rows()), mu_(mu), tau_(tau), 
+  q_(Matrix<T,Dynamic,1>::Zero(D_),Matrix<T,Dynamic,Dynamic>::Identity(D_),pRndGen),
+  pRndGen_(pRndGen)
 {};
 
 template<class T>
@@ -77,15 +84,21 @@ T vMF<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& x)
 template<class T>
 Matrix<T,Dynamic,1> vMF<T>::sample()
 {
-  // TODO: implement using rejection sampling and proposals from a gaussian
-  assert(false);
-  return mu_;
+  // implemented using rejection sampling and proposals from a gaussian
+  Matrix<T,Dynamic,1> x;
+  while(42)
+  {
+    x = q_.sample(); // propose value
+    x /= x.norm();   // make it lie on sphere
+    // rejection sampling (in log domain)
+    T u = log(unif_(*pRndGen_));
+    T pdf = this->logPdf(x);
+    // bound via maximum over vMF at mu
+    T M = this->logPdf(mu_); // np.exp(tau)*tau/(4*np.pi*np.sinh(tau))
+    // normalizer (surface area of hyper-sphere)
+    T U = LOG_2+0.5*D_*LOG_PI - boost::math::lgamma(0.5*D_);
+    if(u < pdf-(M+U)) break;
+  };
+  return x;
 };
 
-template<class T>
-vMF<T> vMF<T>::posterior(const Matrix<T,Dynamic,1>& xSum)
-{
-  const Matrix<T,Dynamic,1> xi = t0_*m0_ + mu_.transpose()*xSum_;
-  const T t = xi.norm();
-  
-};

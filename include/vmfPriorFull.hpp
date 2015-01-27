@@ -12,6 +12,8 @@
 #include <boost/random/chi_squared_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
+#include <boost/special_functions/bessel.hpp>
+
 #include "distribution.hpp"
 #include "vmf.hpp"
 
@@ -24,7 +26,8 @@ template<typename T>
 class vMFpriorFull : public Distribution<T>
 {
 public:
-  vMFpriorFull(const Matrix<T,Dynamic,1>& m0, T t0, T a0, T b0);
+  vMFpriorFull(const Matrix<T,Dynamic,1>& m0, T t0, T a0, T b0, boost::mt19937
+    *pRndGen);
   vMFpriorFull(const vMFpriorFull<T>& vmfPriorFull);
   ~vMFpriorFull();
 
@@ -37,7 +40,7 @@ public:
     const VectorXu& z, uint32_t k);
 
   vMF<T> sample();
-  vMF<T> sampleFromPosterior();
+  vMF<T> sampleFromPosterior(const vMF<T>& vmf);
 
   T logPdf(const vMF<T>& vmf) const;
   T logPdfMarginalized() const; // log pdf of SS under NIW prior
@@ -52,21 +55,29 @@ public:
   Matrix<T,Dynamic,1> xSum_;
   T count_;
 
+  boost::mt19937 *pRndGen_;
+
 privat:
+  boost::uniform_01<> unif_;
+
+  T concentrationLogPdf(const T tau, const T a, const T b) const;
+  T sampleConcentration(const T a, const T b) const ;
 };
 // -----------------------------------------------------------------------
 
 template<typename T> 
 vMFpriorFull<T>::vMFpriorFull(const Matrix<T,Dynamic,1>& m0, T t0, T a0, T
-    b0)
-: vmf0_(m0,t0), a0(a0_), b0(b0_), xSum_(Matrix<T,Dynamic,1>::Zero(m0.rows())), count_(0.)
+    b0, boost::mt19937 *pRndGen)
+: vmf0_(m0,t0), a0(a0_), b0(b0_), xSum_(Matrix<T,Dynamic,1>::Zero(m0.rows())),
+  count_(0.), pRndGen_(pRndGen)
 {
 };
 
 template<typename T> 
 vMFpriorFull<T>::vMFpriorFull(const vMFpriorFull<T>& vmfPriorFull)
 : vmf0_(vmfPriorFull.vmf0_), a0_(vmfPriorFull.a0_), b0_(vmfPriorFull.b0_),
-  xSum_(vmfPriorFull.xSum_), count_(vmfPriorFull.count_)
+  xSum_(vmfPriorFull.xSum_), count_(vmfPriorFull.count_),
+  pRndGen_(vmfPriorFull.pRndGen_)
 {
 };
 
@@ -100,6 +111,7 @@ void vMFpriorFull<T>::resetSufficientStatistics()
   count_ = 0;
 };
 
+
 template<typename T>
 void vMFpriorFull<T>::getSufficientStatistics(const
     Matrix<T,Dynamic,Dynamic> &x, const VectorXu& z, uint32_t k)
@@ -124,4 +136,65 @@ void vMFpriorFull<T>::getSufficientStatistics(const
   cout<<"xSum="<<xSum_.transpose()<<endl;
   posterior().print();
 #endif
+};
+
+template<typename T>
+vMF<T> vMFpriorFull<T>::sample()
+{
+  tau = sampleConcentration(a0_,b0_);
+  Matrix<T,Dynamic,1> mu = vmf0_.sample();
+  return vMF<T>(mu, tau,pRndGen_);
+};
+
+template<typename T>
+vMF<T> vMFpriorFull<T>::sampleFromPosterior(const vMF<T>& vmf)
+{
+  const T a = a0_ + count_;
+  const T b = b0_ + vmf.mu().transpose()*xSum_;
+  const T tau = sampleConcentration(a,b);
+
+  Matrix<T,Dynamic,1> xi = t0_*m0_ + tau*xSum_;
+  Matrix<T,Dynamic,1> mu = vmf0_.sample();
+
+  return vMF<T>(mu, tau,pRndGen_);
+};
+
+
+template<typename T>
+T vMFpriorFull<T>::concentrationLogPdf(const T tau, const T a, const T b)
+{
+  // modified bessel function of the first kind
+  // http://www.boost.org/doc/libs/1_35_0/libs/math/doc/sf_and_dist/html/math_toolkit/special/bessel/mbessel.html
+  const T D = D_;
+  return a*((D/2. -1.)*log(tau) 
+    - (D/2.)*log(2.*M_PI) 
+    - log(cyl_bessel_i(D_/2. -1.,tau)))
+    + tau*b;
+};
+
+template<typename T>
+T vMFpriorFull<T>::sampleConcentration(const T a, const T b)
+{
+  // slice sampler for concentration paramter tau
+  const T w = 0.1;  // width for expansions of search region
+  T tau = 1.0;      // arbitrary starting point
+  for(int32_t t=0; t<100; ++t)
+  {
+    const T yMax = concentrationLogPdf(tau,a,b);
+    const T y = unif_(*pRndGen_)*yMax; 
+    T tauMin = tau-w; 
+    T tauMax = tau+w; 
+    while (concentrationLogPdf(tauMin,a,b) >= y) tauMin -= w;
+    while (concentrationLogPdf(tauMax,a,b) >= y) tauMax += w;
+    while(42){
+      T tauNew = unif_(*pRndGen_)*(tauMax-tauMin)+tauMin;
+      if(concentrationLogPdf(tauNew,a,b) >= y)
+      {
+        tau = tauNew; break;
+      }else{
+        if (tauNew < tau) tauMin = tauNew; else tauMax = tauNew;
+      }
+    };
+  }
+  return tau;
 };
