@@ -48,7 +48,7 @@ public:
   virtual void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs)
   {};
 
-private:
   shared_ptr<Matrix<T,Dynamic,Dynamic> > spx_;
+private:
 };
 

@@ -200,6 +200,12 @@ if( COMPILE_TEST )
   dpmm dpmm_cuda
 	)
 
+	cuda_add_executable(testCrpMM ./test/crpMM.cpp
+	)
+	target_link_libraries(testCrpMM
+	${Boost_LIBRARIES}
+  dpmm dpmm_cuda
+	)
 
 
 	cuda_add_executable(testSampler ./test/sampler.cpp

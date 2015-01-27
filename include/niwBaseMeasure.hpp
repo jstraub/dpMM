@@ -70,6 +70,8 @@ public:
   T logPdfUnderPriorMarginalized() const;
   T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSampled<T> >& other) const;
 
+  T logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x) {return 0.;};
+
   virtual NiwSampled<T>* merge(const NiwSampled<T>& other);
   void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
 

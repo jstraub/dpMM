@@ -35,8 +35,9 @@ public:
   void sample();
 
   T logPdfUnderPrior() const;
-  T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSampled<T> >& other) const;
+  virtual T logPdfUnderPriorMarginalized() const;
+
+  virtual T logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x);
 
 //  virtual NiwSampled<T>* merge(const NiwSampled<T>& other);
 //  void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
@@ -131,8 +132,15 @@ T vMFbase<T>::logPdfUnderPriorMarginalized() const
 };
 
 template<typename T>
-T vMFbase<T>::logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSampled<T> >& other) const 
+T vMFbase<T>::logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x) 
 {
-  return 0.;
+  // approximate the log pdf under the prior via monte carlo sampling
+  T logPdfMarg = 0;
+  for(uint32_t t=0; t<3; ++t)
+  {
+    vMF<T> vmf = vmfPrior_.sample();
+    logPdfMarg += vmf.logPdf(x);
+  }
+  return logPdfMarg/3.;
 };
 

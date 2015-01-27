@@ -33,10 +33,12 @@ public:
 
   virtual BaseMeasure<T>* copy() = 0;
 
+  // log likelihood under the model sampled from this base measure
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const =0;
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
 
+  // sample new model from the possterior under this base measure
   virtual void posterior(const Matrix<T,Dynamic,Dynamic>&x, const VectorXu& z, 
       uint32_t k) =0;
   virtual void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
@@ -45,7 +47,16 @@ public:
   virtual void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k) 
   {assert(false);};
 
+  // log pdf value of the current model under the base measure
   virtual T logPdfUnderPrior() const =0;
+
+  // log pdf value of the data point under the base measure (integrated over
+  // model parameters - could use Monte carlo integration if not analytic)
+  virtual T logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x) {return 0.;};
+  //  log pdf value of the data point under the base measure using the
+  //  sufficient statistics stored with the base measure
+  virtual T logPdfUnderPriorMarginalized() const {return 0;};
+
   virtual void print() const =0;
   virtual uint32_t getDim() const =0; // {return(0);};
 
