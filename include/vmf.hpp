@@ -10,9 +10,9 @@
 
 #include <iostream>
 
-#include <boost/special_functions/bessel.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/math/special_functions/bessel.hpp>
 #include "distribution.hpp"
-#include "normal.hpp"
 
 using namespace Eigen;
 using std::cout;
@@ -31,7 +31,7 @@ public:
   vMF(const vMF<T>& vmf);
   ~vMF();
 
-  T logPdf(const Matrix<T,Dynamic,Dynamic>& x) const;
+  T logPdf(const Matrix<T,Dynamic,1>& x) const;
 
   Matrix<T,Dynamic,1> sample();
 
@@ -43,58 +43,57 @@ public:
   T tau() const {return tau_;};
   void tau(const T tau) {tau_ = tau;};
 
-private 
-  T tau_;
+private:
   Matrix<T,Dynamic,1> mu_;
+  T tau_;
   
 // Gaussian as a proposal distribution
-  Normal<T> q_;
   boost::mt19937 *pRndGen_;
   boost::uniform_01<> unif_;
+  normal_distribution<> gauss_;
 };
 
 typedef vMF<double> vMFd;
 typedef vMF<float> vMFf;
 
-template<class T>
+template<typename T>
 vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
-  : D_(mu_.rows()), mu_(mu), tau_(tau), 
-  q_(Matrix<T,Dynamic,1>::Zero(D_),Matrix<T,Dynamic,Dynamic>::Identity(D_),pRndGen),
-  pRndGen_(pRndGen)
+  : Distribution<T>(pRndGen), D_(mu.rows()), mu_(mu), tau_(tau), pRndGen_(pRndGen)
 {};
 
-template<class T>
+template<typename T>
 vMF<T>::vMF(const vMF<T>& vmf)
-  : D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()), 
-  q_(Matrix<T,Dynamic,1>::Zero(D_),Matrix<T,Dynamic,Dynamic>::Identity(D_),vmf.pRndGen_),
-  pRndGen_(vmf.pRndGen_)
+  : Distribution<T>(vmf.pRndGen_), D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()),
+    pRndGen_(vmf.pRndGen_)
 {};
 
-template<class T>
+template<typename T>
 vMF<T>::~vMF()
 {};
 
-template<class T>
-T vMF<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& x)
+template<typename T>
+T vMF<T>::logPdf(const Matrix<T,Dynamic,1>& x) const 
 {
   // modified bessel function of the first kind
   // http://www.boost.org/doc/libs/1_35_0/libs/math/doc/sf_and_dist/html/math_toolkit/special/bessel/mbessel.html
   // 
-  const T D = D_;
+  const T D = static_cast<T>(D_);
+//  cout<<"vMF: bessel: D="<<D<<" "<<(D/2.-1.)<<" tau="<<tau_<<endl;
   return (D/2. -1.)*log(tau_) 
     - (D/2.)*log(2.*M_PI) 
-    - log(cyl_bessel_i(D_/2. -1.,tau_)) 
-    + tau_*(mu_.transpose()*x).sum();
+    - log(boost::math::cyl_bessel_i(D_/2. -1.,tau_)) 
+    + tau_*(mu_.transpose()*x)(0);
 };
 
-template<class T>
+template<typename T>
 Matrix<T,Dynamic,1> vMF<T>::sample()
 {
   // implemented using rejection sampling and proposals from a gaussian
-  Matrix<T,Dynamic,1> x;
+  Matrix<T,Dynamic,1> x(D_);
   while(42)
   {
-    x = q_.sample(); // propose value
+    for (uint32_t d=0; d<D_; d++)
+      x[d] = gauss_(*this->pRndGen_); //gsl_ran_gaussian(r,1);
     x /= x.norm();   // make it lie on sphere
     // rejection sampling (in log domain)
     T u = log(unif_(*pRndGen_));
@@ -108,3 +107,8 @@ Matrix<T,Dynamic,1> vMF<T>::sample()
   return x;
 };
 
+template<typename T>
+void vMF<T>::print() const
+{
+  cout<<"mu = "<<mu_.transpose()<<" tau = "<<tau_<<endl;
+};
