@@ -175,7 +175,7 @@ T vMFpriorFull<T>::concentrationLogPdf(const T tau, const T a, const T b) const
 //  cout<<"vMFpriorFull:: bessel: D="<<DD<<" "<<(DD/2.-1.)<<" tau="<<tau<<endl;
   return a*((DD/2. -1.)*log(tau) 
     - (DD/2.)*log(2.*M_PI) 
-    - log(boost::math::cyl_bessel_i(DD/2. -1.,tau)))
+    - logBesselI(DD/2. -1.,tau))
     + tau*b;
 };
 

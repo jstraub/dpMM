@@ -243,4 +243,5 @@ T NiwMarginalized<T>::logPdfUnderPrior() const
 template<typename T>
 void NiwMarginalized<T>::print() const
 {
+  niw0_.posterior().print();
 };

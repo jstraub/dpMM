@@ -134,6 +134,7 @@ void CrpMM<T>::sampleLabels()
       thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
       // TODO might want to add z_i to the SS of the new cluster?
       thetas_[z_(i)]->posterior(*this->spx_,z_,K_); // TODO slow
+      ++K_; 
     }
   }
   this->removeEmptyClusters();
@@ -146,26 +147,30 @@ void CrpMM<T>::sampleParameters()
   for(uint32_t k=0; k<K_; ++k)
   {
     thetas_[k]->posterior(*this->spx_,z_,k);
-    cout<<"k:"<<k<<" ";
-    thetas_[k]->print();
+//    cout<<"k:"<<k<<" ";
+//    thetas_[k]->print();
   }
 };
 
 template <typename T>
 void CrpMM<T>::removeEmptyClusters()
 {
+//  cout<<"K="<<K_<<" z="<<z_.transpose()<<endl;
   std::vector<bool> toDelete(K_,true);
-#pragma omp parallel for 
-  for(uint32_t i=0; i<z_.size(); ++i)
-    for(uint32_t k=0; k<K_; ++k) 
-      toDelete[z_(i)] = toDelete[z_(i)] && !(z_(i)==k);
+//#pragma omp parallel for 
+  for(uint32_t k=0; k<K_; ++k) 
+  {
+    toDelete[k] = true;
+    for(uint32_t i=0; i<z_.size(); ++i)
+      toDelete[k] = toDelete[k] && (z_(i)!=k);
+  }
 
   std::vector<uint32_t> labelMap(K_,0);
   {
     uint32_t k=0;
     for(k=0; k<K_; ++k) if(!toDelete[k]) break;
-    for(k=k==0?1:k; k<K_; ++k)
-      if(toDelete[k-1]) 
+    for(k=k+1; k<K_; ++k)
+      if(toDelete[k]) 
         labelMap[k] = labelMap[k-1];
       else
         labelMap[k] = labelMap[k-1]+1;
@@ -175,6 +180,7 @@ void CrpMM<T>::removeEmptyClusters()
 #pragma omp parallel for
   for(uint32_t i=0; i<z_.size(); ++i)
     z_(i) = labelMap[z_(i)];
+//  cout<<z_.transpose()<<endl;
 
   for(int32_t k=K_-1; k>=0; --k)
     if (toDelete[k])

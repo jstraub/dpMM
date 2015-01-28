@@ -19,6 +19,14 @@ using std::cout;
 using std::endl;
 using std::min;
 
+template<typename T> 
+inline T logBesselI(T nu, T x)
+{
+  // for large values of x besselI \approx exp(x)/sqrt(2 PI x)
+  if(x>100.)  return x - 0.5*log(2.*M_PI*x);
+  return log(boost::math::cyl_bessel_i(nu,x));
+};
+
 /* von-Mises-Fisher distribution
  */
 template<typename T>
@@ -81,7 +89,7 @@ T vMF<T>::logPdf(const Matrix<T,Dynamic,1>& x) const
 //  cout<<"vMF: bessel: D="<<D<<" "<<(D/2.-1.)<<" tau="<<tau_<<endl;
   return (D/2. -1.)*log(tau_) 
     - (D/2.)*log(2.*M_PI) 
-    - log(boost::math::cyl_bessel_i(D_/2. -1.,tau_)) 
+    - logBesselI<T>(D_/2. -1.,tau_) 
     + tau_*(mu_.transpose()*x)(0);
 };
 
