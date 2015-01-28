@@ -136,10 +136,11 @@ T vMFbase<T>::logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x)
 {
   // approximate the log pdf under the prior via monte carlo sampling
   T logPdfMarg = 0;
+#pragma omp parallel for reduction(+:logPdfMarg)
   for(uint32_t t=0; t<3; ++t)
   {
     vMF<T> vmf = vmfPrior_.sample();
-    logPdfMarg += vmf.logPdf(x);
+    logPdfMarg = logPdfMarg + vmf.logPdf(x);
   }
   return logPdfMarg/3.;
 };

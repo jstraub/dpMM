@@ -61,7 +61,7 @@ private:
   boost::uniform_01<> unif_;
 
   T concentrationLogPdf(const T tau, const T a, const T b) const;
-  T sampleConcentration(const T a, const T b) ;
+  T sampleConcentration(const T a, const T b, const T TT=10);
 };
 // -----------------------------------------------------------------------
 
@@ -180,12 +180,12 @@ T vMFpriorFull<T>::concentrationLogPdf(const T tau, const T a, const T b) const
 };
 
 template<typename T>
-T vMFpriorFull<T>::sampleConcentration(const T a, const T b)
+T vMFpriorFull<T>::sampleConcentration(const T a, const T b, const T TT)
 {
   // slice sampler for concentration paramter tau
   const T w = 0.1;  // width for expansions of search region
   T tau = 0.11;      // arbitrary starting point
-  for(int32_t t=0; t<100; ++t)
+  for(int32_t t=0; t<TT; ++t)
   {
     const T yMax = concentrationLogPdf(tau,a,b);
     const T y = log(unif_(*pRndGen_)*exp(yMax)); 

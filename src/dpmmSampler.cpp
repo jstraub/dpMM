@@ -19,6 +19,8 @@
 #include "unifSphere.hpp"
 #include "sphericalKMeans.hpp"
 #include "kmeans.hpp"
+#include "crpMM.hpp"
+#include "vmfBaseMeasure.hpp"
 //#include "dpvMFmeans.hpp"
 #include "timer.hpp"
 
@@ -49,7 +51,7 @@ int main(int argc, char **argv)
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere, DirNiwSphereFull"
-      " NiwSphereUnifNoise, spkm, spkmKarcher, kmeans right now)")
+      " NiwSphereUnifNoise, spkm, spkmKarcher, kmeans, CrpvMF right now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
     ("brief", po::value< vector<double> >()->multitoken(), 
@@ -489,6 +491,28 @@ int main(int argc, char **argv)
 //      lambda = params[0];
 //    }
 //    spkm = new DPvMFMeans<double>(spx, K, lambda, &rndGen);
+  }else if(!base.compare("CrpvMF")){
+    cout<<"D="<<D<<endl;
+
+    double a0 = 2.0;
+    double b0 = 1.7;
+    double t0 = 0.01;
+    VectorXd m0(D);
+
+    if(vm.count("params"))
+    {
+      vector<double> params = vm["params"].as< vector<double> >();
+      cout<<"params length="<<params.size()<<" D="<<D<<endl;
+      for(uint32_t i=0; i<D; ++i)
+        m0(i) = params[i];
+      t0 = params[D];
+      a0 = params[D+1];
+      b0 = params[D+2];
+    }
+    vMFpriorFull<double> vMFprior(m0,t0,a0,b0,&rndGen);
+    shared_ptr<vMFbase<double> > vMFsampled( new vMFbase<double>(vMFprior));
+    dpmm = new CrpMM<double>(alpha(0),vMFsampled,K,&rndGen);
+
   }else if(!base.compare("spkm")){
     spkm = new SphericalKMeans<double>(spx, K, &rndGen);
   }else if(!base.compare("spkmKarcher")){

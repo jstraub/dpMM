@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(crpMM_vMF_test)
   double alpha = 1.0;
   CrpMM<double> dirvMF_sp(alpha,vMFsampled,1,&rndGen);
   
-  uint32_t N=20;
+  uint32_t N=100;
   uint32_t K=2;
   MatrixXd x(3,N);
   MatrixXd mus = sampleClustersOnSphere<double>(x, K);

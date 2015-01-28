@@ -136,6 +136,7 @@ void CrpMM<T>::sampleLabels()
       thetas_[z_(i)]->posterior(*this->spx_,z_,K_); // TODO slow
       ++K_; 
     }
+    if(i %(z_.size()/100) == 0) cout<<" CrpMM<T>::sampleLabel: "<<(i/(z_.size()/100))<<"% done"<<endl;
   }
   this->removeEmptyClusters();
 };
