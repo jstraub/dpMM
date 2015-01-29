@@ -153,14 +153,18 @@ vMF<T> vMFpriorFull<T>::sampleFromPosterior(const vMF<T>& vmf)
   // posterior concentration prior parameters
   const T a = a0_ + count_;
   const T b = b0_ + vmf.mu().transpose()*xSum_;
+//  cout<<"vMFpriorFull::sampleFromPosterior: a="<<a<<" b="<<b<<endl;
   // sample concentration form this posterior
   const T tau = sampleConcentration(a,b);
+//  cout<<"vMFpriorFull::sampleFromPosterior: tau="<<tau<<endl;
   // posterior mean (m_N) and concentration (t_N) for vMF
   Matrix<T,Dynamic,1> m_N = vmf0_.tau()*vmf0_.mu() + tau*xSum_;
   T t_N = m_N.norm();
   m_N /= t_N;
+//  cout<<"vMFpriorFull::sampleFromPosterior: t_N="<<t_N<<" m_N="<<m_N.transpose()<<endl;
   // sample mean mu from posterior vMF
   Matrix<T,Dynamic,1> mu = vMF<T>(m_N,t_N, pRndGen_).sample();
+//  cout<<"vMFpriorFull::sampleFromPosterior: mu="<<mu.transpose()<<endl;
   // return sampled posterior vMF
   return vMF<T>(mu, tau, pRndGen_);
 };
@@ -188,7 +192,8 @@ T vMFpriorFull<T>::sampleConcentration(const T a, const T b, const T TT)
   for(int32_t t=0; t<TT; ++t)
   {
     const T yMax = concentrationLogPdf(tau,a,b);
-    const T y = log(unif_(*pRndGen_)*exp(yMax)); 
+    const T y = log(unif_(*pRndGen_)) + yMax; 
+//    cout<<"vMFpriorFull::sampleConcentration: yMax="<<yMax<<" y="<<y<<endl;
     T tauMin = tau-w; 
     T tauMax = tau+w; 
     while (tauMin >=0. && concentrationLogPdf(tauMin,a,b) >= y) tauMin -= w;
@@ -196,7 +201,7 @@ T vMFpriorFull<T>::sampleConcentration(const T a, const T b, const T TT)
     while (concentrationLogPdf(tauMax,a,b) >= y) tauMax += w;
     while(42){
       T tauNew = unif_(*pRndGen_)*(tauMax-tauMin)+tauMin;
-//      cout<<"sampleConcentration: "<<tauNew<<" min: "<<tauMin<<" max: "<<tauMax<<" a="<<a<<" b="<<b<<endl;
+//      cout<<"vMFpriorFull::sampleConcentration: "<<tauNew<<" min: "<<tauMin<<" max: "<<tauMax<<" a="<<a<<" b="<<b<<endl;
       if(concentrationLogPdf(tauNew,a,b) >= y)
       {
         tau = tauNew; break;
