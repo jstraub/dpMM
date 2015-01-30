@@ -174,9 +174,9 @@ void DirMM<T>::sampleParameters()
 //#pragma omp parallel for 
   for(uint32_t k=0; k<K_; ++k)
   {
-    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
+//    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
     thetas_[k]->posterior(x_,z_,k);
-    thetas_[k]->print();
+//    thetas_[k]->print();
   }
 };
 

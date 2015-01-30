@@ -117,6 +117,7 @@ Matrix<T,Dynamic,1> Normal<T>::sample()
   Matrix<T,Dynamic,1> x(D_);
   for (uint32_t d=0; d<D_; d++)
     x[d] = gauss_(*this->pRndGen_); //gsl_ran_gaussian(r,1);
+  // TODO fix sampler!
   return Sigma_*x + mu_;
 };
 
