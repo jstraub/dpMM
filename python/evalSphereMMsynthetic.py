@@ -163,6 +163,7 @@ bases = ['DpNiwSphereFull_1']
 bases = ['DpNiw_1']
 bases = ['spkm_30','kmeans_30']
 bases = ['DirNiwSphereFull_100','spkm_30','kmeans_30','DpNiw_1','DpNiwSphereFull_1']
+bases = ['DpNiw_1']
 
 x=np.loadtxt(rootPath+dataPath,delimiter=' ')
 N = x.shape[1]
@@ -174,8 +175,8 @@ reRun = True
 
 cfg['K'] = K;
 cfg['T'] = 200
-cfg['T'] = 600
-cfg['J'] = 10
+cfg['T'] = 100
+cfg['J'] = 1
 
 nmis = np.zeros((len(bases)*cfg['J'],cfg['T']))
 vMeasures = np.zeros((len(bases)*cfg['J'],cfg['T']))
@@ -229,6 +230,7 @@ for i,base in enumerate(bases):
   #  args = ['../build/dpStickGMM',
     args = ['../../dpMMshared/build/dpmmSampler',
       '--seed {}'.format(int(time.time()*100000) - 100000*int(time.time())),
+      '-s', # print silhouette
       '-N {}'.format(N),
       '-D {}'.format(D),
       '-K {}'.format(cfg['K']),

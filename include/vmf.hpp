@@ -7,12 +7,13 @@
 #include <Eigen/Dense>
 #include <Eigen/Cholesky>
 #include <algorithm>
-
 #include <iostream>
 
 #include <boost/random/normal_distribution.hpp>
 #include <boost/math/special_functions/bessel.hpp>
-#include "distribution.hpp"
+
+#include <distribution.hpp>
+#include <sphere.hpp>
 
 using namespace Eigen;
 using std::cout;
@@ -59,6 +60,8 @@ private:
   boost::mt19937 *pRndGen_;
   boost::uniform_01<> unif_;
   normal_distribution<> gauss_;
+
+  Sphere<T> S_;
 };
 
 typedef vMF<double> vMFd;
@@ -66,13 +69,14 @@ typedef vMF<float> vMFf;
 
 template<typename T>
 vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
-  : Distribution<T>(pRndGen), D_(mu.rows()), mu_(mu), tau_(tau), pRndGen_(pRndGen)
+  : Distribution<T>(pRndGen), D_(mu.rows()), mu_(mu), tau_(tau),
+  pRndGen_(pRndGen), S_(D_)
 {};
 
 template<typename T>
 vMF<T>::vMF(const vMF<T>& vmf)
   : Distribution<T>(vmf.pRndGen_), D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()),
-    pRndGen_(vmf.pRndGen_)
+    pRndGen_(vmf.pRndGen_), S_(D_)
 {};
 
 template<typename T>
@@ -98,20 +102,33 @@ Matrix<T,Dynamic,1> vMF<T>::sample()
 {
   // implemented using rejection sampling and proposals from a gaussian
   Matrix<T,Dynamic,1> x(D_);
+  Matrix<T,Dynamic,1> xtNorth(D_-1);
+
+  uint32_t t=0;
   while(42)
   {
-    for (uint32_t d=0; d<D_; d++)
-      x[d] = gauss_(*this->pRndGen_); //gsl_ran_gaussian(r,1);
-    x /= x.norm();   // make it lie on sphere
+    // sample from zero mean Gaussian in tangent space at north pole
+    for (uint32_t d=0; d<D_-1; d++)
+      xtNorth[d] = gauss_(*this->pRndGen_)*sqrt(1./tau_); //gsl_ran_gaussian(r,1);
+    // rotate sample to mu and map it down to sphere
+    x = S_.Exp_p_single(mu_,S_.rotate_north2p(mu_,xtNorth));
     // rejection sampling (in log domain)
     T u = log(unif_(*pRndGen_));
-    T pdf = this->logPdf(x);
+    T pdf_f = this->logPdf(x);
+//    cout<<endl<<"xtNorth "<<xtNorth.transpose()<<" tau="<<tau_<<endl;
+    T pdf_g = -0.5*(log(2.*M_PI)*D_ -log(tau_)+tau_*(xtNorth.transpose()*xtNorth)(0) );
+//    cout<<endl<<"xtNorth "<<xtNorth.transpose()<<" tau="<<tau_<<" pdf_g="<<pdf_g<<" "<<tau_*(xtNorth.transpose()*xtNorth)(0)<<endl;
+
     // bound via maximum over vMF at mu
-    T M = this->logPdf(mu_); // np.exp(tau)*tau/(4*np.pi*np.sinh(tau))
-    // normalizer (surface area of hyper-sphere)
-    T U = LOG_2+0.5*D_*LOG_PI - boost::math::lgamma(0.5*D_);
-    if(u < pdf-(M+U)) break;
+//    T M = this->logPdf(mu_) + 0.5*(log(2.*M_PI)*D_ - log(tau_));
+//  conservative bound
+    T M = this->logPdf(mu_) + log(10) + 0.5*(log(2.*M_PI)*D_ - log(tau_));
+//    cout<< u<<" "<< (pdf_f-(M+pdf_g))<< " "<<pdf_f<<" "<<M<<" "<<pdf_g<<endl;
+    if(u < pdf_f-(M+pdf_g)) break;
+
+    ++t;
   };
+//  cout<<"vMF<T>::sample: T="<<t<<endl;
   return x;
 };
 

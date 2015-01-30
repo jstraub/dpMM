@@ -170,12 +170,13 @@ void DirMM<T>::sampleLabels()
 template<typename T>
 void DirMM<T>::sampleParameters()
 {
-#pragma omp parallel for 
+  Matrix<T,Dynamic,1> Ns = getCounts();
+//#pragma omp parallel for 
   for(uint32_t k=0; k<K_; ++k)
   {
+    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
     thetas_[k]->posterior(x_,z_,k);
-//    cout<<"k:"<<k<<endl;
-//    thetas_[k]->print();
+    thetas_[k]->print();
   }
 };
 

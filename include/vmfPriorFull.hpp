@@ -14,8 +14,8 @@
 
 #include <boost/math/special_functions/bessel.hpp>
 
-#include "distribution.hpp"
-#include "vmf.hpp"
+#include <distribution.hpp>
+#include <vmf.hpp>
 
 using namespace Eigen;
 using std::endl;

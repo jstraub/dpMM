@@ -4,6 +4,7 @@
 #pragma once
 
 #include <vector>
+#include <algorithm>
 #include <Eigen/Dense>
 
 #include "global.hpp"
@@ -12,6 +13,8 @@
 using std::vector;
 using std::cout;
 using std::endl;
+using std::min;
+using std::max;
 using boost::shared_ptr;
 
 /* clustered data */
@@ -47,6 +50,7 @@ public:
 
 //  virtual const spVectorXu& z() const {return z_;};
   virtual VectorXu& z() {return *z_;};
+  virtual uint32_t z(uint32_t i) const {return (*z_)(i);};
   virtual const spVectorXu& labels() const {return z_;};
   virtual const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x() const {return x_;};
   virtual const Matrix<T,Dynamic,Dynamic>& xMat() const {return (*x_);};
@@ -70,10 +74,65 @@ typedef ClData<float> ClDataf;
 typedef ClData<double> ClDatad;
 
 
-//class ClDataGpu : public ClData
-//{
-//  
-//};
+template<typename T>
+struct Spherical 
+{
+  static T dist(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b)
+  { return a.transpose()*b; };
+
+  static T dissimilarity(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b)
+  { return acos(min(static_cast<T>(1.0),max(static_cast<T>(-1.0),(a.transpose()*b)(0)))); };
+
+  static bool closer(const T a, const T b)
+  { return a > b; };
+};
+
+template<typename T>
+struct Euclidean 
+{
+  static T dist(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b)
+  { return (a-b).squaredNorm(); };
+
+  static T dissimilarity(const Matrix<T,Dynamic,1>& a, const Matrix<T,Dynamic,1>& b)
+  { return (a-b).squaredNorm();};
+
+  static bool closer(const T a, const T b) { return a<b; };
+};
+
+template<class T, class DS>
+T silhouette(const ClData<T>& cld)
+{ 
+  if(cld.K()<2) return -1.0;
+//  assert(Ns_.sum() == N_);
+  cout<<cld.N()<<endl;
+  Matrix<T,Dynamic,1> sil(cld.N());
+#pragma omp parallel for
+  for(uint32_t i=0; i<cld.N(); ++i)
+  {
+    Matrix<T,Dynamic,1> b = Matrix<T,Dynamic,1>::Zero(cld.K());
+    for(uint32_t j=0; j<cld.N(); ++j)
+      if(j != i)
+      {
+        b(cld.z(j)) += DS::dissimilarity(cld.x()->col(i),cld.x()->col(j));
+      }
+    for (uint32_t k=0; k<cld.K(); ++k) b /= cld.count(k);
+//    b *= Ns_.cast<T>().cwiseInverse(); // Assumes Ns are up to date!
+    T a_i = b(cld.z(i)); // average dist to own cluster
+    T b_i = cld.z(i)==0 ? b(1) : b(0); // avg dist do closest other cluster
+    for(uint32_t k=0; k<cld.K(); ++k)
+      if(k != cld.z(i) && b(k) == b(k) && b(k) < b_i && cld.count(k) > 0)
+      {
+        b_i = b(k);
+      }
+    if(a_i < b_i)
+      sil(i) = 1.- a_i/b_i;
+    else if(a_i > b_i)
+      sil(i) = b_i/a_i - 1.;
+    else
+      sil(i) = 0.;
+  }
+  return sil.sum()/static_cast<T>(cld.N());
+};
 
 // -------------------------- impl --------------------------------------------
 template<class T>
@@ -114,8 +173,8 @@ void ClData<T>::update(uint32_t K)
     Ss_[k].setZero(D_,D_);
   }
 
-  for(uint32_t i=0; i<N_; ++i)
-    Ss_[(*z_)(i)] += (x_->col(i) - means_.col((*z_)(i)))*
-      (x_->col(i) - means_.col((*z_)(i))).transpose();
+//  for(uint32_t i=0; i<N_; ++i)
+//    Ss_[(*z_)(i)] += (x_->col(i) - means_.col((*z_)(i)))*
+//      (x_->col(i) - means_.col((*z_)(i))).transpose();
 }
 

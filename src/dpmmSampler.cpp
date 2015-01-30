@@ -20,6 +20,7 @@
 #include "sphericalKMeans.hpp"
 #include "kmeans.hpp"
 #include "crpMM.hpp"
+#include "clData.hpp"
 #include "vmfBaseMeasure.hpp"
 //#include "dpvMFmeans.hpp"
 #include "timer.hpp"
@@ -48,6 +49,7 @@ int main(int argc, char **argv)
       "same")
     ("K,K", po::value<int>(), "number of initial clusters ")
     ("nopropose,n", "flag to disable the propsal of splits and merges")
+    ("silhouette,s", "flag to enable output of silhouett value of the last iteration")
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere, DirNiwSphereFull"
@@ -710,6 +712,30 @@ int main(int argc, char **argv)
     fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
     fout<<logLikes<<endl;
     fout.close();
+
+    if(vm.count("silhouette")) 
+    {
+      const VectorXu& z = dpmm->getLabels().transpose();
+      spVectorXu spz(new VectorXu(z));
+      ClData<double> cld(spx,spz,dpmm->getK());
+      cld.update(dpmm->getK()); // compute SS
+      double sil = 0.;
+      if(!base.compare("spkm") || !base.compare("spkmKarcher") 
+        || !base.compare("DpNiwSphereFull")
+        || !base.compare("DpNiwSphere")
+        || !base.compare("DirNiwSphereFull")
+        || !base.compare("CrpvMF")
+        || !base.compare("DirvMF"))
+      {
+        sil = silhouette<double,Spherical<double> >(cld);
+      }else{
+        sil = silhouette<double,Euclidean<double> >(cld);
+      }
+      cout<<"silhouette = "<<sil<<" saved to "<<(pathOut+"_measures.csv")<<endl;
+      fout.open((pathOut+"_measures.csv").data(),ofstream::out);
+      fout<<sil<<endl;
+      fout.close();
+    }
   }
 };
 
