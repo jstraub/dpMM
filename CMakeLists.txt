@@ -247,7 +247,7 @@ if( COMPILE_TEST )
 
 endif() 
 
-#add_executable(testDist ./test/distributions.cpp
+add_executable(testDist ./test/distributions.cpp
     #./src/dir.cpp
   #./src/cat.cpp
   #./src/mult.cpp
@@ -256,10 +256,8 @@ endif()
     #./src/normal.cpp
   #./include/dpmmSubclusters/niw_sampled.cpp
   #./include/dpmmSubclusters/normal.cpp
-#)
-#target_link_libraries(testDist
-  #boost_system
-  #boost_random
-  #boost_unit_test_framework
-  #gsl gslcblas m rt
-#)
+)
+target_link_libraries(testDist
+		${Boost_LIBRARIES}
+    dpmm dpmm_cuda
+)

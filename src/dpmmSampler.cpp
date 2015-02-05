@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     ("K,K", po::value<int>(), "number of initial clusters ")
     ("nopropose,n", "flag to disable the propsal of splits and merges")
     ("silhouette,s", "flag to enable output of silhouett value of the last iteration")
+    ("shuffle", "shuffle the data before processing")
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere, DirNiwSphereFull"
@@ -131,10 +132,18 @@ int main(int argc, char **argv)
   }else{
     cout<<"loading data from "<<pathIn<<endl;
     ifstream fin(pathIn.data(),ifstream::in);
+
+    vector<uint32_t> ind(N);
+    for (uint32_t i=0; i<N; ++i)
+      ind[i] = i;
+    if(vm.count("shuffle"))
+    {
+      cout<<"shuffling input"<<endl;
+      std::random_shuffle(ind.begin(),ind.end());
+    }
     for (uint32_t j=0; j<D; ++j)
       for (uint32_t i=0; i<N; ++i)
-        fin>>x(j,i);
-    //cout<<x<<endl;
+        fin>>x(j,ind[i]);
   }
 
   // which base distribution

@@ -131,6 +131,18 @@ BOOST_AUTO_TEST_CASE( gauss_test)
   x << 0.0,0.0,0.0;
   cout << normal.logPdf(x) <<endl;
   BOOST_CHECK(a>normal.logPdf(x));
+
+
+  Sigma << 5.0,0.0,0.0,
+        0.0,1.0,0.0,
+        0.0,0.0,0.1;
+  mu << 1.0,1.0,0.0;
+  Normal<double> normalA(mu,Sigma,&rndGen);
+  for (uint32_t i=0; i<100; ++i)
+  {
+    x = normalA.sample();
+    cout<<"x="<<x.transpose()<<" logPdf="<<normalA.logPdf(x)<<endl;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(iw_test)

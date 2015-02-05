@@ -117,8 +117,10 @@ Matrix<T,Dynamic,1> Normal<T>::sample()
   Matrix<T,Dynamic,1> x(D_);
   for (uint32_t d=0; d<D_; d++)
     x[d] = gauss_(*this->pRndGen_); //gsl_ran_gaussian(r,1);
-  // TODO fix sampler!
-  return Sigma_*x + mu_;
+  Matrix<T,Dynamic,Dynamic> sqrtD = Matrix<T,Dynamic,Dynamic>::Zero(D_,D_); 
+  sqrtD.diagonal() = SigmaLDLT_.vectorD();
+  sqrtD = sqrtD.array().sqrt();
+  return (SigmaLDLT_.matrixL()*sqrtD*SigmaLDLT_.matrixU())*x + mu_;
 };
 
 template<typename T>
