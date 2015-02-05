@@ -104,9 +104,10 @@ T silhouette(const ClData<T>& cld)
 { 
   if(cld.K()<2) return -1.0;
 //  assert(Ns_.sum() == N_);
-  cout<<cld.N()<<endl;
+  cout<<"N="<<cld.N()<<" K="<<cld.K()<<endl;
+  cout<<"counts="<<cld.counts().transpose()<<endl;
   Matrix<T,Dynamic,1> sil(cld.N());
-#pragma omp parallel for
+//#pragma omp parallel for
   for(uint32_t i=0; i<cld.N(); ++i)
   {
     Matrix<T,Dynamic,1> b = Matrix<T,Dynamic,1>::Zero(cld.K());
@@ -115,7 +116,8 @@ T silhouette(const ClData<T>& cld)
       {
         b(cld.z(j)) += DS::dissimilarity(cld.x()->col(i),cld.x()->col(j));
       }
-    for (uint32_t k=0; k<cld.K(); ++k) b /= cld.count(k);
+    for (uint32_t k=0; k<cld.K(); ++k) 
+      b(k) /= cld.count(k);
 //    b *= Ns_.cast<T>().cwiseInverse(); // Assumes Ns are up to date!
     T a_i = b(cld.z(i)); // average dist to own cluster
     T b_i = cld.z(i)==0 ? b(1) : b(0); // avg dist do closest other cluster
@@ -130,7 +132,9 @@ T silhouette(const ClData<T>& cld)
       sil(i) = b_i/a_i - 1.;
     else
       sil(i) = 0.;
+//    cout<<"@"<<i<<" b="<<b.transpose()<<" b_i="<<b_i<<" a_i="<<a_i<<endl;
   }
+  cout<<" sil.sum="<<sil.sum()<<endl;
   return sil.sum()/static_cast<T>(cld.N());
 };
 

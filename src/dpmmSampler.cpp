@@ -563,6 +563,9 @@ int main(int argc, char **argv)
     pathOut = vm["output"].as<string>();
   cout<<"output to "<<pathOut<<endl;
 
+  VectorXu z_; 
+  uint32_t K_;
+
   // TODO stupid duplication
   if(!base.compare("NiwSphereCuda"))
   {
@@ -605,6 +608,9 @@ int main(int argc, char **argv)
     fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
     fout<<logLikes<<endl;
     fout.close();
+    
+    z_ = dpmmf->getLabels().transpose();
+    K_ = dpmmf->getK();
 
   }else if(!base.compare("spkm") || !base.compare("spkmKarcher") 
       || !base.compare("kmeans"))
@@ -652,6 +658,9 @@ int main(int argc, char **argv)
     ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
     foutMeans << spkm->centroids()<<endl;
     foutMeans.close();
+
+    z_ = spkm->z().transpose();
+    K_ = spkm->getK();
 
   }else{
     assert(dpmm!=NULL);
@@ -723,29 +732,33 @@ int main(int argc, char **argv)
     fout<<logLikes<<endl;
     fout.close();
 
-    if(vm.count("silhouette")) 
-    {
-      const VectorXu& z = dpmm->getLabels().transpose();
-      spVectorXu spz(new VectorXu(z));
-      ClData<double> cld(spx,spz,dpmm->getK());
-      cld.update(dpmm->getK()); // compute SS
-      double sil = 0.;
-      if(!base.compare("spkm") || !base.compare("spkmKarcher") 
+    z_ = dpmm->getLabels().transpose();
+    K_ = dpmm->getK();
+
+  }
+  if(vm.count("silhouette")) 
+  {
+    spVectorXu spz(new VectorXu(z_));
+    ClData<double> cld(spx,spz,K_);
+    cld.update(K_); // compute SS
+    double sil = 0.;
+    if(!base.compare("spkm") || !base.compare("spkmKarcher") 
         || !base.compare("DpNiwSphereFull")
         || !base.compare("DpNiwSphere")
         || !base.compare("DirNiwSphereFull")
         || !base.compare("CrpvMF")
         || !base.compare("DirvMF"))
-      {
-        sil = silhouette<double,Spherical<double> >(cld);
-      }else{
-        sil = silhouette<double,Euclidean<double> >(cld);
-      }
-      cout<<"silhouette = "<<sil<<" saved to "<<(pathOut+"_measures.csv")<<endl;
-      fout.open((pathOut+"_measures.csv").data(),ofstream::out);
-      fout<<sil<<endl;
-      fout.close();
+    {
+      cout<<"spherical silhouette"<<endl;
+      sil = silhouette<double,Spherical<double> >(cld);
+    }else{
+      cout<<"euclidean silhouette"<<endl;
+      sil = silhouette<double,Euclidean<double> >(cld);
     }
+    cout<<"silhouette = "<<sil<<" saved to "<<(pathOut+"_measures.csv")<<endl;
+    ofstream fout((pathOut+"_measures.csv").data(),ofstream::out);
+    fout<<sil<<endl;
+    fout.close();
   }
 };
 
