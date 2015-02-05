@@ -81,6 +81,7 @@ int main(int argc, char **argv)
   if(vm.count("seed"))
     seed = static_cast<uint64_t>(vm["seed"].as<int>());
   boost::mt19937 rndGen(seed);
+  std::srand(seed);
   uint32_t K=5;
   if (vm.count("K")) K = vm["K"].as<int>();
   // number of iterations
