@@ -36,7 +36,7 @@ protected:
 
 public:
   LrCluster(const shared_ptr<B>& theta, T alpha, boost::mt19937 *pRndGen);
-  ~LrCluster();
+  virtual ~LrCluster();
 
   virtual LrCluster<B,T>* copy();
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
