@@ -130,11 +130,15 @@ void CrpMM<T>::sampleLabels()
     Nk(z_(i)) ++; // add data-point into new cluster
 
     // add a new cluster from the base measure
-    if(z_(i)==K_){
+    if(z_(i)==K_)
+    {
       thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
       // TODO might want to add z_i to the SS of the new cluster?
       thetas_[z_(i)]->posterior(*this->spx_,z_,K_); // TODO slow
       ++K_; 
+      Nk.conservativeResize(K_+1);
+      Nk(z_(i)) -= alpha_;
+      Nk(K_) = alpha_;
     }
     if(i %(z_.size()/100) == 0) cout<<" CrpMM<T>::sampleLabel: "<<(i/(z_.size()/100))<<"% done"<<endl;
   }
