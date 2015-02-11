@@ -119,6 +119,9 @@ int main(int argc, char **argv)
 
   shared_ptr<MatrixXd> spx(new MatrixXd(D,N));
   MatrixXd& x(*spx);
+  // ind -> mapping to allow shuffling and un-shuffling of data for the algos
+  vector<uint32_t> ind(N);
+  for (uint32_t i=0; i<N; ++i)  ind[i] = i;
   string pathIn ="";
   if(vm.count("input")) pathIn = vm["input"].as<string>();
   if (!pathIn.compare(""))
@@ -134,9 +137,6 @@ int main(int argc, char **argv)
     cout<<"loading data from "<<pathIn<<endl;
     ifstream fin(pathIn.data(),ifstream::in);
 
-    vector<uint32_t> ind(N);
-    for (uint32_t i=0; i<N; ++i)
-      ind[i] = i;
     if(vm.count("shuffle"))
     {
       cout<<"shuffling input"<<endl;
@@ -587,8 +587,8 @@ int main(int argc, char **argv)
       cout<<"  counts=   "<<counts<double,uint32_t>(z,dpmmf->getK()).transpose()<<endl;
 //      cout<<"  logJoint= "<<dpmmf->logJoint()<<endl;
       for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(i)<<" ";
-      fout<<z(z.size()-1)<<endl;
+        fout<<z(ind[i])<<" ";
+      fout<<z(ind[z.size()-1])<<endl;
       foutJointLike<<dpmmf->logJoint()<<endl;
 
       dpmmf->sampleParameters();
@@ -627,8 +627,8 @@ int main(int argc, char **argv)
 
       const VectorXu& z = spkm->z();
       for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(i)<<" ";
-      fout<<z(z.size()-1)<<endl;
+        fout<<z(ind[i])<<" ";
+      fout<<z(ind[z.size()-1])<<endl;
       double deviation = spkm->avgIntraClusterDeviation();
 
       cout<<"   K="<<spkm->getK();
@@ -673,8 +673,8 @@ int main(int argc, char **argv)
 
       const VectorXu& z = dpmm->getLabels().transpose();
       for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(i)<<" ";
-      fout<<z(z.size()-1)<<endl;
+        fout<<z(ind[i])<<" ";
+      fout<<z(ind[z.size()-1])<<endl;
       foutJointLike<<dpmm->logJoint()<<endl;
       dpmm->dump(foutMeans,foutCovs);
 
@@ -693,8 +693,8 @@ int main(int argc, char **argv)
 
       const VectorXu& z = dpmm->getLabels().transpose();
       for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(i)<<" ";
-      fout<<z(z.size()-1)<<endl;
+        fout<<z(ind[i])<<" ";
+      fout<<z(ind[z.size()-1])<<endl;
       foutJointLike<<dpmm->logJoint()<<endl;
       dpmm->dump(foutMeans,foutCovs);
       
