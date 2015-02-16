@@ -28,7 +28,7 @@ extern void gmmPdf(float * d_x, float *d_invSigmas,
     uint32_t K_);
 
 template<typename T>
-class ClDataGpu : public ClData<T>
+class ClGMMDataGpu : public ClData<T>
 {
 protected:
   GpuMatrix<uint32_t> d_z_; // indicators on GPU
@@ -42,9 +42,9 @@ protected:
   GpuMatrix<T> d_invSigmas_; //
  
 public: 
-  ClDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+  ClGMMDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
       const spVectorXu& z, uint32_t K);
-  virtual ~ClDataGpu(){;};
+  virtual ~ClGMMDataGpu(){;};
  
   virtual void init();
 
@@ -69,12 +69,12 @@ protected:
   virtual void computeSufficientStatistics(uint32_t k0, uint32_t K);
 };
 
-typedef ClDataGpu<double> ClDataGpud;
-typedef ClDataGpu<float> ClDataGpuf;
+typedef ClGMMDataGpu<double> ClGMMDataGpud;
+typedef ClGMMDataGpu<float> ClGMMDataGpuf;
 
 // ------------------------------------ impl --------------------------------
 template<typename T>
-ClDataGpu<T>::ClDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+ClGMMDataGpu<T>::ClGMMDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
     const spVectorXu& z, uint32_t K)
   : ClData<T>(x,z,K), d_z_(this->N_,1), 
     d_x_(this->D_,this->N_),
@@ -85,14 +85,14 @@ ClDataGpu<T>::ClDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x,
 {};
 
 template<typename T>
-void ClDataGpu<T>::init()
+void ClGMMDataGpu<T>::init()
 {
   d_x_.set(*this->x_);
 };
 
 
 template<typename T>
-void ClDataGpu<T>::updateLabels(uint32_t K)
+void ClGMMDataGpu<T>::updateLabels(uint32_t K)
 {
   this->K_ = K>0?K:this->z_->maxCoeff()+1;
   assert(this->z_->maxCoeff() < this->K_); // no indicators \geq K
@@ -103,7 +103,7 @@ void ClDataGpu<T>::updateLabels(uint32_t K)
 }
 
 template<typename T>
-void ClDataGpu<T>::computeSufficientStatistics(uint32_t k0, uint32_t K)
+void ClGMMDataGpu<T>::computeSufficientStatistics(uint32_t k0, uint32_t K)
 {
   // TODO: could probably move this up to bas class!
   assert(k0+K <= this->K_);
@@ -141,7 +141,7 @@ void ClDataGpu<T>::computeSufficientStatistics(uint32_t k0, uint32_t K)
 }
 
 template<typename T>
-void ClDataGpu<T>::computeSufficientStatistics()
+void ClGMMDataGpu<T>::computeSufficientStatistics()
 {
   uint32_t k0 = 0;
   for (k0=0; k0<this->K_; k0+=6)
@@ -156,11 +156,11 @@ void ClDataGpu<T>::computeSufficientStatistics()
 
 
 template<typename T>
-void ClDataGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi, 
+void ClGMMDataGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi, 
     const vector<Matrix<T,Dynamic,Dynamic> >& Sigmas, 
     const Matrix<T,Dynamic,1>& logNormalizers)
 {
-//  cout<<"ClDataGpu<T>::sampleGMMpdf"<<endl;
+//  cout<<"ClGMMDataGpu<T>::sampleGMMpdf"<<endl;
   assert(pi.size() == this->K_);
   assert(logNormalizers.size() == this->K_);
 
@@ -207,7 +207,7 @@ void ClDataGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi,
 };
 
 template<typename T>
-void ClDataGpu<T>::sampleGMMpdf(const Matrix<T,Dynamic,1>& pi, 
+void ClGMMDataGpu<T>::sampleGMMpdf(const Matrix<T,Dynamic,1>& pi, 
     const vector<Matrix<T,Dynamic,Dynamic> >& Sigmas, 
     const Matrix<T,Dynamic,1>& logNormalizers, Sampler<T> *sampler)
 {

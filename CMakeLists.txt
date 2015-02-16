@@ -40,6 +40,8 @@ if(NOT USE_OPENMP)
 	remove_cxx_debug_flag("-fopenmp")
 endif()
 
+set(COMPILE_TEST OFF)
+
 if(WIN32)
 	#windows configuration
 	message("removing flags not available in MSVSC")
@@ -245,19 +247,26 @@ if( COMPILE_TEST )
     dpmm dpmm_cuda
 	)
 
+  add_executable(testDist ./test/distributions.cpp
+  )
+  target_link_libraries(testDist
+      ${Boost_LIBRARIES}
+      dpmm dpmm_cuda
+  )
+
 endif() 
 
-add_executable(testDist ./test/distributions.cpp
-    #./src/dir.cpp
-  #./src/cat.cpp
-  #./src/mult.cpp
-    #./src/niw.cpp
-    #./src/iw.cpp
-    #./src/normal.cpp
-  #./include/dpmmSubclusters/niw_sampled.cpp
-  #./include/dpmmSubclusters/normal.cpp
-)
-target_link_libraries(testDist
-		${Boost_LIBRARIES}
-    dpmm dpmm_cuda
-)
+
+INSTALL(TARGETS dpmm dpmmSampler
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  # ARCHIVE DESTINATION lib
+  COMPONENT compLib
+  )
+
+install(DIRECTORY include/ DESTINATION include/dpMM
+  FILES_MATCHING PATTERN "*.h")                                         
+install(DIRECTORY cuda/ DESTINATION include/dpMM                          
+  FILES_MATCHING PATTERN "*.h")                                         
+install(DIRECTORY include/ DESTINATION include/dpMM                               
+  FILES_MATCHING PATTERN "*.hpp") 

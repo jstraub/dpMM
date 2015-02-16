@@ -40,7 +40,7 @@ extern void sphereGMMPdf(float *d_p, float *d_Rnorths, float * d_q,
     float* d_logPdf, uint32_t N, uint32_t K);
 
 template<typename T>
-class ClSphereGpu : public ClDataGpu<T>
+class ClTGMMDataGpu : public ClGMMDataGpu<T>
 {
 protected:
   GpuMatrix<T> d_q_; // normals on GPU
@@ -63,9 +63,9 @@ protected:
   Sphere<T> sphere_;
 
 public: 
-  ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
+  ClTGMMDataGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
       const spVectorXu& z, uint32_t K);
-  ~ClSphereGpu(){;};
+  ~ClTGMMDataGpu(){;};
   virtual void init(const Matrix<T,Dynamic,Dynamic>& ps);
   
   /* normal in tangent space around p rotate to the north pole
@@ -119,12 +119,12 @@ protected:
       uint32_t maxIter = 50);
 };
 
-typedef ClSphereGpu<double> ClSphereGpud;
-typedef ClSphereGpu<float> ClSphereGpuf;
+typedef ClTGMMDataGpu<double> ClTGMMDataGpud;
+typedef ClTGMMDataGpu<float> ClTGMMDataGpuf;
 
 // ------------------------------------ impl --------------------------------
 template<typename T>
-ClSphereGpu<T>::ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
+ClTGMMDataGpu<T>::ClTGMMDataGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
     const spVectorXu& z, uint32_t K)
   : ClDataGpu<T>(q,z,K), d_q_(this->D_,this->N_), 
     d_ps_(this->D_,this->K_), d_muKarch_(this->D_+1,this->K_), 
@@ -134,12 +134,12 @@ ClSphereGpu<T>::ClSphereGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >&
 {};
 
 template<typename T>
-void ClSphereGpu<T>::init(const Matrix<T,Dynamic,Dynamic>& ps)
+void ClTGMMDataGpu<T>::init(const Matrix<T,Dynamic,Dynamic>& ps)
 {
   for(uint32_t i=0; i<this->N_; ++i)
     if(fabs(this->x_->col(i).norm()-1.0) > 1e-5 )
     {
-        cout<<"ClSphereGpu<T>::ClSphereGpu: warning: renormalizing normal "
+        cout<<"ClTGMMDataGpu<T>::ClTGMMDataGpu: warning: renormalizing normal "
           <<this->x_->col(i).norm()<<endl;
       this->x_->col(i) /= this->x_->col(i).norm();
     }
@@ -160,7 +160,7 @@ void ClSphereGpu<T>::init(const Matrix<T,Dynamic,Dynamic>& ps)
 
 
 template<typename T>
-void ClSphereGpu<T>::update(uint32_t K)
+void ClTGMMDataGpu<T>::update(uint32_t K)
 {
   this->K_ = K>0?K:this->z_->maxCoeff()+1;
   assert(this->z_->maxCoeff() < this->K_); // no indicators \geq K
@@ -191,7 +191,7 @@ void ClSphereGpu<T>::update(uint32_t K)
 }
 
 template<typename T>
-void ClSphereGpu<T>::relinearize(const Matrix<T,Dynamic,Dynamic>& ps)
+void ClTGMMDataGpu<T>::relinearize(const Matrix<T,Dynamic,Dynamic>& ps)
 {
   // TODO: need to call udapte Labels before this function
   
@@ -218,7 +218,7 @@ void ClSphereGpu<T>::relinearize(const Matrix<T,Dynamic,Dynamic>& ps)
 };
 
 template<typename T>
-Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::meanInTpS2(
+Matrix<T,Dynamic,Dynamic> ClTGMMDataGpu<T>::meanInTpS2(
     const Matrix<T,Dynamic,Dynamic>& ps)
 {
   assert(ps.cols() == this->K_);
@@ -230,7 +230,7 @@ Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::meanInTpS2(
   d_muKarch_.set(muKarch);
   d_ps_.set(ps);
 
-//  cout<<"ClSphereGpu<T>::meanInTpS2: mean starting from "<<endl<<ps<<endl;
+//  cout<<"ClTGMMDataGpu<T>::meanInTpS2: mean starting from "<<endl<<ps<<endl;
 //  cout<<d_ps_.rows()<<" "<<d_ps_.cols()<<endl;
 //  cout<<d_muKarch_.rows()<<" "<<d_muKarch_.cols()<<endl;
 //  cout<<d_q_.rows()<<" "<<d_q_.cols()<<endl;
@@ -259,7 +259,7 @@ Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::meanInTpS2(
 }
 
 template<typename T>
-Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::karcherMeans(const Matrix<T,Dynamic,Dynamic>& p0, uint32_t maxIter)
+Matrix<T,Dynamic,Dynamic> ClTGMMDataGpu<T>::karcherMeans(const Matrix<T,Dynamic,Dynamic>& p0, uint32_t maxIter)
 {
   // stand alone karcher means
   assert(this->z_->maxCoeff() < this->K_); // no indicators \geq K
@@ -276,7 +276,7 @@ Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::karcherMeans(const Matrix<T,Dynamic,Dy
 };
 
 template<typename T>
-Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::karcherMeans__(const Matrix<T,Dynamic,Dynamic>& p0, uint32_t maxIter)
+Matrix<T,Dynamic,Dynamic> ClTGMMDataGpu<T>::karcherMeans__(const Matrix<T,Dynamic,Dynamic>& p0, uint32_t maxIter)
 {
 
   assert(p0.rows() == d_ps_.rows()); // we dont want dimension change
@@ -304,7 +304,7 @@ Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::karcherMeans__(const Matrix<T,Dynamic,
 //    cout<<"@"<<i<<" residual = "<<residual.transpose()<<endl;
     if((residual.array() < 1e-5).all())
     {
-      cout<<"ClSphereGpu<T>::karcherMeans__: converged after "<<i
+      cout<<"ClTGMMDataGpu<T>::karcherMeans__: converged after "<<i
         <<" residual = "<<residual.transpose()<<endl;
       assert((residual.array() != 0.0).any());
 //      assert(i>0); // first itaration convergence is rare
@@ -317,7 +317,7 @@ Matrix<T,Dynamic,Dynamic> ClSphereGpu<T>::karcherMeans__(const Matrix<T,Dynamic,
 
 
 template<typename T>
-void ClSphereGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps, 
+void ClTGMMDataGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps, 
     const VectorXu& z, Matrix<T,Dynamic,Dynamic>& x, int32_t K)
 {
   Log_p_north(ps,z,K);
@@ -326,7 +326,7 @@ void ClSphereGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps,
 
 
 template<typename T>
-void ClSphereGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps, 
+void ClTGMMDataGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps, 
     const VectorXu& z,  int32_t K)
 {
   if(K > 0){
@@ -354,7 +354,7 @@ void ClSphereGpu<T>::Log_p_north(const Matrix<T,Dynamic,Dynamic>& ps,
 };
 
 template<typename T>
-void ClSphereGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi, 
+void ClTGMMDataGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi, 
     const vector<Matrix<T,Dynamic,Dynamic> >& Sigmas, 
     const Matrix<T,Dynamic,1>& logNormalizers)
 {
@@ -405,7 +405,7 @@ void ClSphereGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi,
 };
 
 template<typename T>
-void ClSphereGpu<T>::sampleGMMpdf(const Matrix<T,Dynamic,1>& pi, 
+void ClTGMMDataGpu<T>::sampleGMMpdf(const Matrix<T,Dynamic,1>& pi, 
     const vector<Matrix<T,Dynamic,Dynamic> >& Sigmas, 
     const Matrix<T,Dynamic,1>& logNormalizers, Sampler<T> *sampler)
 {
