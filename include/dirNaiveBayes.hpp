@@ -33,7 +33,7 @@ public:
   virtual ~DirNaiveBayes();
 
   virtual void initialize(const vector< Matrix<T,Dynamic,Dynamic> >&x);
-  virtual void initialize(const boost::shared_ptr<ClData<T> >&cld)
+  virtual void initialize(const boost::shared_ptr<ClGMMData<T> >&cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();

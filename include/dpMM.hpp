@@ -8,7 +8,7 @@
 #include <fstream>
 
 #include "global.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 
 using namespace Eigen;
 using boost::shared_ptr;
@@ -27,7 +27,7 @@ public:
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x)
   {spx_=shared_ptr<Matrix<T,Dynamic,Dynamic> >(new Matrix<T,Dynamic,Dynamic>(x));
   initialize(spx_);};
-  virtual void initialize(const shared_ptr<ClData<T> >& cld) 
+  virtual void initialize(const shared_ptr<ClGMMData<T> >& cld) 
     {assert(false);};
   virtual void sampleLabels() = 0;
   virtual void sampleParameters() = 0;

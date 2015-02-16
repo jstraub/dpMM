@@ -10,8 +10,7 @@
 
 #include "gpuMatrix.hpp"
 #include "sphere.hpp"
-#include "clData.hpp"
-#include "clDataGpu.hpp"
+#include "clGMMDataGpu.hpp"
 #include "timer.hpp"
 
 using namespace Eigen;
@@ -126,7 +125,7 @@ typedef ClTGMMDataGpu<float> ClTGMMDataGpuf;
 template<typename T>
 ClTGMMDataGpu<T>::ClTGMMDataGpu(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& q, 
     const spVectorXu& z, uint32_t K)
-  : ClDataGpu<T>(q,z,K), d_q_(this->D_,this->N_), 
+  : ClGMMDataGpu<T>(q,z,K), d_q_(this->D_,this->N_), 
     d_ps_(this->D_,this->K_), d_muKarch_(this->D_+1,this->K_), 
     d_northRps_(this->D_-1,this->K_*this->D_),
     ps_(Matrix<T,Dynamic,Dynamic>::Zero(this->D_,this->K_)), 
@@ -358,7 +357,7 @@ void ClTGMMDataGpu<T>::computeLogLikelihoods(const Matrix<T,Dynamic,1>& pi,
     const vector<Matrix<T,Dynamic,Dynamic> >& Sigmas, 
     const Matrix<T,Dynamic,1>& logNormalizers)
 {
-//  cout<<"ClDataGpu<T>::sampleGMMpdf"<<endl;
+//  cout<<"ClGMMDataGpu<T>::sampleGMMpdf"<<endl;
   assert(pi.size() == this->K_);
   assert(logNormalizers.size() == this->K_);
 

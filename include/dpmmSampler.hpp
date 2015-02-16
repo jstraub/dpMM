@@ -32,7 +32,7 @@ public:
   {};
 
   virtual void initialize(const MatrixXd& x);
-  virtual void initialize(const shared_ptr<ClData<double> >& cld)
+  virtual void initialize(const shared_ptr<ClGMMData<double> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
   virtual void sampleLabels();
   virtual void sampleParameters(){;}; 

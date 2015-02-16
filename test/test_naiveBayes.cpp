@@ -10,7 +10,7 @@
 #include "niwBaseMeasure.hpp"
 #include "niwSphere.hpp"
 #include "dirMMcld.hpp"
-#include "clSphereGpu.hpp"
+#include "clTGMMDataGpu.hpp"
 #include "distribution.hpp"
 #include "typedef.h"
 
@@ -171,8 +171,8 @@ BOOST_AUTO_TEST_CASE(dirNaiveBayes_test)
 
 ////  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
-  //boost::shared_ptr<ClSphereGpu<myFlt> > clsp(
-      //new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
+  //boost::shared_ptr<ClTGMMDataGpu<myFlt> > clsp(
+      //new ClTGMMDataGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),&rndGen,K));
 
   //Matrix<myFlt,Dynamic,1> mu(D);
   //mu<<0.0,0.0,1.0;

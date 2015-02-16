@@ -341,7 +341,7 @@ void NiwSphereFull<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwSphereFull<T>::posterior( const shared_ptr<ClData<T> >& cldp, uint32_t k)
+void NiwSphereFull<T>::posterior( const shared_ptr<ClGMMData<T> >& cldp, uint32_t k)
 {
   assert(false);//TODO adapt!
 

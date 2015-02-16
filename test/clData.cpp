@@ -7,7 +7,7 @@
 #define BOOST_TEST_MODULE clData test
 #include <boost/test/unit_test.hpp>
 
-#include "clSphereGpu.hpp"
+#include "clTGMMDataGpu.hpp"
 #include "timer.hpp"
 #include "clData.hpp"
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE( clSphereGpu_test)
 //    cout << x->col(i) <<endl;
   }
 
-  ClSphereGpu<float> data(x,z,K);
+  ClTGMMDataGpu<float> data(x,z,K);
   data.update(K);
 
   cout<<"Ns="<<endl<<data.counts()<<endl;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( clSphereGpu_test)
 //        1.0,-1.0,
 //        0.0,0.0;
 //
-//  ClSphereGpu sphere(q,K);
+//  ClTGMMDataGpu sphere(q,K);
 //  //sphere.updateClusters(ps,z);
 //  
 //  Timer t;

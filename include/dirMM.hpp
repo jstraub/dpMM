@@ -29,7 +29,7 @@ public:
   virtual ~DirMM();
 
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
-  virtual void initialize(const shared_ptr<ClData<T> >& cld)
+  virtual void initialize(const shared_ptr<ClGMMData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();

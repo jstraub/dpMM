@@ -11,7 +11,7 @@
 #include "niwBaseMeasure.hpp"
 #include "niwSphere.hpp"
 #include "dirMMcld.hpp"
-#include "clSphereGpu.hpp"
+#include "clTGMMDataGpu.hpp"
 #include "distribution.hpp"
 #include "vmfBaseMeasure.hpp"
 
@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE(dirMMcld_Sphere_test)
 
 //  DirMM<myFlt> dirGMM_cpu(dir,niwSp2);
 
-  shared_ptr<ClSphereGpu<myFlt> > clsp(
-      new ClSphereGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
+  shared_ptr<ClTGMMDataGpu<myFlt> > clsp(
+      new ClTGMMDataGpu<myFlt>(sx, spVectorXu(new VectorXu(N)),K));
 
   MatrixXd ps(D,K);
   Sphere<double> sphere(D);

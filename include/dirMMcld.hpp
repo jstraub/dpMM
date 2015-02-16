@@ -14,14 +14,14 @@
 #include "dir.hpp"
 #include "niw.hpp"
 #include "sampler.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 #include "niwSphere.hpp"
 
 using namespace Eigen;
 using std::endl; using std::cout;
 using boost::shared_ptr;
 
-/* Dirichlet Mixture using ClData for data storage - should be FAST */
+/* Dirichlet Mixture using ClGMMData for data storage - should be FAST */
 template <class H, class T>
 class DirMMcld : public DpMM<T>
 {
@@ -38,14 +38,14 @@ class DirMMcld : public DpMM<T>
   shared_ptr<BaseMeasure<T> > theta0_;
   vector<shared_ptr<BaseMeasure<T> > > thetas_;
 
-  shared_ptr<ClData<T> > cld_;
+  shared_ptr<ClGMMData<T> > cld_;
   
 public:
   DirMMcld(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >& theta);
   DirMMcld(const Dir<Cat<T>,T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
   ~DirMMcld();
 
-  void initialize(const shared_ptr<ClData<T> >& cld);
+  void initialize(const shared_ptr<ClGMMData<T> >& cld);
   void initialize(const Matrix<T,Dynamic,Dynamic>& x)
     {cout<<"not supported"<<endl; assert(false);};
 
@@ -101,7 +101,7 @@ Matrix<T,Dynamic,1> DirMMcld<H,T>::getCounts()
 //};
 
 template <class H, class T>
-void DirMMcld<H,T>::initialize(const shared_ptr<ClData<T> >& cld)
+void DirMMcld<H,T>::initialize(const shared_ptr<ClGMMData<T> >& cld)
 {
   cld_ = cld;
   assert(cld_->K() == K_);

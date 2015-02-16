@@ -98,7 +98,7 @@ void NiwSphere<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwSphere<T>::posterior( const shared_ptr<ClData<T> >& cldp, uint32_t k)
+void NiwSphere<T>::posterior( const shared_ptr<ClGMMData<T> >& cldp, uint32_t k)
 {
   normalS_.setMean(cldp->mean(k));
   iw0_.scatter() = cldp->S(k);

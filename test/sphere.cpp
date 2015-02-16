@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "sphere.hpp"
-#include "clSphereGpu.hpp"
+#include "clTGMMDataGpu.hpp"
 #include "karcherMean.hpp"
 #include "normalSphere.hpp"
 #include "timer.hpp"
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( sphereGpu_test)
   
 //  assert(false);
 
-  ClSphereGpu<myFlt> sphere(sq,sz,K);
+  ClTGMMDataGpu<myFlt> sphere(sq,sz,K);
   //sphere.updateClusters(ps,z);
   Matrix<myFlt,Dynamic,Dynamic> karcherMeans = sphere.karcherMeans(ps);
   cout<< karcherMeans <<endl;

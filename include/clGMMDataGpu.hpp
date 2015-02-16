@@ -9,7 +9,7 @@
 #include <Eigen/Dense>
 
 #include "gpuMatrix.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 #include "timer.hpp"
 
 using namespace Eigen;
@@ -28,7 +28,7 @@ extern void gmmPdf(float * d_x, float *d_invSigmas,
     uint32_t K_);
 
 template<typename T>
-class ClGMMDataGpu : public ClData<T>
+class ClGMMDataGpu : public ClGMMData<T>
 {
 protected:
   GpuMatrix<uint32_t> d_z_; // indicators on GPU
@@ -76,7 +76,7 @@ typedef ClGMMDataGpu<float> ClGMMDataGpuf;
 template<typename T>
 ClGMMDataGpu<T>::ClGMMDataGpu(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
     const spVectorXu& z, uint32_t K)
-  : ClData<T>(x,z,K), d_z_(this->N_,1), 
+  : ClGMMData<T>(x,z,K), d_z_(this->N_,1), 
     d_x_(this->D_,this->N_),
     d_Ss_((this->D_-1)+(this->D_-1)*(this->D_-1)+1,this->K_),
     d_pdfs_(new GpuMatrix<T>(this->N_,this->K_)), d_logPi_(this->K_), 

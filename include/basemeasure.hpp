@@ -8,7 +8,7 @@
 #include <Eigen/Dense>
 
 #include "global.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 
 using namespace Eigen;
 using std::cout;
@@ -44,7 +44,7 @@ public:
   virtual void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
       uint32_t k)
   {assert(false);};
-  virtual void posterior(const boost::shared_ptr<ClData<T> >& cldp, uint32_t k) 
+  virtual void posterior(const boost::shared_ptr<ClGMMData<T> >& cldp, uint32_t k) 
   {assert(false);};
 
   // log pdf value of the current model under the base measure

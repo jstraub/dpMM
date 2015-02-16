@@ -19,7 +19,7 @@ using boost::shared_ptr;
 
 /* clustered data */
 template <class T>
-class ClData
+class ClGMMData
 {
 protected:
   spVectorXu z_; // labels
@@ -34,9 +34,9 @@ protected:
   vector<Matrix<T,Dynamic,Dynamic> > Ss_; //scatter matrices
 
 public:
-  ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+  ClGMMData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
       const spVectorXu& z, uint32_t K);
-  virtual ~ClData();
+  virtual ~ClGMMData();
 
   virtual void init();
 
@@ -70,8 +70,8 @@ public:
   {return Ss_[k];};
 };
 
-typedef ClData<float> ClDataf;
-typedef ClData<double> ClDatad;
+typedef ClGMMData<float> ClGMMDataf;
+typedef ClGMMData<double> ClGMMDatad;
 
 
 template<typename T>
@@ -100,7 +100,7 @@ struct Euclidean
 };
 
 template<class T, class DS>
-T silhouette(const ClData<T>& cld)
+T silhouette(const ClGMMData<T>& cld)
 { 
   if(cld.K()<2) return -1.0;
 //  assert(Ns_.sum() == N_);
@@ -140,7 +140,7 @@ T silhouette(const ClData<T>& cld)
 
 // -------------------------- impl --------------------------------------------
 template<class T>
-ClData<T>::ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
+ClGMMData<T>::ClGMMData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x, 
     const spVectorXu& z, uint32_t K)
  : z_(z), x_(x), K_(K>0?K:z->maxCoeff()+1), N_(x->cols()), D_(x->rows()),
    Ss_(K_,Matrix<T,Dynamic,Dynamic>::Zero(D_,D_))
@@ -149,15 +149,15 @@ ClData<T>::ClData(const boost::shared_ptr<Matrix<T,Dynamic,Dynamic> >& x,
 };
 
 template<class T>
-ClData<T>::~ClData()
+ClGMMData<T>::~ClGMMData()
 {};
 
 template<typename T>
-void ClData<T>::init()
+void ClGMMData<T>::init()
 {};
 
 template<class T>
-void ClData<T>::update(uint32_t K)
+void ClGMMData<T>::update(uint32_t K)
 {
   K_ = K;
   Ns_.setZero(K_);

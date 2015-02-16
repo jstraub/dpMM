@@ -11,7 +11,7 @@
 #include "dpmmSampler.hpp"
 #include "dirMM.hpp"
 #include "dirMMcld.hpp"
-#include "clSphereGpu.hpp"
+#include "clTGMMDataGpu.hpp"
 #include "niwSphere.hpp"
 #include "niwSphereFull.hpp"
 //#include "niwTangent.hpp"
@@ -20,7 +20,7 @@
 #include "sphericalKMeans.hpp"
 #include "kmeans.hpp"
 #include "crpMM.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 #include "vmfBaseMeasure.hpp"
 //#include "dpvMFmeans.hpp"
 #include "timer.hpp"
@@ -571,7 +571,7 @@ int main(int argc, char **argv)
   {
     assert(dpmmf!=NULL);
 //    MatrixXf x_f = x.cast<float>();
-    shared_ptr<ClSphereGpud> cld(new ClSphereGpud(spx,
+    shared_ptr<ClTGMMDataGpud> cld(new ClTGMMDataGpud(spx,
           spVectorXu(new VectorXu(N)),K));
     dpmmf->initialize(cld);
 
@@ -739,7 +739,7 @@ int main(int argc, char **argv)
   if(vm.count("silhouette")) 
   {
     spVectorXu spz(new VectorXu(z_));
-    ClData<double> cld(spx,spz,K_);
+    ClGMMData<double> cld(spx,spz,K_);
     cld.update(K_); // compute SS
     double sil = 0.;
     if(!base.compare("spkm") || !base.compare("spkmKarcher") 

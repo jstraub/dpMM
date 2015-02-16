@@ -17,7 +17,7 @@
 #include "iw.hpp"
 #include "sphere.hpp"
 #include "karcherMean.hpp"
-#include "clData.hpp"
+#include "clGMMData.hpp"
 
 using namespace Eigen;
 using std::endl;
@@ -51,7 +51,7 @@ public:
 
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-  void posterior(const shared_ptr<ClData<T> >& cldp, uint32_t k);
+  void posterior(const shared_ptr<ClGMMData<T> >& cldp, uint32_t k);
   /* assumes the x are already in T_northS correctly */
   void posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k, uint32_t zDivider=1);
