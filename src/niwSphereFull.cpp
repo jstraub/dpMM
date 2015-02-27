@@ -315,7 +315,7 @@ void NiwSphereFull<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
   Matrix<T,Dynamic,1> w(z.size()); 
   w.setZero(z.size());
 #pragma omp parallel for
-  for (uint32_t i=0; i<z.size(); ++i)
+  for (int i=0; i<z.size(); ++i)
     if(z[i] == k) w[i]=1.0;
   if(w.sum() > 0)
   {

@@ -11,14 +11,19 @@ This is research code and builds on the following two papers (please cite them a
  
 ### Dependencies
 
-This code depends on the following other libraries and was tested under Ubuntu
-14.04. 
+This code depends on the following other libraries: Eigen3, Boost, CUDA. Optionally OpenMP. 
+
+It has been tested under Ubuntu 14.04 with: 
 - Eigen3 (3.0.5) 
 - Boost (1.52)
 - CUDA (6.5)
 
-Optional
-- OpenMP
+It has been tested under Windows 7 with: 
+- Visual Studio 2012
+- Eigen3 (3.2.3) 
+- Boost (1.57)
+- CUDA (6.5)
+
 
 ### Getting Started
 Get started quickly by looking at `python/dpmmSampler.py`. It simply loads a

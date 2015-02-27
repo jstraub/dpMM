@@ -34,6 +34,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
 
+#by default build shared_libs
+set(BUILD_SHARED_LIBS ON) 
+
 if(NOT USE_OPENMP)
 	#removes openMP flags
 	remove_cxx_release_flag("-fopenmp")
@@ -82,7 +85,7 @@ if(WIN32)
 
 	set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE ON)
 	#set(CUDA_SEPARABLE_COMPILATION OFF)
-	set(BUILD_SHARED_LIBS ON)
+	set(BUILD_SHARED_LIBS OFF)
 	set(CUDA_VERBOSE_BUILD ON)
 
 	set(Boost_DEBUG 1)
@@ -122,7 +125,7 @@ link_directories(
   ${Boost_LIBRARY_DIRS}
 )
 
-add_library(dpmm SHARED
+add_library(dpmm 
   ./src/distribution.cpp
   ./src/cat.cpp
   ./src/mult.cpp
@@ -135,7 +138,7 @@ add_library(dpmm SHARED
   ./src/sphere.cpp
 )
 
-cuda_add_library(dpmm_cuda SHARED
+cuda_add_library(dpmm_cuda 
   ./src/sampler.cpp
   ./cuda/choiceMult_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
@@ -260,7 +263,7 @@ endif()
 INSTALL(TARGETS dpmm dpmmSampler
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
-  # ARCHIVE DESTINATION lib
+  ARCHIVE DESTINATION lib
   COMPONENT compLib
   )
 
