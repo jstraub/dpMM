@@ -10,6 +10,7 @@
 #include "dirMultiNaiveBayes.hpp"
 #include "niwBaseMeasure.hpp"
 #include "niwSphere.hpp"
+#include "dirBaseMeasure.hpp"
 #include "normalSphere.hpp" //for sampling points on the sphere
 #include "iw.hpp"
 #include "typedef.h"
@@ -25,23 +26,20 @@ int main(int argc, char **argv){
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "produce help message")
-	("K,K", po::value<int>(), "number of initial clusters ")
+	("K,K", po::value<int>(), "number of initial clusters")
 	("T,T", po::value<int>(), "iterations")
 	("v,v", po::value<bool>(), "verbose output")
     ("params,p", po::value<string>(), 
-      "path to file containing parameters (see class definition) "
-      "datapoints)")
-	("nu,n", po::value<std::vector<double> >()->multitoken(), "nu to use for distributions")
-	("deltaOffset,d", po::value<std::vector<double> >()->multitoken(), "delta offset to use for distributions")
+      "path to file containing parameters (see class definition)")
+	("nu,n", po::value<std::vector<double> >()->multitoken(), "NIW mean prior strength to use for distributions")
+	("deltaOffset,d", po::value<std::vector<double> >()->multitoken(), "NIW sigma prior strength to use for distributions")
     ("input,i", po::value<string>(), 
-      "path to input dataset .csv file (rows: dimensions; cols: different "
-      "datapoints)")
+      "path to input dataset .csv file (rows: dimensions; cols: different datapoints)")
     ("output,o", po::value<string>(), 
-      "path to output labels .csv file (rows: time; cols: different "
-      "datapoints)")
+      "path to output labels .csv file (rows: time; cols: different datapoints)")
 	("b,b", po::value<std::vector<string> >()->multitoken(), 
 	  "base class to use for components (must be the same size as M in the data). " 
-	  "valid values: NiwSampled, NiwSphere, [default: NiwSampled].");
+	  "valid values: NiwSampled, NiwSphere, DirSampled [default: NiwSampled].");
     
 
     po::variables_map vm;
@@ -55,13 +53,13 @@ int main(int argc, char **argv){
 
 	bool verbose = false; 
 
-	uint NumObs = 2; //num observations (number of components of multi-dimention data)
+	uint NumObs = 1; //num observations (number of components of multi-dimention data)
 	uint K=2; //num clusters
 	uint T=10; //iterations
 	uint M=2; //num docs
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
-	vector<uint> D(NumObs, 2);  //dimention of data 
+	vector<uint> D(NumObs, 1);  //dimention of data 
 	vector<double> nuIn; //nu
 	vector<double> deltaOffsetIn; //delta offset
 	
@@ -76,6 +74,7 @@ int main(int argc, char **argv){
 		T = vm["T"].as<int>();
 	if (vm.count("v"))
 		verbose = vm["v"].as<bool>();
+
 
 	string pathIn ="";
 	string pathOut ="";
@@ -95,28 +94,39 @@ int main(int argc, char **argv){
 		cout<<"making some data up" <<endl;
 		for (uint n=0; n<NumObs; ++n) 
 		{
-			vector<Matrix<double, Dynamic, Dynamic> > temp;
-			temp.reserve(M); 
+			if(verbose)
+				cout << "Nobs " << n << ": "<< endl;
+			vector<Matrix<double, Dynamic, Dynamic> > tempDoc;
+			tempDoc.reserve(M); 
 			uint Ndoc=M;
 			uint Nword=int(N[n]/M); 
 			for(uint i=0; i<Ndoc; ++i) 
 			{
-				MatrixXd  xdoc(D[n],Nword);  
+				if(verbose)
+					cout << "\tdoc " << i << ": "; 
+				//MatrixXd  xdoc(D[n],Nword);  
 				//for(uint w=0; w<Nword; ++w) 
 				//{
-				//	if(i<Ndoc/2)
-				//		xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
-				//	else
-				//		xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
+					//if(i<Ndoc/2)
+						//xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
+					//else
+						//xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
 				//}
 
-				sampleClustersOnSphere(xdoc,K); 
+				//sampleClustersOnSphere(xdoc,K); 
+				MatrixXd xdoc;
+				if(i%2==0) {
+					xdoc = (NumObs*(i%2))*MatrixXd::Ones(D[n],Nword);	
+				} else {
+					xdoc = (NumObs*(i%2)+100)*MatrixXd::Ones(D[n],Nword);	
+				}
 
-
-				temp.push_back(xdoc); 
+				tempDoc.push_back(xdoc); 
+				if(verbose)
+					cout << xdoc << endl;
 			}
 
-			x.push_back(temp); 
+			x.push_back(tempDoc); 
 		}
 
 	}else{
@@ -184,7 +194,8 @@ int main(int argc, char **argv){
 	
 	boost::mt19937 rndGen(9191);
 	DirMultiNaiveBayes<double> *naive_samp; 
-	
+	vector<string> useBaseDist(NumObs, " ");
+
 	if(paramsF.compare("")){
 		//initialize from file 
 		std::ifstream fin(paramsF.data(),std::ifstream::in);
@@ -193,7 +204,6 @@ int main(int argc, char **argv){
 		fin.close();
 	} else {
 		//initialize here 
-
 
 		vector<string> baseDist; //base distributions for each component
 	
@@ -207,12 +217,12 @@ int main(int argc, char **argv){
 				cerr << "exiting" << endl;
 				return(-1); 
 			}
-
 		} else {
 			baseDist.clear();
 			baseDist = vector<string>(NumObs, "NiwSampled");
 		}
 
+		useBaseDist = baseDist;
 
 		VectorXd alpha = 10.0*VectorXd::Ones(K);
 
@@ -269,6 +279,20 @@ int main(int argc, char **argv){
 				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));
 				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 
+			} else if(iequals(baseDist[m], "DirSampled")) {
+				VectorXd alpha = VectorXd::Ones(K);
+
+				if(nuIn.empty()) {
+					alpha *= 10; 	
+				} else { 
+					alpha *= nuIn[m];	
+				}
+
+				Dir<Catd,double> dirBase(alpha,&rndGen); 
+			
+				boost::shared_ptr<DirSampled<Catd, double> > tempBase( new DirSampled<Catd, double>(dirBase));
+				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;
 				return(-1); 
@@ -287,9 +311,9 @@ int main(int argc, char **argv){
 	cout << "multiObsNaiveBayesian Clustering:" << endl; 
 	cout << "Ndocs=" << M << endl; 
 	cout << "NumComp=" << NumObs << endl; 
-	cout << "NumData,Dim= ";
+	cout << "NumData,Dim,baseDist= ";
 	for(uint n=0; n<NumObs; ++n)
-		cout << "[" << N[n] << ", " << D[n] << "]; "; 
+		cout << "[" << N[n] << ", " << D[n] << "," << useBaseDist[n] << "]; "; 
 	cout << endl; 
 
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
@@ -302,16 +326,7 @@ int main(int argc, char **argv){
 	if (pathOut.compare(""))
 	{
 		std::ofstream fout(pathOut.data(),std::ofstream::out);
-		
-		//streambuf *coutbuf = std::cout.rdbuf(); //save old cout buffer
-		//cout.rdbuf(fout.rdbuf()); //redirect std::cout to fout1 buffer
-
-			//naive_samp.dump(fout,fout);
-			naive_samp->dump_clean(fout);
-			//naive_samp.dump_clean();
-
-		//std::cout.rdbuf(coutbuf); //reset to standard output again
-
+		naive_samp->dump_clean(fout);
 		fout.close();
 	}
 

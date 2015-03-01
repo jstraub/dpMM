@@ -24,6 +24,13 @@ It has been tested under Windows 7 with:
 - Boost (1.57)
 - CUDA (6.5)
 
+It has been tested under Mac OS (10.9.4) with: 
+- clang-600.51 
+- Eigen3 (3.2.1) 
+- Boost (1.55)
+- CUDA (6.5)
+- No OpenMP
+
 
 ### Getting Started
 Get started quickly by looking at `python/dpmmSampler.py`. It simply loads a
