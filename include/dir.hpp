@@ -38,6 +38,7 @@ public:
   Matrix<T,Dynamic,1> alpha_;
 
   Dir(const Matrix<T,Dynamic,1>& alpha, boost::mt19937 *pRndGen);
+  Dir(const Matrix<T,Dynamic,1>& alpha, const Matrix<T,Dynamic,1>& counts, boost::mt19937 *pRndGen);
   Dir(const Dir& other);
   ~Dir();
 

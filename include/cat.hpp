@@ -41,7 +41,7 @@ public:
   T logPdf(const Matrix<T,Dynamic,1>& x) const {
 	//assuming x is all zeros except one element
 	assert(x.rows()==K_); //data dimmension should agree with # categories
-    for(int d=0; d<K_; ++d) {
+    for(uint32_t d=0; d<K_; ++d) {
 		if(x(d)==1) {
 			return(pdf_(d)); 
 		}

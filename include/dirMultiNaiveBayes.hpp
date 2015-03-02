@@ -239,6 +239,36 @@ sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
 				
 			}
 
+		} else if(typeIter==DIR_SAMPLED) {
+			uint Diter = dim[m];
+			T localCount;
+			Matrix<T,Dynamic,1> post_alpha(Diter), counts(Diter), pdf(Diter); 
+
+			for(uint32_t k=0; k<K_; ++k) {
+				//get dir alpha
+				for(uint n=0; n<Diter; ++n)
+					in >> post_alpha(n); 		
+
+				//get dir counts
+				for(uint n=0; n<Diter; ++n)
+					in >> counts(n); 		
+
+				//get disc pdf
+				for(uint n=0; n<Diter; ++n)
+					in >> pdf(n); 		
+
+				in >> localCount; 
+
+				//build theta[m][k]
+				Dir<Cat<T>,T> dirBase(post_alpha,counts, rng); 
+				DirSampled<Cat<T>,T> dirSamp(dirBase); 
+				Cat<T> disc(pdf,rng); 
+				dirSamp.disc_ = disc; 
+				dirSamp.count_	= localCount; 
+
+				//set
+				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(dirSamp.copy()));
+			}
 
 		} else {
 				std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
@@ -275,8 +305,8 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
       	}
       thetas_.push_back(temp); 
     }
-	for(int m=0; m<M_; ++m) {
-		for(int k=0; k<K_; ++k) {
+	for(uint m=0; m<int(M_); ++m) {
+		for(int k=0; k<int(K_); ++k) {
 				thetas_[m][k]->print();
 		}
 	}
@@ -554,8 +584,8 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
     this->sampleLabels();
     this->sampleParameters();
 	if(verbose){
-		for(int m=0; m<M_; ++m) {
-			for(int k=0; k<K_; ++k) {
+		for(int m=0; m<int(M_); ++m) {
+			for(int k=0; k<int(K_); ++k) {
 					thetas_[m][k]->print();
 			}
 		}
@@ -640,8 +670,17 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 			//Sigma (D-1)x(D-1)
 		//--sphere--- (Sphere)
 			//north 1x(D-1)
+	//for type 3 (DirSampled)
+		//--posterior (Dir)
+			//alpha 1xK
+			//counts 1xK
+		//--distribution (Cat)
+			//pdf 1xK
+		//--counts (scalar)
+			//counts 1x1
+
 	//this fixes issues with eigen matrices printing (eg, 00-0.7 )
-	int curPres = out.precision(); 
+	int curPres = int(out.precision()); 
 	out.precision(10); 
 	IOFormat fullPresPrint(FullPrecision,DontAlignCols); 
 
@@ -709,6 +748,22 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 				//sphere 	
 				Sphere<T> sp = theta_iter->get()->S_; 
 				out << sp.north().transpose() << endl; 
+			} else if(type==DIR_SAMPLED) {
+				boost::shared_ptr<DirSampled<Cat<T>,T> >  *theta_iter = 
+						reinterpret_cast<boost::shared_ptr<DirSampled<Cat<T>,T> >* >( &theta_base[k]); 
+				//posterior
+				Dir<Catd,T>  post = theta_iter->get()->dir0_;
+				out <<	post.alpha_.transpose()		<< endl;
+				out <<	post.counts().transpose()	<< endl; 
+
+				//distribution
+				Catd dist = theta_iter->get()->disc_;
+				out <<	dist.pdf_.transpose() << endl;
+				
+				//counts 
+				T counts = theta_iter->get()->count_; 
+				out << counts << endl; 
+				
 			} else {
 					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
 					return;

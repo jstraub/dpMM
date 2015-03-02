@@ -15,6 +15,14 @@ Dir<Disc,T>::Dir(const Matrix<T,Dynamic,1>& alpha, boost::mt19937* pRndGen)
 };
 
 template<class Disc, typename T>
+Dir<Disc,T>::Dir(const Matrix<T,Dynamic,1>& alpha, const Matrix<T,Dynamic,1>& counts, boost::mt19937 *pRndGen) 
+  : Distribution<T>(pRndGen), K_(alpha.size()), alpha_(alpha), counts_(counts)
+{
+  for(uint32_t k=0; k<K_; ++k)
+    gammas_.push_back(gamma_distribution<>(alpha_(k)));
+};
+
+template<class Disc, typename T>
 Dir<Disc,T>::Dir(const Dir& other)
   : Distribution<T>(other.pRndGen_), K_(other.K_), alpha_(other.alpha_), 
   counts_(other.counts())
