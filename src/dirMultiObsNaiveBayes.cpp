@@ -118,7 +118,7 @@ int main(int argc, char **argv){
 				if(i%2==0) {
 					xdoc = (NumObs*(i%2))*MatrixXd::Ones(D[n],Nword);	
 				} else {
-					xdoc = (NumObs*(i%2)+100)*MatrixXd::Ones(D[n],Nword);	
+					xdoc = (NumObs*(i%2)+99)*MatrixXd::Ones(D[n],Nword);	
 				}
 
 				tempDoc.push_back(xdoc); 

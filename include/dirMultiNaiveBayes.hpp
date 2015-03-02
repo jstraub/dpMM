@@ -275,6 +275,13 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
       	}
       thetas_.push_back(temp); 
     }
+	for(int m=0; m<M_; ++m) {
+		for(int k=0; k<K_; ++k) {
+				thetas_[m][k]->print();
+		}
+	}
+
+
 };
 
 template<typename T>
@@ -546,6 +553,13 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
   {
     this->sampleLabels();
     this->sampleParameters();
+	if(verbose){
+		for(int m=0; m<M_; ++m) {
+			for(int k=0; k<K_; ++k) {
+					thetas_[m][k]->print();
+			}
+		}
+	}
     if(verbose || t%100==0){
 		if(Nd_<=10) {
 			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] label: " 
