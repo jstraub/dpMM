@@ -39,8 +39,15 @@ public:
   void sample(VectorXu& z);
 
   T logPdf(const Matrix<T,Dynamic,1>& x) const {
-    assert(false); //TODO
-    return log(pdf_(0));
+	//assuming x is all zeros except one element
+	assert(x.rows()==K_); //data dimmension should agree with # categories
+    for(int d=0; d<K_; ++d) {
+		if(x(d)==1) {
+			return(pdf_(d)); 
+		}
+	}
+	assert(false); //invalid data (at least one element must be one) [this should never happen] 
+    return(-1); 
   };
 
   const Matrix<T,Dynamic,1>& pdf() const {return pdf_;};

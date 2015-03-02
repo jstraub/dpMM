@@ -59,7 +59,7 @@ int main(int argc, char **argv){
 	uint M=2; //num docs
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
-	vector<uint> D(NumObs, 1);  //dimention of data 
+	vector<uint> D(NumObs, 2);  //dimention of data 
 	vector<double> nuIn; //nu
 	vector<double> deltaOffsetIn; //delta offset
 	
@@ -104,22 +104,40 @@ int main(int argc, char **argv){
 			{
 				if(verbose)
 					cout << "\tdoc " << i << ": "; 
-				//MatrixXd  xdoc(D[n],Nword);  
-				//for(uint w=0; w<Nword; ++w) 
-				//{
-					//if(i<Ndoc/2)
-						//xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
-					//else
-						//xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
-				//}
+				/*MatrixXd  xdoc(D[n],Nword);  
+				for(uint w=0; w<Nword; ++w) 
+				{
+					if(i<Ndoc/2)
+						xdoc.col(w) <<  (NumObs*(n%2))*VectorXd::Ones(D[n]);
+					else
+						xdoc.col(w) <<  (NumObs*(n%2)+1)*VectorXd::Ones(D[n]);
+				} */
 
 				//sampleClustersOnSphere(xdoc,K); 
-				MatrixXd xdoc;
+				/*MatrixXd xdoc;
 				if(i%2==0) {
 					xdoc = (NumObs*(i%2))*MatrixXd::Ones(D[n],Nword);	
 				} else {
 					xdoc = (NumObs*(i%2)+99)*MatrixXd::Ones(D[n],Nword);	
 				}
+				*/
+
+				//MatrixXd  xdoc(D[n],Nword);  
+				//VectorXd fill = VectorXd::Zero(D[n]); 
+				//for(uint w=0; w<Nword; ++w) {
+				//	VectorXd tempFill = fill; 
+				//	int ind = int(w<Nword/2); 
+				//	tempFill[ind] = 1; 
+				//	xdoc.col(w) <<  tempFill; 
+				//}
+
+				MatrixXd  xdoc = MatrixXd::Zero(D[n],Nword);  
+				if(i<Ndoc/2) {
+					xdoc.row(0) = MatrixXd::Ones(1,Nword);  
+				} else {
+					xdoc.row(1) = MatrixXd::Ones(1,Nword);  
+				}
+
 
 				tempDoc.push_back(xdoc); 
 				if(verbose)
