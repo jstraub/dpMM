@@ -18,6 +18,8 @@
 #include "basemeasure.hpp"
 #include "niwBaseMeasure.hpp"
 #include "niwSphere.hpp"
+#include "dirBaseMeasure.hpp"
+
 using namespace Eigen;
 using std::cout;
 using std::endl; 
