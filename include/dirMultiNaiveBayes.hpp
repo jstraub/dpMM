@@ -317,7 +317,7 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >& theta) :
- sampler_(NULL), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size()), thetas_(theta) ) 
+ sampler_(NULL), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size())), thetas_(theta) 
 { };
 
 template<typename T>
@@ -756,7 +756,7 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 				out <<	post.alpha_.transpose()		<< endl;
 				out <<	post.counts().transpose()	<< endl; 
 
-				//distribution
+				//distribution 
 				Catd dist = theta_iter->get()->disc_;
 				out <<	dist.pdf_.transpose() << endl;
 				

@@ -245,13 +245,16 @@ int main(int argc, char **argv){
 		VectorXd alpha = 10.0*VectorXd::Ones(K);
 
 		Dir<Catd,double> dir(alpha,&rndGen); 
-		vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled;
-		niwSampled.reserve(NumObs);
+		vector <vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
+		thetas.reserve(NumObs);
 
 		//creates thetas  
 		for(uint m=0;m<NumObs ; ++m) 
 		{
 			if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
+				
+				vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled; 
+
 				double nu;
 				if(nuIn.empty()) {
 					nu = D[m]+1;
@@ -272,11 +275,19 @@ int main(int argc, char **argv){
 
 				NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 				boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));
-				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+				
+				//simple copy
+				for(int k=0; k<int(K);++k) {
+					niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
+				}
+				thetas.push_back(niwSampled); 
 
 			} else if(iequals(baseDist[m], "NiwSphere")) {
 				//IW is one dimention smaller (makes sense since it's on tangent space)
 				//double nu = D[m];
+
+				vector<boost::shared_ptr<BaseMeasure<double> > > niwTangent; 
+
 				double nu;
 				if(nuIn.empty()) {
 					nu = D[m]+1;
@@ -295,21 +306,34 @@ int main(int argc, char **argv){
 				
 				IW<double> iw(Delta,nu,&rndGen);
 				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));
-				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+				
+				//simple copy
+				for(int k=0; k<int(K);++k) {
+					niwTangent.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
+				}
+				thetas.push_back(niwTangent); 
 
 			} else if(iequals(baseDist[m], "DirSampled")) {
-				VectorXd alpha = VectorXd::Ones(K);
 
-				if(nuIn.empty()) {
-					alpha *= 10; 	
-				} else { 
-					alpha *= nuIn[m];	
+				vector<boost::shared_ptr<BaseMeasure<double> > > dirSampled; 
+
+				for(int k=0; k<int(K); ++k) {
+					VectorXd alpha = VectorXd::Ones(K);
+					if(nuIn.empty()) {
+						alpha *= 10; 	
+						alpha(k) = 10/2; 
+					} else { 
+						alpha *= nuIn[m];	
+						alpha(k) = nuIn[m]/2; 
+					}
+					
+					Dir<Catd,double> dirBase(alpha,&rndGen); 
+			
+					boost::shared_ptr<DirSampled<Catd, double> > tempBase( new DirSampled<Catd, double>(dirBase));
+					dirSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
 				}
 
-				Dir<Catd,double> dirBase(alpha,&rndGen); 
-			
-				boost::shared_ptr<DirSampled<Catd, double> > tempBase( new DirSampled<Catd, double>(dirBase));
-				niwSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+				thetas.push_back(dirSampled); 
 
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;
@@ -317,7 +341,7 @@ int main(int argc, char **argv){
 			}
 		}
 
-		naive_samp = new DirMultiNaiveBayes<double>(dir,niwSampled);
+		naive_samp = new DirMultiNaiveBayes<double>(dir,thetas);
 		naive_samp->initialize( x );
 	}
 
