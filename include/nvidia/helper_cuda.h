@@ -378,7 +378,9 @@ static const char *_cudaGetErrorEnum(cudaError_t error)
               return "cudaErrorLaunchFileScopedSurf";
         case cudaErrorSyncDepthExceeded:
               return "cudaErrorSyncDepthExceeded";
-        case cudaErrorIllegalInstruction:
+
+#if CUDART_VERSION > 5050 //TODO: double check this for version 6000
+		case cudaErrorIllegalInstruction:
               return "cudaErrorIllegalInstruction";
         case cudaErrorMisalignedAddress:
               return "cudaErrorMisalignedAddress";
@@ -394,6 +396,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error)
               return "cudaErrorInvalidGraphicsContext";
         case cudaErrorHardwareStackError:
               return "cudaErrorHardwareStackError";
+#endif
     }
 
    return "cuda error not listed";
