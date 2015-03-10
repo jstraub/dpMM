@@ -318,13 +318,14 @@ int main(int argc, char **argv){
 				vector<boost::shared_ptr<BaseMeasure<double> > > dirSampled; 
 
 				for(int k=0; k<int(K); ++k) {
-					VectorXd alpha = VectorXd::Ones(K);
+					VectorXd alpha = VectorXd::Ones(D[m]);
+					int highProbPos = k%D[m];
 					if(nuIn.empty()) {
 						alpha *= 10; 	
-						alpha(k) = 10/2; 
+						alpha(highProbPos) = 10/2; 
 					} else { 
 						alpha *= nuIn[m];	
-						alpha(k) = nuIn[m]/2; 
+						alpha(highProbPos) = nuIn[m]/2; 
 					}
 					
 					Dir<Catd,double> dirBase(alpha,&rndGen); 
