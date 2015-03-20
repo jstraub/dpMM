@@ -145,10 +145,10 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 {
 //  normal_.print();
   uint32_t D = niw0_.D_;
-  T count = x(0);
-  Matrix<T,Dynamic,1>& mean = x.middleRows(1,D);
-  Matrix<T,Dynamic,Dynamic> scatter = 
-    Map<Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D+1)]),D,D);
+  const T count = x(0);
+  const Matrix<T,Dynamic,1>& mean = x.middleRows(1,D);
+  const Matrix<T,Dynamic,Dynamic> scatter = 
+    Map<const Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D+1)]),D,D);
   T logLike = normal_.logPdf(scatter,mean,count);
 //  cout<<x.transpose()<<" -> " <<logLike<<endl;
 //  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;

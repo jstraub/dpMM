@@ -37,6 +37,8 @@ public:
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const =0;
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
+  virtual T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
+  {assert(false);};
 
   // sample new model from the possterior under this base measure
   virtual void posterior(const Matrix<T,Dynamic,Dynamic>&x, const VectorXu& z, 
@@ -45,6 +47,10 @@ public:
       uint32_t k)
   {assert(false);};
   virtual void posterior(const boost::shared_ptr<ClGMMData<T> >& cldp, uint32_t k) 
+  {assert(false);};
+
+  virtual void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+      VectorXu& z, uint32_t k)
   {assert(false);};
 
   // log pdf value of the current model under the base measure
