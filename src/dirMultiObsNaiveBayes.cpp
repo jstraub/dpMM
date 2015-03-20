@@ -26,6 +26,7 @@ int main(int argc, char **argv){
   po::options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "produce help message")
+	("ompMaxThreads,m", po::value<int>(), "max number of OMP threads to use [default: num cores]")
 	("K,K", po::value<int>(), "number of initial clusters")
 	("T,T", po::value<int>(), "iterations")
 	("v,v", po::value<bool>(), "verbose output")
@@ -74,6 +75,18 @@ int main(int argc, char **argv){
 		T = vm["T"].as<int>();
 	if (vm.count("v"))
 		verbose = vm["v"].as<bool>();
+
+
+	//handle ompMaxNumber of threads
+	int Mproc = 1e10; 
+	if(vm.count("ompMaxThreads")) 
+		Mproc = vm["ompMaxThreads"].as<int>();
+
+	#if defined(_OPENMP)
+		//numCores to use is min(Mproc,#cores)
+		Mproc = (Mproc <= omp_get_max_threads()) ? Mproc : omp_get_max_threads();
+		omp_set_num_threads(Mproc);
+	#endif
 
 
 	string pathIn ="";

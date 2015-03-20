@@ -101,6 +101,9 @@ protected:
 
   virtual void helper_setDims();
   vector<VectorXu> dataDim; 
+  
+  vector<uint32_t> logJointIterEval; 
+  vector<T> logJointHist; 
 };
 
 // --------------------------------------- impl -------------------------------
@@ -581,6 +584,17 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
   	cout <<"initial labels:"<< endl;
   	cout<<this->labels().transpose()<<endl;
   }
+
+  
+  logJointIterEval.clear(); logJointHist.clear(); 
+  if(verbose) {
+	//all iterations stored
+	logJointIterEval.reserve(nIter); logJointHist.reserve(nIter); 
+  } else {
+	  //only mod 100 stored
+	  logJointIterEval.reserve(int((nIter/100) + 1)); logJointHist.reserve(int((nIter/100) + 1)); 
+  }
+
   for(uint32_t t=0; t<nIter; ++t)
   {
     this->sampleLabels();
@@ -593,13 +607,18 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
 		}
 	}
     if(verbose || t%100==0){
+		T iterLogJoint = this->logJoint(false) ; 
+		//log iterJoint Prob
+		logJointIterEval.push_back(t); 
+		logJointHist.push_back(iterLogJoint); 
+
 		if(Nd_<=10) {
 			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] label: " 
     		<< this->labels().transpose()
-      		<< " [joint= " << std::setw(6) << this->logJoint(false) << "]"<< endl;
+      		<< " [joint= " << std::setw(6) << iterLogJoint << "]"<< endl;
 		} else {
 			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] joint= " 
-				 << std::setw(6) << this->logJoint(false) << endl;
+				 << std::setw(6) << iterLogJoint << endl;
 		}
     }
   }
@@ -680,6 +699,10 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 			//pdf 1xK
 		//--counts (scalar)
 			//counts 1x1
+	//logJoint history
+		// Niter 1x1
+		// iterValue 1xNiter (iteration corresponding to the logValue)
+		// logJoint	 1xNiter (logJoint)
 
 	//this fixes issues with eigen matrices printing (eg, 00-0.7 )
 	int curPres = int(out.precision()); 
@@ -773,6 +796,16 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 		}
 	}
 
+
+	//print logHistory
+	out << int(logJointHist.size()) << endl; 
+	for(int i=0; i<logJointIterEval.size(); ++i)
+		out << logJointIterEval[i] << " "; 
+	out << endl;
+
+	for(int i=0; i<logJointHist.size(); ++i)
+		out << logJointHist[i] << " "; 
+	out << endl;
 
 	out.precision(curPres);
 
