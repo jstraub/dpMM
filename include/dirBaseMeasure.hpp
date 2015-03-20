@@ -41,6 +41,7 @@ public:
   // assumes vectors [counts]
   virtual void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
       VectorXu& z, uint32_t k);
+  virtual void posteriorFromSS(const Matrix<T,Dynamic,1> &x);
 
   void sample();
 
@@ -135,6 +136,12 @@ void DirSampled<Disc,T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > & x,
 {
   disc_ = dir0_.posteriorFromCounts(x,z,k).sample();
 };
+
+template<class Disc, typename T>
+void DirSampled<Disc,T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x)
+{
+	disc_ = dir0_.posteriorFromCounts(x).sample();
+}
 
 template<class Disc, typename T>
 T DirSampled<Disc,T>::logPdfUnderPrior() const

@@ -169,7 +169,7 @@ int main(int argc, char **argv){
 			return(-1);
 		}
 
-		//read data
+		//read data [sufficient statistics]
 		fin>>NumObs; 
 		N.clear(); N.reserve(NumObs);
 		D.clear(); D.reserve(NumObs);
@@ -265,7 +265,8 @@ int main(int argc, char **argv){
 		for(uint m=0;m<NumObs ; ++m) 
 		{
 			if(iequals(baseDist[m], "NiwSampled")) { //sampled normal inversed wishart
-				
+				//sufficient statistics size:(1+D+D^2)x1
+				//[N, sum(x_i) outerProduct(x_i)_row_major_form ]
 				vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled; 
 
 				int dNorm = (sqrt(D[m]*4+1)-1)/2; 
@@ -322,13 +323,15 @@ int main(int argc, char **argv){
 				IW<double> iw(Delta,nu,&rndGen);
 				boost::shared_ptr<NiwSphere<double> > tempBase( new NiwSphere<double>(iw,&rndGen));
 				
-				//simple copy
+				//simple copycd 
 				for(int k=0; k<int(K);++k) {
 					niwTangent.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase->copy()));
 				}
 				thetas.push_back(niwTangent); 
 
 			} else if(iequals(baseDist[m], "DirSampled")) {
+				//sufficient statistics size:(D)x1
+				//[counts]
 
 				vector<boost::shared_ptr<BaseMeasure<double> > > dirSampled; 
 
