@@ -96,7 +96,8 @@ protected:
 //  Cat cat_;
   vector<vector<boost::shared_ptr<BaseMeasure<T> > > > thetas_;  // theta_[M][K]
 
-  vector<vector<Matrix<T,Dynamic,Dynamic> > > x_; //x_[M][doc](:,word)
+  //suffiecient stats
+  vector<vector<Matrix<T,Dynamic,Dynamic> > > x_; //x_[M][doc](:,word) 
   VectorXu z_;
 
   virtual void helper_setDims();
@@ -354,7 +355,6 @@ void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dy
   // randomly init labels from prior
   VectorXu z; 
   z.setZero(Nd);
-  
   Cat<T> pi = dir_.sample(); 
   pi.sample(z);
 
@@ -380,6 +380,8 @@ void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dy
   this->sampleParameters();
 };
 
+
+
 template<typename T>
 void DirMultiNaiveBayes<T>::helper_setDims()
 {
@@ -388,7 +390,7 @@ void DirMultiNaiveBayes<T>::helper_setDims()
 	for(uint32_t m=0; m<M_; ++m) {
 		VectorXu temp(x_[m].size()); 
 		for(uint32_t t=0; t<x_[m].size(); ++t)
-			temp(t) = x_[m][t].cols(); 
+			temp(t) = uint(x_[m][t].cols()); 
 		dataDim.push_back(temp); 
 	}
 }
@@ -407,6 +409,7 @@ void DirMultiNaiveBayes<T>::sampleLabels()
 
 template<typename T>
 void DirMultiNaiveBayes<T>::updatePDF() {
+
 // compute categorical distribution over label z_i 
 // no need to re-compute the array and log every iteration)
 VectorXd logPdf_z_value = pi_.pdf().array().log();
@@ -419,12 +422,8 @@ VectorXd logPdf_z_value = pi_.pdf().array().log();
 	{
 		for(uint32_t k=0; k<K_; ++k)
 		{
-	//      cout<<thetas_[k].logLikelihood(x_.col(d))<<" ";
-			for(uint32_t w=0; w<x_[m][d].cols(); ++w)
-			{
-        // m is over base measures; d is over the words
-				logPdf_z[k] += thetas_[m][k]->logLikelihood(x_[m][d],w);
-			}
+			//updated to SS
+			logPdf_z[k] += thetas_[m][k]->logLikelihoodFromSS(x_[m][d]);
 		}
 	}
 //    cout<<endl;
@@ -458,6 +457,7 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleParameters()
 {
+//TODO: update to SS
 //unpacks the contains here vector<vector<Matrix>> into what the posterior expects Matrix
 	MatrixXu dim(M_,K_); 
 	for(uint32_t m=0; m<M_; ++m) {
@@ -472,25 +472,26 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 			if(dim(m,k)!=0) {
-				Matrix<T,Dynamic,Dynamic> dataIn(x_[m].front().rows(),dim(m,k)); 
+				Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
 
 				uint32_t count=0;
 				for(uint32_t d=0; d<Nd_; ++d) {
 					if(z_[d]==k) {
 						int add_size =int(x_[m][d].cols()); 
-						dataIn.middleCols(count,add_size) = x_[m][d]; 
+						ssIn += x_[m][d]; //update iteration SS
 						count+=add_size;
 
 						if(count==dim(m,k))
 							break; //early out if you found them all
 					}
 				}
-				//always sends zeros as index and look for index==0
-				thetas_[m][k]->posterior(dataIn,VectorXu::Zero(dim(m,k)),0); 
+				//update values
+				thetas_[m][k]->posteriorFromSS(ssIn); 
 			} else {
-				Matrix<T,Dynamic,Dynamic> dataIn = Matrix<T,Dynamic,Dynamic>::Zero(x_[m].front().rows(),1); 
-				//the posterior needs to reset 
-				thetas_[m][k]->posterior(dataIn,VectorXu::Zero(1),1); 
+				Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
+				ssIn[0]=1; //set counts to 1 to avoid inf
+				//the posterior needs to reset	
+				thetas_[m][k]->posteriorFromSS(ssIn); 
 				//passing in one data point (all zeros, with 1 index value=0 and looking for 1) 
 			}
 		}
@@ -519,13 +520,10 @@ T DirMultiNaiveBayes<T>::logJoint(bool verbose)
 
 	for (int32_t m=0; m<int32_t(M_); ++m) 
 	{
+		#pragma omp parallel for reduction(+:logJoint)  
 		for (int32_t d=0; d<int32_t(Nd_); ++d)
 		{
-			#pragma omp parallel for reduction(+:logJoint)  
-			for(int32_t w=0; w<x_[m][d].cols(); ++w)
-			{
-				logJoint = logJoint + thetas_[m][z_[d]]->logLikelihood(x_[m][d],w);
-			}
+			logJoint = logJoint + thetas_[m][z_[d]]->logLikelihoodFromSS(x_[m][d]);
 		}
 	}
   
@@ -535,45 +533,6 @@ T DirMultiNaiveBayes<T>::logJoint(bool verbose)
   return logJoint;
 };
 
-
-//template<typename T>
-//MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes)
-//{
-//  MatrixXu inds = MatrixXu::Zero(n,K_);
-//  logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
-//  logLikes *= -99999.0;
-//  
-//#pragma omp parallel for 
-//  for (int32_t k=0; k<int32_t(K_); ++k)
-//  {
-//    for (uint32_t i=0; i<z_.size(); ++i)
-//      if(z_(i) == k)
-//      {
-//        T logLike = thetas_[z_[i]]->logLikelihood(x_[i]);
-//        for (uint32_t j=0; j<n; ++j)
-//          if(logLikes(j,k) < logLike)
-//          {
-//            for(uint32_t l=n-1; l>j; --l)
-//            {
-//              logLikes(l,k) = logLikes(l-1,k);
-//              inds(l,k) = inds(l-1,k);
-//            }
-//            logLikes(j,k) = logLike;
-//            inds(j,k) = i;
-////            cout<<"after update "<<logLike<<endl;
-////            Matrix<T,Dynamic,Dynamic> out(n,K_*2);
-////            out<<logLikes.cast<T>(),inds.cast<T>();
-////            cout<<out<<endl;
-//            break;
-//          }
-//      }
-//  } 
-//  cout<<"::mostLikelyInds: logLikes"<<endl;
-//  cout<<logLikes<<endl;
-//  cout<<"::mostLikelyInds: inds"<<endl;
-//  cout<<inds<<endl;
-//  return inds;
-//};
 
 
 template<typename T>
@@ -650,8 +609,6 @@ void DirMultiNaiveBayes<T>::dump(std::ofstream& fOutMeans, std::ofstream& fOutCo
 
 	cout << "printing mixture params: " << endl;
 	pi_.print();
-
-
 }
 
 

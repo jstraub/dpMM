@@ -38,6 +38,15 @@ public:
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
 
+  //adding this here to let derived classes to work with SS rather than data
+  virtual T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
+	  {assert(false); return(1e20);}
+  virtual void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const VectorXu& z, uint32_t k)
+	{assert(false);}
+  virtual void posteriorFromSS(const Matrix<T,Dynamic,1> &x)
+	{assert(false);}
+
+
   // sample new model from the possterior under this base measure
   virtual void posterior(const Matrix<T,Dynamic,Dynamic>&x, const VectorXu& z, 
       uint32_t k) =0;

@@ -78,7 +78,7 @@ int main(int argc, char **argv){
 
 
 	//handle ompMaxNumber of threads
-	int Mproc = 1e10; 
+	int Mproc = 1000000; 
 	if(vm.count("ompMaxThreads")) 
 		Mproc = vm["ompMaxThreads"].as<int>();
 
@@ -268,15 +268,17 @@ int main(int argc, char **argv){
 				
 				vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled; 
 
+				int dNorm = (sqrt(D[m]*4+1)-1)/2; 
+
 				double nu;
 				if(nuIn.empty()) {
-					nu = D[m]+1;
+					nu = dNorm+1;
 				}else {
 					nu = nuIn[m];
 				}
-				double kappa = D[m]+1;
+				double kappa = dNorm+1;
 				
-				MatrixXd Delta = MatrixXd::Identity(D[m],D[m]);
+				MatrixXd Delta = MatrixXd::Identity(dNorm,dNorm);
 				if(deltaOffsetIn.empty()) {
 					Delta *= 0.1; 
 				} else {
@@ -284,7 +286,7 @@ int main(int argc, char **argv){
 				}
 				Delta *= nu;
 				
-				VectorXd theta = VectorXd::Zero(D[m]);
+				VectorXd theta = VectorXd::Zero(dNorm);
 
 				NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
 				boost::shared_ptr<NiwSampled<double> > tempBase( new NiwSampled<double>(niw));

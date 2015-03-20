@@ -68,7 +68,9 @@ public:
       VectorXu& z, uint32_t k);
   void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
       VectorXu& z, uint32_t k);
+  void posteriorFromSS(const Matrix<T,Dynamic,1> &x);
   void sample();
+
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
@@ -146,12 +148,16 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 //  normal_.print();
   uint32_t D = niw0_.D_;
   T count = x(0);
-  Matrix<T,Dynamic,1>& mean = x.middleRows(1,D);
-  Matrix<T,Dynamic,Dynamic> scatter = 
-    Map<Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D+1)]),D,D);
+  Matrix<T,Dynamic,1> mean = x.middleRows(1,D)/count;
+
+  //NOTE: Eigen::Map does not like const data, so this cast is needed to strip const data from input
+  //alternatively the input could be changed to non-const, but this is cleaner from the outside
+  T* datPtr = const_cast<T*>(&(x.data()[(D+1)])); 
+  Matrix<T,Dynamic,Dynamic> scatter =  Map<Matrix<T,Dynamic,Dynamic> >(datPtr,D,D);
+  scatter -= (mean*mean.transpose())*count;
   T logLike = normal_.logPdf(scatter,mean,count);
-//  cout<<x.transpose()<<" -> " <<logLike<<endl;
-//  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;
+  //  cout<<x.transpose()<<" -> " <<logLike<<endl;
+  //  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;
   return logLike;
 };
 
@@ -173,6 +179,12 @@ template<typename T>
 void NiwSampled<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > &x, const VectorXu& z, uint32_t k) 
 {
 	normal_ = niw0_.posteriorFromSS(x,z,k).sample();
+}
+
+template<typename T>
+void NiwSampled<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x) 
+{
+	normal_ = niw0_.posteriorFromSS(x).sample();
 }
 
 template<typename T>
