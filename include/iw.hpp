@@ -37,6 +37,7 @@ public:
 
   IW<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
       uint32_t k, uint32_t zDivider=1);
+  IW<T> posterior(const Matrix<T,Dynamic,Dynamic>& outer, T count) const;
   IW<T> posterior() const ;
   void resetSufficientStatistics();
 
