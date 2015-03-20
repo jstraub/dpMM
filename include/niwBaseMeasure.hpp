@@ -155,6 +155,7 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
   T* datPtr = const_cast<T*>(&(x.data()[(D+1)])); 
   Matrix<T,Dynamic,Dynamic> scatter =  Map<Matrix<T,Dynamic,Dynamic> >(datPtr,D,D);
   scatter -= (mean*mean.transpose())*count;
+
   T logLike = normal_.logPdf(scatter,mean,count);
   //  cout<<x.transpose()<<" -> " <<logLike<<endl;
   //  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;

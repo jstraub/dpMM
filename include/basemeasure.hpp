@@ -40,7 +40,7 @@ public:
 
   //adding this here to let derived classes to work with SS rather than data
   virtual T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
-	  {assert(false); return(1e20);}
+	  {assert(false); return(T(1e20));}
   virtual void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const VectorXu& z, uint32_t k)
 	{assert(false);}
   virtual void posteriorFromSS(const Matrix<T,Dynamic,1> &x)
@@ -55,6 +55,7 @@ public:
   {assert(false);};
   virtual void posterior(const boost::shared_ptr<ClGMMData<T> >& cldp, uint32_t k) 
   {assert(false);};
+
 
   // log pdf value of the current model under the base measure
   virtual T logPdfUnderPrior() const =0;

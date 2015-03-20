@@ -45,6 +45,10 @@ public:
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const ;
   virtual T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
+  // right now this does not support actual scatter!  it supports
+  // weighted directional data though.  count is the weight
+  // [counts,karcherMean,scatter around KarcherMean] 
+  virtual T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const;
   /* assumes x is already in T_northS */
   virtual T logLikelihoodNorth(const Matrix<T,Dynamic,1>& x) const ;
 
@@ -54,6 +58,11 @@ public:
   /* assumes the x are already in T_northS correctly */
   void posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k);
+  // right now this does not support actual scatter!  it supports
+  // weighted directional data though.  count is the weight
+  // [counts,karcherMean,scatter around KarcherMean] 
+  void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+      VectorXu& z, uint32_t k);
 
   void sample();
 

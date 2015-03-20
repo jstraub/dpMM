@@ -98,6 +98,16 @@ IW<T> IW<T>::posterior() const
 };
 
 template<typename T>
+IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& outer, T count) 
+  const
+{
+  assert(scatter_.cols() == Delta_.cols());
+  assert(scatter_.rows() == Delta_.rows());
+  //TODO this one assumes zero mean Gaussian
+  return IW<T>(Delta_+outer, nu_+count, this->pRndGen_);
+};
+
+template<typename T>
 Matrix<T,Dynamic,Dynamic> IW<T>::mode() const
 {
   return Delta_/(nu_+D_+1);

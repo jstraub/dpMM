@@ -39,7 +39,7 @@ public:
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
   // assumes vectors [counts]
-  void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+  virtual void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
       VectorXu& z, uint32_t k);
 
   void sample();
