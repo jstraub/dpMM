@@ -38,16 +38,28 @@ public:
   uint32_t sample();
   void sample(VectorXu& z);
 
-  T logPdf(const Matrix<T,Dynamic,1>& x) const {
-	//assuming x is all zeros except one element
-	assert(x.rows()==K_); //data dimmension should agree with # categories
+  T logPdf(const Matrix<T,Dynamic,1>& x) const 
+  {
+    //assuming x is all zeros except one element
+    assert(x.rows()==K_); //data dimmension should agree with # categories
     for(uint32_t d=0; d<K_; ++d) {
-		if(x(d)==1) {
-			return(pdf_(d)); 
-		}
-	}
-	assert(false); //invalid data (at least one element must be one) [this should never happen] 
+      if(x(d)==1) {
+        return(pdf_(d)); 
+      }
+    }
+    assert(false); //invalid data (at least one element must be one) [this should never happen] 
     return(-1); 
+  };
+
+  T logPdfOfSS(const Matrix<T,Dynamic,1>& x) const 
+  {
+    //assuming x is all zeros except one element
+    assert(x.rows()==K_); //data dimmension should agree with # categories
+    T logPdf = 0;
+    for(uint32_t d=0; d<K_; ++d) {
+      logPdf += x(d) * pdf_(d); 
+    }
+    return logPdf; 
   };
 
   const Matrix<T,Dynamic,1>& pdf() const {return pdf_;};

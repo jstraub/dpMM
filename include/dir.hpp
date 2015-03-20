@@ -51,6 +51,8 @@ public:
       const VectorXu& z, uint32_t k);
   Dir<Disc,T> posteriorFromCounts(const Matrix<T,Dynamic,1>& counts);
   Dir<Disc,T> posteriorFromCounts(const VectorXu& counts);
+  Dir<Disc,T> posteriorFromCounts(const vector<Matrix<T,Dynamic,1> > &
+      counts, const VectorXu& z, uint32_t k);
 
   T logPdf(const Disc& cat);
 

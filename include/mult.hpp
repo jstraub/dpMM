@@ -39,6 +39,7 @@ public:
   void sample(VectorXu& z);
 
   T logPdf(const Matrix<T,Dynamic,1>& x) const;
+  T logPdfOfSS(const Matrix<T,Dynamic,1>& x) const {return logPdf(x);};
 
   const Matrix<T,Dynamic,1>& pdf() const {return pdf_;};
   void pdf(const Matrix<T,Dynamic,1>& pdf){

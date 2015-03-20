@@ -34,8 +34,13 @@ public:
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
   T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
+  // assumes vector [counts]
+  T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const;
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
+  // assumes vectors [counts]
+  void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+      VectorXu& z, uint32_t k);
 
   void sample();
 
@@ -107,12 +112,28 @@ T DirSampled<Disc,T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
 };
 
 template<class Disc, typename T>
+T DirSampled<Disc,T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
+{
+//  disc_.print();
+  T logLike = disc_.logPdfOfSS(x);
+//  cout<<x.transpose()<<" -> " <<logLike<<endl;
+//  cout<<x.transpose()<<" -> " <<disc_.logPdfSlower(x)<<endl;
+  return logLike;
+};
+
+template<class Disc, typename T>
 void DirSampled<Disc,T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k)
 {
   count_ = 0;
   for(uint32_t i=0; i<z.size(); ++i) if(z(i)==k) ++count_;
   disc_ = dir0_.posterior(x,z,k).sample();
+};
+
+template<class Disc, typename T>
+void DirSampled<Disc,T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > & x, const VectorXu& z, uint32_t k)
+{
+  disc_ = dir0_.posteriorFromCounts(x,z,k).sample();
 };
 
 template<class Disc, typename T>
