@@ -269,6 +269,8 @@ int main(int argc, char **argv){
 				//[N, sum(x_i) outerProduct(x_i)_row_major_form ]
 				vector<boost::shared_ptr<BaseMeasure<double> > > niwSampled; 
 
+				//input data will be size given above (but this is SS size and we want size data)
+				//solve size from above and you get this
 				int dNorm = (sqrt(D[m]*4+1)-1)/2; 
 
 				double nu;
@@ -299,20 +301,26 @@ int main(int argc, char **argv){
 				thetas.push_back(niwSampled); 
 
 			} else if(iequals(baseDist[m], "NiwSphere")) {
+				//sufficient statistics size:(1+D+(D-1)^2)x1
+				//[N, Karcher mean, zeros]
 				//IW is one dimention smaller (makes sense since it's on tangent space)
 				//double nu = D[m];
+
+				//input data will be size given above (but this is SS size and we want size data)
+				//solve size from above and you get this				
+				int dNorm = (sqrt(D[m]*4-7)+1)/2; 
 
 				vector<boost::shared_ptr<BaseMeasure<double> > > niwTangent; 
 
 				double nu;
 				if(nuIn.empty()) {
-					nu = D[m]+1;
+					nu = dNorm+1;
 				}else {
 					nu = nuIn[m];
 				}
-				double kappa = D[m];
+				double kappa = dNorm;
 				
-				MatrixXd Delta = MatrixXd::Identity(D[m]-1,D[m]-1);
+				MatrixXd Delta = MatrixXd::Identity(dNorm-1,dNorm-1);
 				if(deltaOffsetIn.empty()) {
 					Delta *= pow(15.0*M_PI/180.0,2); 
 				} else {

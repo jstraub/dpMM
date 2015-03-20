@@ -63,6 +63,8 @@ public:
   // [counts,karcherMean,scatter around KarcherMean] 
   void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
       VectorXu& z, uint32_t k);
+  void posteriorFromSS(const Matrix<T,Dynamic,1> &x);
+
 
   void sample();
 

@@ -472,13 +472,17 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 			if(dim(m,k)!=0) {
-				Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
+
+				//Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
+				vector< Matrix<T,Dynamic,1> >dataIn;  
+				dataIn.reserve(dim(m,k)); 
 
 				uint32_t count=0;
 				for(uint32_t d=0; d<Nd_; ++d) {
 					if(z_[d]==k) {
 						int add_size =int(x_[m][d].cols()); 
-						ssIn += x_[m][d]; //update iteration SS
+						//ssIn += x_[m][d]; //update iteration SS
+						dataIn.push_back(x_[m][d]); 
 						count+=add_size;
 
 						if(count==dim(m,k))
@@ -486,13 +490,22 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 					}
 				}
 				//update values
-				thetas_[m][k]->posteriorFromSS(ssIn); 
+				//thetas_[m][k]->posteriorFromSS(ssIn);
+
+				//always sends zeros and look for zeros
+				thetas_[m][k]->posteriorFromSS(dataIn,VectorXu::Zero(dim(m,k)),0); 
+				
 			} else {
-				Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
-				ssIn[0]=1; //set counts to 1 to avoid inf
+				//Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
+				//ssIn[0]=1; //set counts to 1 to avoid inf
 				//the posterior needs to reset	
-				thetas_[m][k]->posteriorFromSS(ssIn); 
+				//thetas_[m][k]->posteriorFromSS(ssIn); 
 				//passing in one data point (all zeros, with 1 index value=0 and looking for 1) 
+
+				vector<Matrix<T,Dynamic,Dynamic> >dataIn; 
+				dataIn.push_back(Matrix<T,Dynamic,1>::Zero(x_[m].front().rows(),1)); 
+				//the posterior needs to reset 
+				thetas_[m][k]->posterior(dataIn,VectorXu::Zero(1),1); 
 			}
 		}
 	}

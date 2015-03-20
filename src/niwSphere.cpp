@@ -42,7 +42,7 @@ T NiwSphere<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
   uint32_t D = normalS_.D_;
   T count = x(0);
   Matrix<T,Dynamic,1> mean = x.middleRows(1,D);
-  Matrix<T,Dynamic,Dynamic> scatter = Matrix<T,Dynamic,Dynamic>::Map(&(x.data()[(D+1)]),D,D);
+  Matrix<T,Dynamic,Dynamic> scatter = Matrix<T,Dynamic,Dynamic>::Map(&(x.data()[(D+1)]),D-1,D-1);
   // right now this does not support actual scatter!  it supports
   // weighted directional data though.  count is the weight
   assert(scatter(0,0)==0.);
@@ -114,8 +114,8 @@ void NiwSphere<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
 };
 
 template<typename T>
-void NiwSphere<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1>
-    >&x, const VectorXu& z, uint32_t k)
+void NiwSphere<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, 
+								   const VectorXu& z, uint32_t k)
 {
   uint32_t D = normalS_.D_;
   Matrix<T,Dynamic,1> w(z.size()); 
@@ -134,19 +134,20 @@ void NiwSphere<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1>
     for (int32_t i=0; i<z.size(); ++i)
       if(z[i] == k)
       {
-        q.col(j++) = x[i].middleCols(1,D);
+        q.col(j++) = x[i].middleRows(1,D);
       }
     normalS_.setMean(karcherMeanWeighted<T>(normalS_.getMean(), q, w, 100));
     //TODO: slight permutation here for mu to allow proper sampling
     // TODO: wastefull since it computes stuff for normals that are not used in the 
     // later computations
     Matrix<T,Dynamic,Dynamic> x_mu = S_.Log_p_north(normalS_.getMean(),q);
-    Matrix<T,Dynamic,Dynamic> outer =  Matrix<T,Dynamic,Dynamic>::Zero(D,D);
+    Matrix<T,Dynamic,Dynamic> outer =  Matrix<T,Dynamic,Dynamic>::Zero(D-1,D-1);
     j=0;
     for (int32_t i=0; i<z.size(); ++i)
       if(z[i] == k)
       {
-        outer += w(i)* x_mu.col(j) * x_mu.col(j++).transpose();
+        outer += w(i)* x_mu.col(j) * x_mu.col(j).transpose();
+		j++; 
       }
     normalS_.setSigma(iw0_.posterior(outer, w.sum()).sample());
   
@@ -165,6 +166,38 @@ void NiwSphere<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1>
     <<normalS_.Sigma()<<endl;
 #endif
 };
+
+template<typename T>
+void NiwSphere<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x) {
+
+  uint32_t D = normalS_.D_;
+
+  if(x(0)!=0) {
+    normalS_.setMean(x.middleRows(1,D));
+    //TODO: slight permutation here for mu to allow proper sampling
+    // TODO: wastefull since it computes stuff for normals that are not used in the 
+    // later computations
+	
+	T* datPtr = const_cast<T*>(&(x.data()[(D+1)])); 
+	Matrix<T,Dynamic,Dynamic> outer =  Map<Matrix<T,Dynamic,Dynamic> >(datPtr,D-1,D-1);
+    //Matrix<T,Dynamic,Dynamic> outer =  Matrix<T,Dynamic,Dynamic>::Zero(D-1,D-1);
+    normalS_.setSigma(iw0_.posterior(outer, x(0)).sample());
+  }else{
+    normalS_.setMean(S_.sampleUnif(normalS_.pRndGen_));
+    iw0_.resetSufficientStatistics();
+    normalS_.setSigma(iw0_.sample());
+  }
+//  sample();
+  //  cout<<"Delta: \n"<<iw0_.posterior(x_mu,z,k).Delta_<<endl;
+  //  cout<<"Sigma: \n"<<normalS_.Sigma()<<endl;
+//  cout<<"Sigma Eigs:"<<normalS_.Sigma().eigenvalues()<<endl;
+#ifndef NDEBUG
+  cout<<"NiwSphere<T>::posterior"<<endl
+    <<normalS_.getMean().transpose()<<endl
+    <<normalS_.Sigma()<<endl;
+#endif
+
+}
 
 template<typename T>
 void NiwSphere<T>::posterior( const shared_ptr<ClGMMData<T> >& cldp, uint32_t k)
