@@ -58,6 +58,9 @@ public:
   /* assumes the x are already in T_northS correctly */
   void posteriorFromPtsInTpS(const Matrix<T,Dynamic,Dynamic>& x, 
     const VectorXu& z, uint32_t k);
+  // right now this does not support actual scatter!  it supports
+  // weighted directional data though.  count is the weight
+  // [counts,karcherMean,scatter around KarcherMean] 
   void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
       VectorXu& z, uint32_t k);
 
