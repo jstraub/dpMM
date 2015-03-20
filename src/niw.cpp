@@ -58,6 +58,56 @@ NIW<T> NIW<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> > &x, const Vect
   return posterior();
 }; 
 
+// assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+template<typename T>
+NIW<T> NIW<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x) 
+{
+  count_ = x(0);
+  mean_ = x.middleRows(1,D_)/count_;
+//  scatter_ = Map<Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D_+1)]),D_,D_);
+  scatter_ = Matrix<T,Dynamic,Dynamic>::Map(&(x.data()[(D_+1)]),D_,D_);
+//  scatter_ = Matrix<T,Dynamic,Dynamic>::Map(x.data(),D_,D_);
+//  scatter_ = Map<Matrix<T,Dynamic,Dynamic> >(x.data(),D_,D_);
+  scatter_ -= (mean_*mean_.transpose())*count_;
+  return posterior();
+}; 
+
+template<typename T>
+NIW<T> NIW<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > & x,
+    const VectorXu& z, uint32_t k)
+{
+  this->resetSufficientStatistics();
+  // TODO: be carefull here when parallelizing since all are writing to
+  // the same location in memory
+#pragma omp parallel for
+  for (int32_t i=0; i<z.size(); ++i)
+  {
+    if(z(i) == k)
+    {      
+#pragma omp critical
+      {
+        count_ += x[i](0);
+        mean_ += x[i].middleRows(1,D_);
+        scatter_ += Matrix<T,Dynamic,Dynamic>::Map(&(x[i].data()[(D_+1)]),D_,D_);
+//        scatter_ += Matrix<T,Dynamic,Dynamic>::Map<Matrix<T,Dynamic,Dynamic> >(&(x[i].data()[(D_+1)]),D_,D_);
+      }
+    }
+  }
+  if (count_ > 0.)
+  {
+    mean_ /= count_;
+    scatter_ -= (mean_*mean_.transpose())*count_;
+  }
+#ifndef NDEBUG
+  cout<<" -- updating ss "<<count_<<endl;
+  cout<<"mean="<<mean_.transpose()<<endl;
+  cout<<"scatter="<<endl<<scatter_<<endl;
+  posterior().print();
+#endif
+  return posterior();
+}; 
+
+
 template<typename T>
 NIW<T> NIW<T>::posterior() const 
 {

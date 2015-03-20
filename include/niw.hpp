@@ -39,8 +39,13 @@ public:
 
   NIW<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-  NIW<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
-    uint32_t k);
+  NIW<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
+      VectorXu& z, uint32_t k);
+  // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+  NIW<T> posteriorFromSS(const Matrix<T,Dynamic,1>& x);
+  NIW<T> posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+      VectorXu& z, uint32_t k);
+
   NIW<T> posterior() const;
   void resetSufficientStatistics();
   void getSufficientStatistics(const Matrix<T,Dynamic,Dynamic> &x, 

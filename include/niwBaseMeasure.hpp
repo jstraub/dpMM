@@ -60,10 +60,14 @@ public:
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
   T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
     {return logLikelihood(x.col(i));};
+  // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+  T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const;
   void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
     uint32_t k);
-  void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const VectorXu& z, 
-    uint32_t k);
+  void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
+      VectorXu& z, uint32_t k);
+  void posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+      VectorXu& z, uint32_t k);
   void sample();
 
   T logPdfUnderPrior() const;
@@ -135,6 +139,21 @@ T NiwSampled<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
   return logLike;
 };
 
+// assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+template<typename T>
+T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
+{
+//  normal_.print();
+  uint32_t D = niw0_.D_;
+  T count = x(0);
+  Matrix<T,Dynamic,1>& mean = x.middleRows(1,D);
+  Matrix<T,Dynamic,Dynamic> scatter = 
+    Map<Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D+1)]),D,D);
+  T logLike = normal_.logPdf(scatter,mean,count);
+//  cout<<x.transpose()<<" -> " <<logLike<<endl;
+//  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;
+  return logLike;
+};
 
 template<typename T>
 void NiwSampled<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, 
@@ -148,6 +167,12 @@ void NiwSampled<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x,
 	const VectorXu& z, uint32_t k) 
 {
 	normal_ = niw0_.posterior(x,z,k).sample();
+}
+
+template<typename T>
+void NiwSampled<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > &x, const VectorXu& z, uint32_t k) 
+{
+	normal_ = niw0_.posteriorFromSS(x,z,k).sample();
 }
 
 template<typename T>

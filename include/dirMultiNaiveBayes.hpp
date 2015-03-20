@@ -370,15 +370,14 @@ void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dy
   //init data and labels from given 
   x_ = x;
   z_ = z; 
-  
+
   pi_ = dir_.sample(); 
 
   pdfs_.setZero(Nd_,K_);
 
-this->initialize_sampler();
-this->helper_setDims();
-
-this->sampleParameters();
+  this->initialize_sampler();
+  this->helper_setDims();
+  this->sampleParameters();
 };
 
 template<typename T>
@@ -423,6 +422,7 @@ VectorXd logPdf_z_value = pi_.pdf().array().log();
 	//      cout<<thetas_[k].logLikelihood(x_.col(d))<<" ";
 			for(uint32_t w=0; w<x_[m][d].cols(); ++w)
 			{
+        // m is over base measures; d is over the words
 				logPdf_z[k] += thetas_[m][k]->logLikelihood(x_[m][d],w);
 			}
 		}
