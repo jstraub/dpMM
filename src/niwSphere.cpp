@@ -37,6 +37,13 @@ T NiwSphere<T>::logLikelihood(const Matrix<T,Dynamic,1>& q) const
 };
 
 template<typename T>
+T NiwSphere<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
+{
+  assert(false);
+  return normalS_.logPdf(x);
+};
+
+template<typename T>
 T NiwSphere<T>::logLikelihoodNorth(const Matrix<T,Dynamic,1>& x) const
 {
   return normalS_.logPdfNorth(x);
@@ -95,6 +102,13 @@ void NiwSphere<T>::posterior(const Matrix<T,Dynamic,Dynamic>& q,
     <<normalS_.getMean().transpose()<<endl
     <<normalS_.Sigma()<<endl;
 #endif
+};
+
+template<typename T>
+void NiwSphere<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1>
+    >&x, const VectorXu& z, uint32_t k)
+{
+  assert(false);
 };
 
 template<typename T>
