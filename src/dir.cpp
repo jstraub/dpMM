@@ -109,9 +109,11 @@ Dir<Disc,T> Dir<Disc,T>::posteriorFromCounts(const
     vector<Matrix<T,Dynamic,1> > & counts, const VectorXu& z, uint32_t k)
 {
   counts_.setZero(K_);
-  for (uint32_t i=0; i<z.size(); ++i)
-    if(z(i) == k)
+  for (uint32_t i=0; i<z.size(); ++i) {
+    if(z(i) == k) {
       counts_ += counts[i];
+	}
+  }
   return posterior();
 };
 
