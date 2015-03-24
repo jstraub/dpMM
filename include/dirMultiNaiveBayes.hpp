@@ -553,8 +553,10 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
 { 
   if(verbose){
   	cout<<"[DirMultiNaiveBayes::inferALL] ------ inferingALL (nIter=" << nIter << ") ------"<<endl;
-  	cout <<"initial labels:"<< endl;
-  	cout<<this->labels().transpose()<<endl;
+  	if(Nd_<=100) { 
+		cout <<"initial labels:"<< endl;
+  		cout<<this->labels().transpose()<<endl;
+	}
   }
 
   
