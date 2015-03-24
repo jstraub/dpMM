@@ -86,9 +86,14 @@ BOOST_AUTO_TEST_CASE( sphere_test)
     BOOST_CHECK(
         (x.col(i) - S.Log_p_north(muEst.col(z(i)),sq->col(i))).norm() < 1e-6);
   
+  p = VectorXd(3);
+  q = VectorXd(3);
   p << 1,0,0;
   q <<-1,0,0;
-  cout<< S.Log_p_single(p,q) <<endl;
+  VectorXd qp = S.Log_p_single(p,q) ;
+  cout<<"mapping "<<q.transpose()<<" to TpS at"<<p.transpose()
+    <<endl<< qp.transpose() <<endl;
+  cout<<"Exp ing it back down: "<<S.Exp_p_single(p,qp).transpose()<<endl;
  
 }
 

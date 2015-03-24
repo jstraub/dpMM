@@ -257,7 +257,24 @@ Matrix<T,Dynamic,1> Sphere<T>::Log_p_single(const Matrix<T,Dynamic,1>& p,
 
   T dot = max(static_cast<T>(-1.0),min(static_cast<T>(1.0),p.dot(q)));
 #ifdef NDEBUG
-  return (q-p*dot)*invSincDot(dot);
+  if (dot < -0.99999999984769128) 
+  { // > 179.999 deg
+    //  sample random point on north pole on radius pi and map to TpS
+    //  the log map is not defined for points on exactly the opposite
+    //  side - would be best to sample a random point on the radius pi
+    //  in TpS but thats slow so just pick a point.
+    //  
+    //  Matrix<T,Dynamic,1> xNorth(D_-1); Normal<T>
+    //  normal(D_-1,pRndGen); Matrix<T,Dynamic,1> xNorth =
+    //  normal.sample(); xNorth = M_PI*xNorth/xNorth.norm();
+//
+//    faster but maybe a bit fishy
+    Matrix<T,Dynamic,1> xNorth(2);
+    xNorth << M_PI,0;
+    return rotate_north2p(p,xNorth);    
+  }else{
+    return (q-p*dot)*invSincDot(dot);
+  }
 #else
   Matrix<T,Dynamic,1> x = (q-p*dot)*invSincDot(dot);
 //  ASSERT((x.norm()<PI+1e-6),x.transpose()<<" |.| "<<x.norm());
