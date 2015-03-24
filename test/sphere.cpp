@@ -86,6 +86,9 @@ BOOST_AUTO_TEST_CASE( sphere_test)
     BOOST_CHECK(
         (x.col(i) - S.Log_p_north(muEst.col(z(i)),sq->col(i))).norm() < 1e-6);
   
+  p << 1,0,0;
+  q <<-1,0,0;
+  cout<< S.Log_p_single(p,q) <<endl;
  
 }
 
