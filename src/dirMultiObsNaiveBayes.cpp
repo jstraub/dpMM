@@ -271,7 +271,7 @@ int main(int argc, char **argv){
 
 				//input data will be size given above (but this is SS size and we want size data)
 				//solve size from above and you get this
-				int dNorm = (sqrt(D[m]*4+1)-1)/2; 
+				int dNorm = int( (sqrt(D[m]*4+1)-1)/2); 
 
 				double nu;
 				if(nuIn.empty()) {
@@ -308,7 +308,7 @@ int main(int argc, char **argv){
 
 				//input data will be size given above (but this is SS size and we want size data)
 				//solve size from above and you get this				
-				int dNorm = (sqrt(D[m]*4-7)+1)/2; 
+				int dNorm = int( (sqrt(D[m]*4-7)+1)/2 ); 
 
 				vector<boost::shared_ptr<BaseMeasure<double> > > niwTangent; 
 

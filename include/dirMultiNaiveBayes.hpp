@@ -69,17 +69,24 @@ public:
 	  return(thetas_[m][k]);
   };
 
-  virtual T evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, uint32_t clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
-  virtual vector<T> evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> clusterInd, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<T> evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, const vector<uint32_t> clusterInd, 
+							   const vector<uint32_t> comp2eval =vector<uint32_t>());
   
-  virtual uint32_t sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
-  virtual vector<uint32_t> sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
-  virtual uint32_t MAPLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
-  virtual vector<uint32_t> MAPLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual uint32_t sampleLabels(const vector<Matrix<T,Dynamic,1> > xnew, 
+								const vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<uint32_t> sampleLabels(const vector<vector<Matrix<T,Dynamic,1> > > xnew, 
+										const vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual uint32_t MAPLabels(const vector<Matrix<T,Dynamic,1> > xnew, 
+							 const vector<uint32_t> comp2eval =vector<uint32_t>());
+  virtual vector<uint32_t> MAPLabels(const vector<vector<Matrix<T,Dynamic,1> > > xnew, 
+									 const vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual void updatePDF();
 
 protected: 
-  virtual uint32_t labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels=false);
+  virtual T evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, const uint32_t clusterInd, 
+					   const vector<uint32_t> comp2eval);
+  virtual uint32_t labels_sample_max(const vector<Matrix<T,Dynamic,1> > xnew, 
+									 const vector<uint32_t> comp2eval, const bool return_MAP_labels=false);
 
   uint32_t Nd_;  
   uint32_t K_; //num cluseters
@@ -794,30 +801,14 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
 
 
 template <typename T>
-T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, 
-							  uint32_t clusterInd, vector<uint32_t> comp2eval) 
+T DirMultiNaiveBayes<T>::evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, 
+							  const uint32_t clusterInd, const vector<uint32_t> comp2eval) 
 {
-	if(comp2eval.empty()) {
-		for(uint m=0; m<M_; ++m)
-			comp2eval.push_back(m); 
-	}
-
 	//T logJoint = pi_.pdf_(clusterInd);
 	T logJoint  = 0; 
 	for (int32_t m=0; m<int32_t(comp2eval.size()); ++m) 
 	{
-		if(xnew[m].cols()<24) { //use a single core if num words is small		
-			for(int32_t w=0; w<xnew[m].cols(); ++w)
-			{
-				logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
-			}
-		} else { //switch to multi-core if lots of words. 
-			#pragma omp parallel for reduction(+:logJoint)  
-			for(int32_t w=0; w<xnew[m].cols(); ++w)
-			{
-				logJoint = logJoint + thetas_[comp2eval[m]][clusterInd]->logLikelihood(xnew[m],w);
-			}
-		}
+		logJoint += thetas_[comp2eval[m]][clusterInd]->logLikelihoodFromSS(xnew[m]);
 	}
     
   return logJoint;
@@ -825,31 +816,37 @@ T DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew,
 
 
 template <typename T>
-vector<T> DirMultiNaiveBayes<T>::evalLogLik(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> clusterInd, vector<uint32_t> comp2eval) {
+vector<T> DirMultiNaiveBayes<T>::evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, 
+											const vector<uint32_t> clusterInd, 
+											const vector<uint32_t> comp2eval) {
+	
+	vector<uint32_t> comp2evalLocal = comp2eval; 
+	if(comp2evalLocal.empty()) {
+		for(uint m=0; m<M_; ++m)
+			comp2evalLocal.push_back(m); 
+	}
+
 	vector<T> out; 
 	for(uint32_t k=0; k<uint32_t(clusterInd.size()); ++k) {
-		out.push_back(this->evalLogLik(xnew,clusterInd[k],comp2eval)); 
+		out.push_back(this->evalLogLik(xnew,clusterInd[k],comp2evalLocal)); 
 	}
 	return(out);
 }
 
 
 template <typename T>
-uint32_t DirMultiNaiveBayes<T>::labels_sample_max(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval, bool return_MAP_labels)
+uint32_t DirMultiNaiveBayes<T>::labels_sample_max(const vector<Matrix<T,Dynamic,1> > xnew, 
+												  const vector<uint32_t> comp2eval, const bool return_MAP_labels)
 {
-	/* xnew in the form x[docs][m][words] */
+	/* xnew in the form x[docs][m][SS] */
 
 VectorXd logPdf_z = pi_.pdf().array().log();
 
 for(int32_t m=0; m<comp2eval.size(); ++m)
 {
-	#pragma omp parallel for
 	for(int32_t k=0; k<int32_t(K_); ++k)
 	{
-		for(uint32_t w=0; w<xnew[m].cols(); ++w)
-		{
-			logPdf_z[k] += thetas_[comp2eval[m]][k]->logLikelihood(xnew[m],w);
-		}
+		logPdf_z[k] += thetas_[comp2eval[m]][k]->logLikelihoodFromSS(xnew[m]);
 	}
 }
 
@@ -860,7 +857,7 @@ pdfLocal = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
 
 VectorXu zout = VectorXu(1);
 
-if(return_MAP_labels) {
+if(return_MAP_labels) { 
 	// return MAP label
 	int r,c; 
 	pdfLocal.maxCoeff(&r, &c);
@@ -877,14 +874,16 @@ if(return_MAP_labels) {
 
 
 template <typename T>
-uint32_t DirMultiNaiveBayes<T>::sampleLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) {
+uint32_t DirMultiNaiveBayes<T>::sampleLabels(const vector<Matrix<T,Dynamic,1> > xnew, 
+											 const vector<uint32_t> comp2eval) {
 	return(this->labels_sample_max(xnew, comp2eval, false)); 
 }
 
 template <typename T>
-vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval) 
+vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(const vector<vector<Matrix<T,Dynamic,1> > > xnew,
+													 const vector<uint32_t> comp2eval) 
 {
-	/* xnew in the form x[docs][m][words] */
+	/* xnew in the form x[doc][m][SS] */
 	vector<uint32_t> out; 
 	for(uint32_t d=0; d<xnew.size(); ++d) {
 		out.push_back(this->sampleLabels(xnew[d],comp2eval)); 
@@ -894,14 +893,16 @@ vector<uint32_t> DirMultiNaiveBayes<T>::sampleLabels(vector<vector<Matrix<T,Dyna
 
 
 template <typename T>
-uint32_t DirMultiNaiveBayes<T>::MAPLabels(vector<Matrix<T,Dynamic,Dynamic> > xnew, vector<uint32_t> comp2eval) {
+uint32_t DirMultiNaiveBayes<T>::MAPLabels(const vector<Matrix<T,Dynamic,1> > xnew, 
+										  const vector<uint32_t> comp2eval) {
 	return(this->labels_sample_max(xnew, comp2eval, true)); 
 }
 
 
 template <typename T>
-vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(vector<vector<Matrix<T,Dynamic,Dynamic> > > xnew, vector<uint32_t> comp2eval) {
-	/* xnew in the form x[docs][m][words] */
+vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(const vector<vector<Matrix<T,Dynamic,1> > > xnew, 
+												  const vector<uint32_t> comp2eval) {
+	/* xnew in the form x[docs][m][SS] */
 	vector<uint32_t> out; 
 	for(uint32_t d=0; d<xnew.size(); ++d) {
 		out.push_back(this->MAPLabels(xnew[d],comp2eval)); 
