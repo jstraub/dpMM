@@ -46,7 +46,7 @@ public:
   virtual const VectorXu & labels(){return z_;};
   virtual Matrix<T,Dynamic,1> getCounts();
   virtual uint32_t getK() const { return K_;};
-  virtual double logJoint() { return 0.0;}; 
+  virtual double logJoint(); 
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n) 
 //{ return MatrixXu::Zero(n,1);};
@@ -95,6 +95,8 @@ void CrpMM<T>::initialize(const shared_ptr<Matrix<T,Dynamic,Dynamic> >& spx)
     z_(i) = pi.sample();
   }
 
+  cout<<"init counts "<<this->getCounts().transpose()<<endl;
+
   // init the parameters
   if(thetas_.size() == 0)
   {
@@ -140,7 +142,7 @@ void CrpMM<T>::sampleLabels()
       Nk(z_(i)) -= alpha_;
       Nk(K_) = alpha_;
     }
-    if(i %(z_.size()/100) == 0) cout<<" CrpMM<T>::sampleLabel: "<<(i/(z_.size()/100))<<"% done"<<endl;
+    if(z_.size()>10000 && i %(z_.size()/100) == 0) cout<<" CrpMM<T>::sampleLabel: "<<(i/(z_.size()/100))<<"% done"<<endl;
   }
   this->removeEmptyClusters();
 };
@@ -152,8 +154,8 @@ void CrpMM<T>::sampleParameters()
   for(uint32_t k=0; k<K_; ++k)
   {
     thetas_[k]->posterior(*this->spx_,z_,k);
-//    cout<<"k:"<<k<<" ";
-//    thetas_[k]->print();
+    cout<<"k:"<<k<<" ";
+    thetas_[k]->print();
   }
 };
 
@@ -191,4 +193,15 @@ void CrpMM<T>::removeEmptyClusters()
     if (toDelete[k])
       thetas_.erase(thetas_.begin()+k);
   K_ = labelMap[K_-1]+1;
+}
+
+template <typename T>
+double CrpMM<T>::logJoint() 
+{
+  double logP = 0.;
+  for (uint32_t i=0; i<z_.size(); ++i)
+  {
+    logP += thetas_[z_(i)]->logLikelihood(this->spx_->col(i)); 
+  }
+  return logP;
 }

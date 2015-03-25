@@ -90,6 +90,7 @@ vMFbase<T>* vMFbase<T>::copyNative()
 template<typename T>
 T vMFbase<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
 {
+//  cout<<vmf_.logPdf(x)<<endl;
   return vmf_.logPdf(x);
 };
 
@@ -136,12 +137,13 @@ T vMFbase<T>::logPdfUnderPriorMarginalized(const Matrix<T,Dynamic,1>& x)
 {
   // approximate the log pdf under the prior via monte carlo sampling
   T logPdfMarg = 0;
+  uint32_t N = 3;
 //#pragma omp parallel for reduction(+:logPdfMarg)
-  for(uint32_t t=0; t<3; ++t)
+  for(uint32_t t=0; t<N; ++t)
   {
     vMF<T> vmf = vmfPrior_.sample();
     logPdfMarg = logPdfMarg + vmf.logPdf(x);
   }
-  return logPdfMarg/3.;
+  return logPdfMarg/T(N);
 };
 

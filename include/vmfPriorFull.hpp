@@ -42,8 +42,8 @@ public:
   vMF<T> sample();
   vMF<T> sampleFromPosterior(const vMF<T>& vmf);
 
-  T logPdf(const vMF<T>& vmf) const;
-  T logPdfMarginalized() const; // log pdf of SS under NIW prior
+//  T logPdf(const vMF<T>& vmf) const;
+//  T logPdfMarginalized() const; // log pdf of SS under NIW prior
 //  T logPdfUnderPriorMarginalizedMerged(const NIW<T>& other) const;
 
   vMF<T> vmf0_; // prior on the mean
@@ -137,6 +137,7 @@ void vMFpriorFull<T>::getSufficientStatistics(const
   cout<<"xSum="<<xSum_.transpose()<<endl;
   posterior().print();
 #endif
+//  cout<<"SS: "<<count_<<" "<<xSum_.transpose()<<endl;
 };
 
 template<typename T>
@@ -150,23 +151,37 @@ vMF<T> vMFpriorFull<T>::sample()
 template<typename T>
 vMF<T> vMFpriorFull<T>::sampleFromPosterior(const vMF<T>& vmf)
 {
-  // posterior concentration prior parameters
-  const T a = a0_ + count_;
-  const T b = b0_ + vmf.mu().transpose()*xSum_;
-//  cout<<"vMFpriorFull::sampleFromPosterior: a="<<a<<" b="<<b<<endl;
-  // sample concentration form this posterior
-  const T tau = sampleConcentration(a,b);
-//  cout<<"vMFpriorFull::sampleFromPosterior: tau="<<tau<<endl;
-  // posterior mean (m_N) and concentration (t_N) for vMF
-  Matrix<T,Dynamic,1> m_N = vmf0_.tau()*vmf0_.mu() + tau*xSum_;
-  T t_N = m_N.norm();
-  m_N /= t_N;
-//  cout<<"vMFpriorFull::sampleFromPosterior: t_N="<<t_N<<" m_N="<<m_N.transpose()<<endl;
-  // sample mean mu from posterior vMF
-  Matrix<T,Dynamic,1> mu = vMF<T>(m_N,t_N, pRndGen_).sample();
-//  cout<<"vMFpriorFull::sampleFromPosterior: mu="<<mu.transpose()<<endl;
-  // return sampled posterior vMF
-  return vMF<T>(mu, tau, pRndGen_);
+  vMF<T> vmfPost (vmf);
+  vMF<T> vmfPostPrev (vmf);
+  T logPost = -FLT_MAX;
+  T logPostPrev = logPost;
+  // Gibbs sampler for concentration and mean
+  for(uint32_t j=0;j<10; ++j)
+  {
+    // posterior concentration prior parameters
+    const T a = a0_ + count_;
+    const T b = b0_ + vmfPost.mu().transpose()*xSum_;
+//    cout<<"vMFpriorFull::sampleFromPosterior: a="<<a<<" b="<<b<<endl;
+    // sample concentration form this posterior
+    const T tau = sampleConcentration(a,b);
+//    cout<<"vMFpriorFull::sampleFromPosterior: tau="<<tau<<endl;
+    // posterior mean (m_N) and concentration (t_N) for vMF
+    Matrix<T,Dynamic,1> m_N = vmf0_.tau()*vmf0_.mu() + tau*xSum_;
+    T t_N = m_N.norm();
+    m_N /= t_N;
+//    cout<<"vMFpriorFull::sampleFromPosterior: t_N="<<t_N<<" m_N="<<m_N.transpose()<<endl;
+    // sample mean mu from posterior vMF
+    Matrix<T,Dynamic,1> mu = vMF<T>(m_N,t_N, pRndGen_).sample();
+//    cout<<"vMFpriorFull::sampleFromPosterior: mu="<<mu.transpose()<<endl;
+    logPost = (tau*b + tau*mu.transpose()*xSum_ + vmf0_.tau()*vmf0_.mu().transpose()*mu);
+//    cout<<"@"<<j<<" cost "<<logPost<<" "<<(logPost - logPostPrev)<<endl;
+    // return sampled posterior vMF
+    vmfPost = vMF<T>(mu, tau, pRndGen_);
+//    if((logPost - logPostPrev)<0. ) break;
+    logPostPrev = logPost;
+    vmfPostPrev = vmfPost;
+  }
+  return vmfPostPrev;
 };
 
 

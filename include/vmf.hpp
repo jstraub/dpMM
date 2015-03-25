@@ -135,5 +135,5 @@ Matrix<T,Dynamic,1> vMF<T>::sample()
 template<typename T>
 void vMF<T>::print() const
 {
-  cout<<"mu = "<<mu_.transpose()<<" tau = "<<tau_<<endl;
+  cout<<"mu = "<<mu_.transpose()<<"\t tau = "<<tau_<<endl;
 };

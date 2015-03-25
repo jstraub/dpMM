@@ -151,7 +151,9 @@ int main(int argc, char **argv)
   string base = "NIW";
   if(vm.count("base")) base = vm["base"].as<string>();
 
-  if(base.compare("DpNiw")){
+  if(base.compare("DpNiw") || base.compare("DirvMF")
+    || base.compare("CrpvMF") ){
+    cout<<"check unit length "<<endl;
     // normalize to unit length
     int err = 0;
 #pragma omp parallel for
@@ -506,8 +508,8 @@ int main(int argc, char **argv)
   }else if(!base.compare("CrpvMF")){
     cout<<"D="<<D<<endl;
 
-    double a0 = 2.0;
-    double b0 = 1.7;
+    double a0 = 100.0;
+    double b0 = 80.0;
     double t0 = 0.01;
     VectorXd m0(D);
 

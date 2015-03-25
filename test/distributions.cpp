@@ -25,17 +25,20 @@
 #include "gsl/gsl_permutation.h"
 #include "gsl/gsl_cdf.h"
 
-#include "dpmmSubclusters/common.h"
-
-#include "dpmmSubclusters/niw_sampled.h"
-//#include "dpmmSubclusters/cluster_sampledT.cpp"
-#include "dpmmSubclusters/linkedList.cpp"
-
-//#include "dpmmSubclusters/reduction_array.h"
-//#include "dpmmSubclusters/reduction_array2.h"
-#include "dpmmSubclusters/linear_algebra.h"
-//#include "dpmmSubclusters/sample_categorical.h"
+//#include "dpmmSubclusters/common.h"
+//
 //#include "dpmmSubclusters/niw_sampled.h"
+////#include "dpmmSubclusters/cluster_sampledT.cpp"
+//#include "dpmmSubclusters/linkedList.cpp"
+//
+////#include "dpmmSubclusters/reduction_array.h"
+////#include "dpmmSubclusters/reduction_array2.h"
+//#include "dpmmSubclusters/linear_algebra.h"
+////#include "dpmmSubclusters/sample_categorical.h"
+////#include "dpmmSubclusters/niw_sampled.h"
+
+#include <vmfPriorFull.hpp>
+#include <vmf.hpp>
 
 using std::cout;
 using std::endl;
@@ -178,6 +181,43 @@ BOOST_AUTO_TEST_CASE( gauss_test)
   x2D << M_PI*0.5,0.0; // 90 degree away
   Normal<double> normalS(mu2D,Sigma2D,&rndGen);
   cout<<" logPDf "<<normalS.logPdf(x2D)<<endl;
+
+}
+
+
+BOOST_AUTO_TEST_CASE( vMF_test)
+{
+  cout<<"----------------------- vMF ----------------------"<<endl;
+  
+  VectorXd m0(3);
+  m0 << 0.0,0.0,1.0;
+  double t0 = 0.01;
+  double a0 = 2.0;
+  double b0 = 1.7;
+
+  boost::mt19937 rndGen(1);
+  vMFpriorFull<double> vMFprior(m0,t0,a0,b0,&rndGen);
+
+  MatrixXd x(3,100);
+  for(uint32_t i=0; i<100; ++i)
+    x(0,i) = 1.0;
+  VectorXu z(100); z.fill(0);
+  uint32_t k = 0;
+
+  vMFprior.getSufficientStatistics(x,z,k);
+
+  for(uint32_t i = 0; i < 10;++i)
+  {
+    cout<<" -- "<<endl;
+    vMF<double> vmf =  vMFprior.sample();
+    vmf.print();
+//    for(uint32_t j=0;j<10; ++j)
+//    {
+     vmf = vMFprior.sampleFromPosterior(vmf);
+    vmf.print();
+//      cout<<" j="<<j<<" logPdf = "<<vMFprior.logPdf
+//    }
+  }
 
 }
 
