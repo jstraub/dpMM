@@ -464,7 +464,6 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 template<typename T>
 void DirMultiNaiveBayes<T>::sampleParameters()
 {
-//TODO: update to SS
 //unpacks the contains here vector<vector<Matrix>> into what the posterior expects Matrix
 	MatrixXu dim(M_,K_); 
 	for(uint32_t m=0; m<M_; ++m) {
