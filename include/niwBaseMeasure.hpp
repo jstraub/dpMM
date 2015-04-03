@@ -148,7 +148,11 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 //  normal_.print();
   uint32_t D = niw0_.D_;
   T count = x(0);
-  Matrix<T,Dynamic,1> mean = x.middleRows(1,D)/count;
+  Matrix<T,Dynamic,1> mean;
+  if(count>0) 
+	  mean = x.middleRows(1,D)/count;
+  else
+	  mean = Matrix<T,Dynamic,1>::Zero(D); //this should not matter since everything gets multiplied by 0 counts
 
   //NOTE: Eigen::Map does not like const data, so this cast is needed to strip const data from input
   //alternatively the input could be changed to non-const, but this is cleaner from the outside

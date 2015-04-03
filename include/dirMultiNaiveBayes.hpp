@@ -318,11 +318,14 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
       	}
       thetas_.push_back(temp); 
     }
+
+#ifndef NDEBUG
 	for(uint m=0; m<int(M_); ++m) {
 		for(int k=0; k<int(K_); ++k) {
 				thetas_[m][k]->print();
 		}
 	}
+#endif
 
 
 };
@@ -804,7 +807,7 @@ T DirMultiNaiveBayes<T>::evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew,
 							  const uint32_t clusterInd, const vector<uint32_t> comp2eval) 
 {
 	//T logJoint = pi_.pdf_(clusterInd);
-	T logJoint  = 0; 
+	T logJoint  = 0;
 	for (int32_t m=0; m<int32_t(comp2eval.size()); ++m) 
 	{
 		logJoint += thetas_[comp2eval[m]][clusterInd]->logLikelihoodFromSS(xnew[m]);

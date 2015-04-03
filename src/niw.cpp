@@ -63,7 +63,11 @@ template<typename T>
 NIW<T> NIW<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x) 
 {
   count_ = x(0);
-  mean_ = x.middleRows(1,D_)/count_;
+  if(count_>0)
+	mean_ = x.middleRows(1,D_)/count_;
+  else 
+	 mean_ =  Matrix<T,Dynamic,1>::Zero(D_); //this should not matter since it gets multiplied by 0 counts
+
 //  scatter_ = Map<Matrix<T,Dynamic,Dynamic> >(&(x.data()[(D_+1)]),D_,D_);
   scatter_ = Matrix<T,Dynamic,Dynamic>::Map(&(x.data()[(D_+1)]),D_,D_);
 //  scatter_ = Matrix<T,Dynamic,Dynamic>::Map(x.data(),D_,D_);
