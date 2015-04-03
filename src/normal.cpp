@@ -93,10 +93,17 @@ template<typename T>
 T Normal<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& scatter, 
       const Matrix<T,Dynamic,1>& mean, T count) const
 {
-  return -0.5*((LOG_2PI*D_ + logDetSigma_)*count
-      + count*(mu_.transpose()*SigmaLDLT_.solve(mu_)).sum() 
-      -2.*count*(mean.transpose()*SigmaLDLT_.solve(mu_)).sum()
-      +(SigmaLDLT_.solve(scatter + mean*mean.transpose()*count )).trace());
+	Matrix<T,1,Dynamic> meanT = mean.transpose();
+	Matrix<T,Dynamic,Dynamic> CovMu= SigmaLDLT_.solve(mu_);	
+	return -0.5*((LOG_2PI*D_ + logDetSigma_)*count 
+		+ count*(mu_.transpose()*CovMu).sum() 
+		-2.*count*(meanT*CovMu).sum()
+		+(SigmaLDLT_.solve(scatter + mean*meanT*count)).trace());
+
+  //return -0.5*((LOG_2PI*D_ + logDetSigma_)*count
+  //    + count*(mu_.transpose()*SigmaLDLT_.solve(mu_)).sum() 
+  //    -2.*count*(mean.transpose()*SigmaLDLT_.solve(mu_)).sum()
+  //    +(SigmaLDLT_.solve(scatter + mean*mean.transpose()*count )).trace());
 }
 
 template<typename T>
