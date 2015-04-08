@@ -1,8 +1,12 @@
-# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>                    
-# Licensed under the MIT license. See the license file LICENSE.                
+# Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>
+# Licensed under the MIT license. See the license file LICENSE.
 
 project(DpMM)
 cmake_minimum_required(VERSION 2.4.6)
+
+set(POD_NAME DpMM)
+include(cmake/pods.cmake)
+
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #set( CMAKE_VERBOSE_MAKEFILE on )
@@ -29,13 +33,13 @@ macro(remove_cuda_flag flag)
 endmacro()
 
 # add flags depending on build type (these are the default flags, remove according to configuraiton (eg, windows configuration)
-set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA") 
+set(CMAKE_CXX_FLAGS_RELEASE "-fopenmp -g -Wall -Wno-deprecated -O2 -finline-functions -DNDEBUG -DCUDA")
 set(CMAKE_CXX_FLAGS_DEBUG "-fopenmp -g -Wall -Wno-deprecated  -DCUDA")
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=\"sm_35,compute_35\")
 
 #by default build shared_libs
-set(BUILD_SHARED_LIBS ON) 
+set(BUILD_SHARED_LIBS ON)
 
 if(NOT USE_OPENMP)
 	#removes openMP flags
@@ -66,8 +70,8 @@ if(WIN32)
 	remove_cxx_release_flag("-fopenmp")
 	remove_cxx_debug_flag("-fopenmp")
 
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  /MP /MD /W0") 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /MDd /Zi /MP /Od") 
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  /MP /MD /W0")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /MDd /Zi /MP /Od")
 	
 	if( USE_OPENMP)
 		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}  /openmp")
@@ -125,7 +129,7 @@ link_directories(
   ${Boost_LIBRARY_DIRS}
 )
 
-add_library(dpmm 
+add_library(dpmm
   ./src/distribution.cpp
   ./src/cat.cpp
   ./src/mult.cpp
@@ -138,7 +142,7 @@ add_library(dpmm
   ./src/sphere.cpp
 )
 
-cuda_add_library(dpmm_cuda 
+cuda_add_library(dpmm_cuda
   ./src/sampler.cpp
   ./cuda/choiceMult_kernel.cu
   ./cuda/sphereMixturePdf_kernel.cu
@@ -179,7 +183,7 @@ target_link_libraries(generateSphericalData
   dpmm dpmm_cuda
   )
 
-cuda_add_executable(myNaiveBayes 
+cuda_add_executable(myNaiveBayes
 	./test/naiveBayes.cpp
 )
 target_link_libraries(myNaiveBayes
@@ -188,7 +192,7 @@ target_link_libraries(myNaiveBayes
 )
 
 
-cuda_add_executable(dirMultiObsNaiveBayes 
+cuda_add_executable(dirMultiObsNaiveBayes
 	./src/dirMultiObsNaiveBayes.cpp
 )
 target_link_libraries(dirMultiObsNaiveBayes
@@ -197,7 +201,7 @@ target_link_libraries(dirMultiObsNaiveBayes
 )
 
 
-if( COMPILE_TEST ) 
+if( COMPILE_TEST )
 	cuda_add_executable(testDirMM ./test/dirMM.cpp
 	)
 	target_link_libraries(testDirMM
@@ -234,7 +238,7 @@ if( COMPILE_TEST )
   dpmm dpmm_cuda
 	)
 
-	cuda_add_executable(testNaiveBayes 
+	cuda_add_executable(testNaiveBayes
 		./test/test_naiveBayes.cpp
 	)
 	target_link_libraries(testNaiveBayes
@@ -249,7 +253,7 @@ if( COMPILE_TEST )
       dpmm dpmm_cuda
   )
 
-endif() 
+endif()
 
 
 INSTALL(TARGETS dpmm dpmmSampler
@@ -259,9 +263,16 @@ INSTALL(TARGETS dpmm dpmmSampler
   COMPONENT compLib
   )
 
-install(DIRECTORY include/ DESTINATION include/dpMM
-  FILES_MATCHING PATTERN "*.h")                                         
-install(DIRECTORY cuda/ DESTINATION include/dpMM                          
-  FILES_MATCHING PATTERN "*.h")                                         
-install(DIRECTORY include/ DESTINATION include/dpMM                               
-  FILES_MATCHING PATTERN "*.hpp") 
+pods_install_executables(dpmmSampler)
+pods_install_libraries(dpmm)
+pods_install_headers(
+  ./include/basemeasure.hpp
+  DESTINATION dpMM)
+
+
+#install(DIRECTORY include/ DESTINATION include/dpMM
+#  FILES_MATCHING PATTERN "*.h")
+#install(DIRECTORY cuda/ DESTINATION include/dpMM
+#  FILES_MATCHING PATTERN "*.h")
+#install(DIRECTORY include/ DESTINATION include/dpMM
+#  FILES_MATCHING PATTERN "*.hpp")
