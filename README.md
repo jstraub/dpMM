@@ -48,20 +48,28 @@ Make sure you compiled the cpp code beforehand since the python script
 just wraps the call to dpmmSampler.
 
 ### Executables
-- *dpmmSampler*: Sampler for Dirichlet process mixture model (DPMM) inference using different algorithms
+- *dpmmSampler*: Sampler for Dirichlet process mixture model (DPMM) inference
+using different algorithms. It is usually preferable to use the python script
+in python/dpmmSampler.py which wraps around this executable to provide an
+easier-to-use interface. 
 ```
 Allowed options:
   -h [ --help ]         produce help message
   --seed arg            seed for random number generator
   -N [ --N ] arg        number of input datapoints
   -D [ --D ] arg        number of dimensions of the data
-  -T [ --T ] arg        number of iterations
+  -T [ --T ] arg        number of sampler iterations
   -a [ --alpha ] arg    alpha parameter of the DP (if single value assumes all 
                         alpha_i are the same
   -K [ --K ] arg        number of initial clusters 
-  --base arg            which base measure to use (NIW, DpNiw, DpNiwSphereFull,
-                          DpNiwSphere, NiwSphere, NiwSphereUnifNoise, spkm, 
-                        spkmKarcher, kmeans right now)
+  -n [ --nopropose ]    flag to disable the propsal of splits and merges
+  -s [ --silhouette ]   flag to enable output of silhouett value of the last 
+                        iteration
+  --shuffle             shuffle the data before processing
+  --base arg            which base measure to use (StickNiw, DpNiw (DP-GMM), 
+                        DpNiwSphereFull (DP-TGMM), DpNiwSphere, NiwSphere, 
+                        DirNiwSphereFull NiwSphereUnifNoise, CrpvMF, DirvMF 
+                        right now)
   -p [ --params ] arg   parameters of the base measure
   --brief arg           brief parameters of the base measure (ie Delta = 
                         delta*I; theta=t*ones(D)
@@ -69,6 +77,24 @@ Allowed options:
                         cols: different datapoints)
   -o [ --output ] arg   path to output labels .csv file (rows: time; cols: 
                         different datapoints)
+```
+Parameter arguments by model:
+- DpNiw (DP-GMM): nu kappa theta0 ... thetaD Delta00 Delta01 ... DeltaDD 
+- DpNiwSphereFull (DP-TGMM): nu Delta00 Delta01 ... Delta(D-1)(D-1)
+
+- *generateSphericalData*: generate spherical data for synthetic data experiments.
+```
+Allowed options:
+  -h [ --help ]         produce help message
+  --seed arg            seed for random number generator
+  -N [ --N ] arg        number of input datapoints
+  -D [ --D ] arg        number of dimensions of the data
+  -K [ --K ] arg        number of initial clusters 
+  -n [ --nu ] arg       nu parameter of IW from which sigmas are sampled
+  -a [ --minAngle ] arg min angle between means on sphere
+  -d [ --delta ] arg    delta of NIW
+  -o [ --output ] arg   path to output labels and data .csv file (rows: time; 
+                        cols: different datapoints)
 ```
 
 ### Collaborators
