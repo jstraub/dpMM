@@ -33,15 +33,20 @@ It has been tested under Mac OS (10.9.4) with:
 
 ### Compiling
 
-- Linux: 
+- *Linux:* 
+
     Install Eigen3 and Boost
+
     ```
     sudo apt-get install libeigen3-dev libboost-dev 
     ```
+
     Install the appropriate CUDA version matching with your nvidia
     drivers. On our machines we use `nvidia-340-dev` with
     `libcuda1-340`
+
     Clone this repository and compile the code:
+
     ```
     git clone https://github.com/jstraub/dpMM; cd dpMM; mkdir build; cd
     build; cmake ..; make -j6;
