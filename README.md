@@ -43,7 +43,7 @@ It has been tested under Mac OS (10.9.4) with:
 
     Install the appropriate CUDA version matching with your nvidia
     drivers. On our machines we use `nvidia-340-dev` with
-    `libcuda1-340`
+    `libcuda1-340 cuda-6-5 cuda-toolkit-6-5`
 
     Clone this repository and compile the code:
 
