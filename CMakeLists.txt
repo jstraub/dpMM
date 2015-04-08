@@ -220,14 +220,6 @@ if( COMPILE_TEST )
   dpmm dpmm_cuda
 	)
 
-
-	cuda_add_executable(testClData ./test/clData.cpp
-	)
-	target_link_libraries(testClData
-	${Boost_LIBRARIES}
-  dpmm dpmm_cuda
-	)
-
 	cuda_add_executable(testSPKM ./test/spkm.cpp
 	)
 	target_link_libraries(testSPKM
