@@ -53,7 +53,7 @@ public:
   virtual uint32_t getN() const { return Nd_;};
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
-  //virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
+  virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
   Matrix<T,Dynamic,1> getCounts();
 
@@ -911,3 +911,48 @@ vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(const vector<vector<Matrix<T,D
 	}
 	return(out); 
 }
+
+template<typename T>
+MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n,
+    Matrix<T,Dynamic,Dynamic>& logLikes)
+{
+  MatrixXu inds = MatrixXu::Zero(n,K_);
+  logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
+  
+#pragma omp parallel for 
+  for (uint32_t k=0; k<K_; ++k)
+  {
+    for (uint32_t i=0; i<z_.size(); ++i)
+      if(z_(i) == k)
+      {
+        T logLike = 0.;
+        // iterate over datasources and sum up their logLikes
+        for(uint32_t m=0; m<uint32_t(M_); ++m)
+        {
+          logLike += thetas_[m][z_[i]]->logLikelihoodFromSS(x_[m][i]);
+        }
+        // keep only the top n and sorted
+        for (uint32_t j=0; j<n; ++j)
+          if(logLikes(j,k) < logLike)
+          {
+            for(uint32_t l=n-1; l>j; --l)
+            {
+              logLikes(l,k) = logLikes(l-1,k);
+              inds(l,k) = inds(l-1,k);
+            }
+            logLikes(j,k) = logLike;
+            inds(j,k) = i;
+//            cout<<"after update "<<logLike<<endl;
+//            Matrix<T,Dynamic,Dynamic> out(n,K_*2);
+//            out<<logLikes.cast<T>(),inds.cast<T>();
+//            cout<<out<<endl;
+            break;
+          }
+      }
+  } 
+  cout<<"::mostLikelyInds: logLikes"<<endl;
+  cout<<logLikes<<endl;
+  cout<<"::mostLikelyInds: inds"<<endl;
+  cout<<inds<<endl;
+  return inds;
+};
