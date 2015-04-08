@@ -915,14 +915,13 @@ vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(const vector<vector<Matrix<T,D
 }
 
 template<typename T>
-MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n,
-    Matrix<T,Dynamic,Dynamic>& logLikes)
+MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes)
 {
   MatrixXu inds = MatrixXu::Zero(n,K_);
   logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
   
 #pragma omp parallel for 
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
