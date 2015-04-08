@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.                
  */
 
-#include "sampler.hpp"
+#include <dpMM/sampler.hpp>
 
 // ------------------------ impl ---------------------------------------------
 template<typename T>

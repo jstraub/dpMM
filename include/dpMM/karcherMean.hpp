@@ -6,7 +6,7 @@
 #pragma once
 
 #include <iostream>
-#include "sphere.hpp"
+#include <dpMM/sphere.hpp>
 
 using std::cout;
 using std::endl;

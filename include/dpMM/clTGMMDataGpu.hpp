@@ -8,10 +8,10 @@
 #include <vector>
 #include <Eigen/Dense>
 
-#include "gpuMatrix.hpp"
-#include "sphere.hpp"
-#include "clGMMDataGpu.hpp"
-#include "timer.hpp"
+#include <dpMM/gpuMatrix.hpp>
+#include <dpMM/sphere.hpp>
+#include <dpMM/clGMMDataGpu.hpp>
+#include <dpMM/timer.hpp>
 
 using namespace Eigen;
 using std::vector;

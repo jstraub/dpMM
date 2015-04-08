@@ -9,11 +9,11 @@
 
 #include <boost/random/gamma_distribution.hpp> // for gamma_distribution.
 
-#include "basemeasure.hpp"
-#include "cat.hpp"
-#include "niwSphere.hpp"
-#include "niwSphereFull.hpp"
-//#include "niwTangent.hpp"
+#include <dpMM/basemeasure.hpp>
+#include <dpMM/cat.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/niwSphereFull.hpp>
+//#include <dpMM/niwTangent.hpp>
 
 using namespace Eigen;
 using std::cout;

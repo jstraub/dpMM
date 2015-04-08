@@ -9,8 +9,8 @@
 
 #include <omp.h>
 
-#include "dirMM.hpp"
-#include "niwSphere.hpp"
+#include <dpMM/dirMM.hpp>
+#include <dpMM/niwSphere.hpp>
 
 using namespace Eigen;
 using std::string;

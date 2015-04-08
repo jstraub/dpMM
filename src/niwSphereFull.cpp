@@ -1,7 +1,7 @@
 /* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>
  * Licensed under the MIT license. See the license file LICENSE.
  */
-#include "niwSphereFull.hpp"
+#include <dpMM/niwSphereFull.hpp>
 // ----------------------------------------------------------------------------
 
 template<typename T>

@@ -12,7 +12,7 @@
 
 #include <boost/random/normal_distribution.hpp>
 
-#include "distribution.hpp"
+#include <dpMM/distribution.hpp>
 
 using namespace Eigen;
 using std::cout;

@@ -6,10 +6,10 @@
 
 #include <boost/program_options.hpp>
 
-#include "dirNaiveBayes.hpp"
-#include "niwBaseMeasure.hpp"
-#include "typedef.h"
-#include "timer.hpp"
+#include <dpMM/dirNaiveBayes.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/typedef.h>
+#include <dpMM/timer.hpp>
 
 namespace po = boost::program_options;
 

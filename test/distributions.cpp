@@ -7,18 +7,18 @@
 #define BOOST_TEST_MODULE distributions test
 #include <boost/test/unit_test.hpp>
 
-#include "dir.hpp"
-#include "cat.hpp"
-#include "niw.hpp"
-#include "iw.hpp"
-#include "normal.hpp"
+#include <dpMM/dir.hpp>
+#include <dpMM/cat.hpp>
+#include <dpMM/niw.hpp>
+#include <dpMM/iw.hpp>
+#include <dpMM/normal.hpp>
 
 #include <omp.h>
 
-//#include "matrix.h"
-//#include "mex.h"
-//#include "helperMEX.h"
-//#include "debugMEX.h"
+//#include <dpMM/matrix.h>
+//#include <dpMM/mex.h>
+//#include <dpMM/helperMEX.h>
+//#include <dpMM/debugMEX.h>
 
 #include "gsl/gsl_rng.h"
 #include "gsl/gsl_randist.h"
@@ -37,8 +37,8 @@
 ////#include "dpmmSubclusters/sample_categorical.h"
 ////#include "dpmmSubclusters/niw_sampled.h"
 
-#include <vmfPriorFull.hpp>
-#include <vmf.hpp>
+#include <dpMM/vmfPriorFull.hpp>
+#include <dpMM/vmf.hpp>
 
 using std::cout;
 using std::endl;

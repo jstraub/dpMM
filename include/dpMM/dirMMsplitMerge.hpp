@@ -9,7 +9,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "dirMM.hpp"
+#include <dpMM/dirMM.hpp>
 
 
 using namespace Eigen;

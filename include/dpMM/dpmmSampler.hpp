@@ -8,9 +8,9 @@
 #include <vector>
 #include <Eigen/Dense>
 
-#include "dpMM.hpp"
-#include "cat.hpp"
-#include "niw.hpp"
+#include <dpMM/dpMM.hpp>
+#include <dpMM/cat.hpp>
+#include <dpMM/niw.hpp>
 
 using namespace Eigen;
 using std::endl;

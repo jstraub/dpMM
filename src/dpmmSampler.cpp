@@ -7,23 +7,23 @@
 #include <string>
 #include <boost/program_options.hpp>
 
-#include "dpSubclusterMM.hpp"
-#include "dpmmSampler.hpp"
-#include "dirMM.hpp"
-#include "dirMMcld.hpp"
-#include "clTGMMDataGpu.hpp"
-#include "niwSphere.hpp"
-#include "niwSphereFull.hpp"
-//#include "niwTangent.hpp"
-#include "niwBaseMeasure.hpp"
-#include "unifSphere.hpp"
-#include "sphericalKMeans.hpp"
-#include "kmeans.hpp"
-#include "crpMM.hpp"
-#include "clGMMData.hpp"
-#include "vmfBaseMeasure.hpp"
-//#include "dpvMFmeans.hpp"
-#include "timer.hpp"
+#include <dpMM/dpSubclusterMM.hpp>
+#include <dpMM/dpmmSampler.hpp>
+#include <dpMM/dirMM.hpp>
+#include <dpMM/dirMMcld.hpp>
+#include <dpMM/clTGMMDataGpu.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/niwSphereFull.hpp>
+//#include <dpMM/niwTangent.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/unifSphere.hpp>
+//#include <dpMM/sphericalKMeans.hpp>
+//#include <dpMM/kmeans.hpp>
+#include <dpMM/crpMM.hpp>
+#include <dpMM/clGMMData.hpp>
+#include <dpMM/vmfBaseMeasure.hpp>
+//#include <dpMM/dpvMFmeans.hpp>
+#include <dpMM/timer.hpp>
 
 using namespace Eigen;
 using std::string; 
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     ("base", po::value<string>(), 
       "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
       " DpNiwSphere, NiwSphere, DirNiwSphereFull"
-      " NiwSphereUnifNoise, spkm, spkmKarcher, kmeans, CrpvMF, DirvMF right now)")
+      " NiwSphereUnifNoise, CrpvMF, DirvMF right now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
     ("brief", po::value< vector<double> >()->multitoken(), 
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
   
   DpMM<double> *dpmm=NULL;
   DpMM<double> *dpmmf=NULL;
-  Clusterer<double> *spkm = NULL;
+//  Clusterer<double> *spkm = NULL;
   if(!base.compare("NIW"))
   {
     MatrixXd Delta(D,D);
@@ -549,12 +549,12 @@ int main(int argc, char **argv)
     Dir<Cat<double>,double> dir(alpha,&rndGen);
     dpmm = new DirMM<double>(dir,vMFsampled,K);
 
-  }else if(!base.compare("spkm")){
-    spkm = new SphericalKMeans<double>(spx, K, &rndGen);
-  }else if(!base.compare("spkmKarcher")){
-    spkm = new SphericalKMeansKarcher<double>(spx, K, &rndGen);
-  }else if(!base.compare("kmeans")){
-    spkm = new KMeans<double>(spx, K, &rndGen);
+//  }else if(!base.compare("spkm")){
+//    spkm = new SphericalKMeans<double>(spx, K, &rndGen);
+//  }else if(!base.compare("spkmKarcher")){
+//    spkm = new SphericalKMeansKarcher<double>(spx, K, &rndGen);
+//  }else if(!base.compare("kmeans")){
+//    spkm = new KMeans<double>(spx, K, &rndGen);
   }else{
     cout<<"base "<<base<<" not supported"<<endl;
     return 1;
@@ -614,56 +614,56 @@ int main(int argc, char **argv)
     z_ = dpmmf->getLabels().transpose();
     K_ = dpmmf->getK();
 
-  }else if(!base.compare("spkm") || !base.compare("spkmKarcher") 
-      || !base.compare("kmeans"))
-  {
-    ofstream fout(pathOut.data(),ofstream::out);
-    ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
-    Timer watch;
-    for (uint32_t t=0; t<T; ++t)
-    {
-      cout<<"------------ t="<<t<<" -------------"<<endl;
-      watch.tic();
-      spkm->updateCenters();
-      watch.toctic("-- updateCenters");
-
-      const VectorXu& z = spkm->z();
-      for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(ind[i])<<" ";
-      fout<<z(ind[z.size()-1])<<endl;
-      double deviation = spkm->avgIntraClusterDeviation();
-
-      cout<<"   K="<<spkm->getK();
-      cout<<"  counts=   "<<counts<double,uint32_t>(z,spkm->getK()).transpose();
-      cout<<" avg deviation "<<deviation<<endl;
-      foutJointLike<<deviation<<endl;
-
-      watch.tic();
-      spkm->updateLabels();
-      watch.toctic("-- updateLabels");
-    }
-    fout.close();
-
-    MatrixXd deviates;
-    MatrixXu inds = spkm->mostLikelyInds(10,deviates);
-    cout<<"most likely indices"<<endl;
-    cout<<inds<<endl;
-    cout<<"----------------------------------------"<<endl;
-
-    fout.open((pathOut+"mlInds.csv").data(),ofstream::out);
-    fout<<inds<<endl;
-    fout.close();
-    fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
-    fout<<deviates<<endl;
-    fout.close();
-
-    ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
-    foutMeans << spkm->centroids()<<endl;
-    foutMeans.close();
-
-    z_ = spkm->z().transpose();
-    K_ = spkm->getK();
-
+//  }else if(!base.compare("spkm") || !base.compare("spkmKarcher") 
+//      || !base.compare("kmeans"))
+//  {
+//    ofstream fout(pathOut.data(),ofstream::out);
+//    ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
+//    Timer watch;
+//    for (uint32_t t=0; t<T; ++t)
+//    {
+//      cout<<"------------ t="<<t<<" -------------"<<endl;
+//      watch.tic();
+//      spkm->updateCenters();
+//      watch.toctic("-- updateCenters");
+//
+//      const VectorXu& z = spkm->z();
+//      for (uint32_t i=0; i<z.size()-1; ++i) 
+//        fout<<z(ind[i])<<" ";
+//      fout<<z(ind[z.size()-1])<<endl;
+//      double deviation = spkm->avgIntraClusterDeviation();
+//
+//      cout<<"   K="<<spkm->getK();
+//      cout<<"  counts=   "<<counts<double,uint32_t>(z,spkm->getK()).transpose();
+//      cout<<" avg deviation "<<deviation<<endl;
+//      foutJointLike<<deviation<<endl;
+//
+//      watch.tic();
+//      spkm->updateLabels();
+//      watch.toctic("-- updateLabels");
+//    }
+//    fout.close();
+//
+//    MatrixXd deviates;
+//    MatrixXu inds = spkm->mostLikelyInds(10,deviates);
+//    cout<<"most likely indices"<<endl;
+//    cout<<inds<<endl;
+//    cout<<"----------------------------------------"<<endl;
+//
+//    fout.open((pathOut+"mlInds.csv").data(),ofstream::out);
+//    fout<<inds<<endl;
+//    fout.close();
+//    fout.open((pathOut+"mlLogLikes.csv").data(),ofstream::out);
+//    fout<<deviates<<endl;
+//    fout.close();
+//
+//    ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
+//    foutMeans << spkm->centroids()<<endl;
+//    foutMeans.close();
+//
+//    z_ = spkm->z().transpose();
+//    K_ = spkm->getK();
+//
   }else{
     assert(dpmm!=NULL);
     dpmm->initialize(x);

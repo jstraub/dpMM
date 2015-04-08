@@ -9,13 +9,13 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "dpMM.hpp"
-#include "cat.hpp"
-#include "dir.hpp"
-#include "niw.hpp"
-#include "sampler.hpp"
-#include "clGMMData.hpp"
-#include "niwSphere.hpp"
+#include <dpMM/dpMM.hpp>
+#include <dpMM/cat.hpp>
+#include <dpMM/dir.hpp>
+#include <dpMM/niw.hpp>
+#include <dpMM/sampler.hpp>
+#include <dpMM/clGMMData.hpp>
+#include <dpMM/niwSphere.hpp>
 
 using namespace Eigen;
 using std::endl; using std::cout;

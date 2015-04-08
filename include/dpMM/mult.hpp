@@ -9,8 +9,8 @@
 //#include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_01.hpp>
 
-#include "distribution.hpp"
-#include "sampler.hpp"
+#include <dpMM/distribution.hpp>
+#include <dpMM/sampler.hpp>
 
 using namespace Eigen;
 using std::cout;

@@ -8,13 +8,13 @@
 #define BOOST_TEST_MODULE dpSubclusterMM test
 #include <boost/test/unit_test.hpp>
 
-#include "lrCluster.hpp"
-#include "niwBaseMeasure.hpp"
-#include "niwSphere.hpp"
-#include "niwSphereFull.hpp"
-#include "distribution.hpp"
-#include "normalSphere.hpp"
-#include "dpSubclusterMM.hpp"
+#include <dpMM/lrCluster.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/niwSphereFull.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/normalSphere.hpp>
+#include <dpMM/dpSubclusterMM.hpp>
 
 #include <Eigen/Dense>
 

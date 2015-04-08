@@ -7,9 +7,9 @@
 #define BOOST_TEST_MODULE sampler test
 #include <boost/test/unit_test.hpp>
 
-#include "sampler.hpp"
-#include "distribution.hpp"
-#include "timer.hpp"
+#include <dpMM/sampler.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/timer.hpp>
 
 using namespace Eigen;
 

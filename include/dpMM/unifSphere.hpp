@@ -4,8 +4,8 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include "basemeasure.hpp"
-#include "sphere.hpp"
+#include <dpMM/basemeasure.hpp>
+#include <dpMM/sphere.hpp>
 
 using namespace Eigen;
 

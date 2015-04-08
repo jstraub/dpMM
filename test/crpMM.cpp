@@ -7,10 +7,10 @@
 #define BOOST_TEST_MODULE crpMM test
 #include <boost/test/unit_test.hpp>
 
-#include "crpMM.hpp"
-#include "niwBaseMeasure.hpp"
-#include "niwSphere.hpp"
-#include "vmfBaseMeasure.hpp"
+#include <dpMM/crpMM.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/vmfBaseMeasure.hpp>
 
 BOOST_AUTO_TEST_CASE(crpMM_test)
 {

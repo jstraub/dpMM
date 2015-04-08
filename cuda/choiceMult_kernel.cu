@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
 #include <stdint.h>
-#include "typedef.h"
+#include <dpMM/typedef.h>
 #include <cuda_runtime.h>
 #include <nvidia/helper_cuda.h>
 

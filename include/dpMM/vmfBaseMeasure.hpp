@@ -7,8 +7,8 @@
 
 #include <Eigen/Dense>
 
-#include "basemeasure.hpp"
-#include "vmfPriorFull.hpp"
+#include <dpMM/basemeasure.hpp>
+#include <dpMM/vmfPriorFull.hpp>
 
 /*
  * vmf base measure; uses monte carlo integration for p(x|hyperparams)

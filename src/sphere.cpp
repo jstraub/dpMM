@@ -3,7 +3,7 @@
  */
  
 
-#include "sphere.hpp"
+#include <dpMM/sphere.hpp>
 
 template <typename T>
 double const Sphere<T>::MIN_DOT=-0.95;

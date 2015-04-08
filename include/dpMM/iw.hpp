@@ -12,8 +12,8 @@
 #include <boost/random/chi_squared_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-#include "distribution.hpp"
-#include "normal.hpp"
+#include <dpMM/distribution.hpp>
+#include <dpMM/normal.hpp>
 
 using namespace Eigen;
 using std::endl;

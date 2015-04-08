@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.                
  */
 
-#include "iw.hpp"
+#include <dpMM/iw.hpp>
 
 
 template<typename T>

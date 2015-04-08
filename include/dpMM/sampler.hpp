@@ -12,8 +12,8 @@
 //#include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_01.hpp>
 
-#include "global.hpp"
-#include "cat.hpp"
+#include <dpMM/global.hpp>
+#include <dpMM/cat.hpp>
 
 
 using namespace Eigen;
@@ -62,7 +62,7 @@ public:
 };
 
 #ifdef CUDA
-#include "gpuMatrix.hpp"
+#include <dpMM/gpuMatrix.hpp>
 
 extern void choiceMultGpu(double* d_pdf, uint32_t* d_z, uint32_t N, 
     uint32_t M, uint32_t seed);

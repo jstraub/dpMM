@@ -7,8 +7,8 @@
 
 #include <Eigen/Dense>
 
-#include "basemeasure.hpp"
-#include "dir.hpp"
+#include <dpMM/basemeasure.hpp>
+#include <dpMM/dir.hpp>
 
 /*
  * NIW base measure; samples Normal distribution parameters

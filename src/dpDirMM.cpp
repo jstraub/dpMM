@@ -7,8 +7,8 @@
 #include <string>
 #include <boost/program_options.hpp>
 
-#include "dpSubclusterMM.hpp"
-#include "dirBaseMeasure.hpp"
+#include <dpMM/dpSubclusterMM.hpp>
+#include <dpMM/dirBaseMeasure.hpp>
 
 using namespace Eigen;
 using std::string; 

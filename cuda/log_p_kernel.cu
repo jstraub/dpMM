@@ -3,7 +3,7 @@
  */
  
 
-#include "cuda_global.h"
+#include <nvidia/cuda_global.h>
 
 template<typename T>
 __global__ void Log_p_kernel_noBuff(T *p, T *q, T *Rs, uint32_t *z, 

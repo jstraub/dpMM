@@ -16,11 +16,11 @@
 #include <boost/random/gamma_distribution.hpp> // for gamma_distribution.
 #include <boost/math/special_functions/gamma.hpp>
 
-#include "cat.hpp"
-#include "dpMM.hpp"
-#include "lrCluster.hpp"
-#include "dir.hpp"
-#include "dirBaseMeasure.hpp"
+#include <dpMM/cat.hpp>
+#include <dpMM/dpMM.hpp>
+#include <dpMM/lrCluster.hpp>
+#include <dpMM/dir.hpp>
+#include <dpMM/dirBaseMeasure.hpp>
 
 
 using namespace Eigen;

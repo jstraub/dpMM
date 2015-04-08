@@ -12,8 +12,8 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/math/special_functions/bessel.hpp>
 
-#include <distribution.hpp>
-#include <sphere.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/sphere.hpp>
 
 using namespace Eigen;
 using std::cout;

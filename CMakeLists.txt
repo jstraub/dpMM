@@ -130,7 +130,6 @@ link_directories(
 )
 
 add_library(dpmm
-  ./src/distribution.cpp
   ./src/cat.cpp
   ./src/mult.cpp
   ./src/niw.cpp
@@ -224,12 +223,12 @@ if( COMPILE_TEST )
   dpmm dpmm_cuda
 	)
 
-	cuda_add_executable(testSPKM ./test/spkm.cpp
-	)
-	target_link_libraries(testSPKM
-	${Boost_LIBRARIES}
-  dpmm dpmm_cuda
-	)
+#	cuda_add_executable(testSPKM ./test/spkm.cpp
+#	)
+#	target_link_libraries(testSPKM
+#	${Boost_LIBRARIES}
+#  dpmm dpmm_cuda
+#	)
 
 	cuda_add_executable(testDpSubclusterMM ./test/dpSubclusterMM.cpp
 	)
@@ -265,53 +264,31 @@ INSTALL(TARGETS dpmm dpmmSampler
 
 pods_install_executables(dpmmSampler)
 pods_install_libraries(dpmm)
-pods_install_headers(
-  ./include/dpMM/niw.hpp
-  ./include/dpMM/unifSphere.hpp
-  ./include/dpMM/kmeans.hpp
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  ./include/dpMM/
-  DESTINATION dpMM)
+#pods_install_headers(
+#  ./include/dpMM/niw.hpp
+#  ./include/dpMM/unifSphere.hpp
+#  ./include/dpMM/kmeans.hpp
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  ./include/dpMM/
+#  DESTINATION dpMM)
 
 
 #install(DIRECTORY include/ DESTINATION include/dpMM

@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <Eigen/Dense>
 
-#include "global.hpp"
-#include "sampler.hpp"
+#include <dpMM/global.hpp>
+#include <dpMM/sampler.hpp>
 
 using std::vector;
 using std::cout;

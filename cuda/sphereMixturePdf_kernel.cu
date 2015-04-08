@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
  
-#include "cuda_global.h"
+#include <nvidia/cuda_global.h>
 
 // executions per thread
 #define N_PER_T 32

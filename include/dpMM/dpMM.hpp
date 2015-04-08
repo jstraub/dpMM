@@ -7,8 +7,8 @@
 #include <boost/shared_ptr.hpp>
 #include <fstream>
 
-#include "global.hpp"
-#include "clGMMData.hpp"
+#include <dpMM/global.hpp>
+#include <dpMM/clGMMData.hpp>
 
 using namespace Eigen;
 using boost::shared_ptr;

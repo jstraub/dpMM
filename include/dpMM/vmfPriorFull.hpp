@@ -14,8 +14,8 @@
 
 #include <boost/math/special_functions/bessel.hpp>
 
-#include <distribution.hpp>
-#include <vmf.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/vmf.hpp>
 
 using namespace Eigen;
 using std::endl;
@@ -174,7 +174,7 @@ vMF<T> vMFpriorFull<T>::sampleFromPosterior(const vMF<T>& vmf)
     Matrix<T,Dynamic,1> mu = vMF<T>(m_N,t_N, pRndGen_).sample();
 //    cout<<"vMFpriorFull::sampleFromPosterior: mu="<<mu.transpose()<<endl;
     logPost = (tau*b + tau*mu.transpose()*xSum_ + vmf0_.tau()*vmf0_.mu().transpose()*mu);
-//    cout<<"@"<<j<<" cost "<<logPost<<" "<<(logPost - logPostPrev)<<endl;
+    cout<<"@"<<j<<" cost "<<logPost<<" "<<(logPost - logPostPrev)<<endl;
     // return sampled posterior vMF
     vmfPost = vMF<T>(mu, tau, pRndGen_);
 //    if((logPost - logPostPrev)<0. ) break;

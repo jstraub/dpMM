@@ -7,13 +7,13 @@
 #define BOOST_TEST_MODULE dirMM test
 #include <boost/test/unit_test.hpp>
 
-#include "dirMM.hpp"
-#include "niwBaseMeasure.hpp"
-#include "niwSphere.hpp"
-#include "dirMMcld.hpp"
-#include "clTGMMDataGpu.hpp"
-#include "distribution.hpp"
-#include "vmfBaseMeasure.hpp"
+#include <dpMM/dirMM.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/dirMMcld.hpp>
+#include <dpMM/clTGMMDataGpu.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/vmfBaseMeasure.hpp>
 
 BOOST_AUTO_TEST_CASE(niwBaseMeasure_test)
 {

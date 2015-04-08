@@ -8,7 +8,7 @@
 
 #include <boost/program_options.hpp>
 
-#include "normalSphere.hpp"
+#include <dpMM/normalSphere.hpp>
 
 using namespace Eigen;
 using std::string; 

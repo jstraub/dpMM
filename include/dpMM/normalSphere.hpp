@@ -4,10 +4,10 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include "global.hpp"
-#include "normal.hpp"
-#include "iw.hpp"
-#include "sphere.hpp"
+#include <dpMM/global.hpp>
+#include <dpMM/normal.hpp>
+#include <dpMM/iw.hpp>
+#include <dpMM/sphere.hpp>
 
 #define LOG_2PI 1.8378770664093453
 

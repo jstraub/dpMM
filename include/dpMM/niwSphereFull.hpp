@@ -11,13 +11,13 @@
 #include <boost/random/chi_squared_distribution.hpp>
 #include <boost/random/normal_distribution.hpp>
 
-#include "basemeasure.hpp"
-#include "distribution.hpp"
-#include "normalSphere.hpp"
-#include "iw.hpp"
-#include "sphere.hpp"
-#include "karcherMean.hpp"
-#include "clGMMData.hpp"
+#include <dpMM/basemeasure.hpp>
+#include <dpMM/distribution.hpp>
+#include <dpMM/normalSphere.hpp>
+#include <dpMM/iw.hpp>
+#include <dpMM/sphere.hpp>
+#include <dpMM/karcherMean.hpp>
+#include <dpMM/clGMMData.hpp>
 
 using namespace Eigen;
 using std::endl;

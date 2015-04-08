@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.                
  */
 
-#include "normal.hpp"
+#include <dpMM/normal.hpp>
 
 // ---------------------------------------------------------------------------
 

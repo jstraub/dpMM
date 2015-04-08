@@ -7,11 +7,11 @@
 #define BOOST_TEST_MODULE distributions test
 #include <boost/test/unit_test.hpp>
 
-#include "sphere.hpp"
-#include "clTGMMDataGpu.hpp"
-#include "karcherMean.hpp"
-#include "normalSphere.hpp"
-#include "timer.hpp"
+#include <dpMM/sphere.hpp>
+#include <dpMM/clTGMMDataGpu.hpp>
+#include <dpMM/karcherMean.hpp>
+#include <dpMM/normalSphere.hpp>
+#include <dpMM/timer.hpp>
 
 using std::cout;
 using std::endl;

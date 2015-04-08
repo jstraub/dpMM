@@ -11,9 +11,9 @@
 #include <boost/random/gamma_distribution.hpp> // for gamma_distribution.
 #include <boost/math/special_functions/gamma.hpp>
 
-#include "distribution.hpp"
-#include "cat.hpp"
-#include "mult.hpp"
+#include <dpMM/distribution.hpp>
+#include <dpMM/cat.hpp>
+#include <dpMM/mult.hpp>
 
 using namespace Eigen;
 using std::cout;

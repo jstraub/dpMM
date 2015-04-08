@@ -7,14 +7,14 @@
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp> //case insensitve string comparison
 
-#include "dirMultiNaiveBayes.hpp"
-#include "niwBaseMeasure.hpp"
-#include "niwSphere.hpp"
-#include "dirBaseMeasure.hpp"
-#include "normalSphere.hpp" //for sampling points on the sphere
-#include "iw.hpp"
-#include "typedef.h"
-#include "timer.hpp"
+#include <dpMM/dirMultiNaiveBayes.hpp>
+#include <dpMM/niwBaseMeasure.hpp>
+#include <dpMM/niwSphere.hpp>
+#include <dpMM/dirBaseMeasure.hpp>
+#include <dpMM/normalSphere.hpp> //for sampling points on the sphere
+#include <dpMM/iw.hpp>
+#include <dpMM/typedef.h>
+#include <dpMM/timer.hpp>
 
 namespace po = boost::program_options;
 using boost::iequals; 

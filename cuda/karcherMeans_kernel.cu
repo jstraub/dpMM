@@ -3,8 +3,8 @@
  */
  
 
-#include "cuda_global.h"
 #include <stdio.h>
+#include <nvidia/cuda_global.h>
 
 // executions per thread
 #define N_PER_T 16
