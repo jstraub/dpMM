@@ -31,8 +31,24 @@ It has been tested under Mac OS (10.9.4) with:
 - CUDA (6.5)
 - No OpenMP
 
+### Compiling
+
+- Linux: 
+    Install Eigen3 and Boost
+    ```
+    sudo apt-get install libeigen3-dev libboost-dev 
+    ```
+    Install the appropriate CUDA version matching with your nvidia
+    drivers. On our machines we use `nvidia-340-dev` with
+    `libcuda1-340`
+    Clone this repository and compile the code:
+    ```
+    git clone https://github.com/jstraub/dpMM; cd dpMM; mkdir build; cd
+    build; cmake ..; make -j6;
+    ```
 
 ### Getting Started
+
 Get started quickly by looking at `python/dpmmSampler.py`. It simply loads a
 dataset and runs the sub-cluster split/merge algorithm with different base
 measures:
@@ -44,7 +60,11 @@ Where DpNiwSphereFull is for the DP-TGMM [2] and DpNiw for the standard DP-GMM
 [1]. 
 After finishing the specified number of iterations (via the `-T` option) the log
 likelihood as well as the number of clusters over the iterations is shown.
-Make sure you compiled the cpp code beforehand since the python script
+Note that the true number of clusters of the data in
+./data/rndSphereDataIwUncertain.csv is 30 where each of the clusters
+has 333 data-points. A groundtruth labeling can be found in
+./data/rndSphereDataIwUncertain_gt.lbl.
+Make sure you compiled the .cpp code beforehand since the python script
 just wraps the call to dpmmSampler.
 
 ### Executables
