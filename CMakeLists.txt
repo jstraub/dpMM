@@ -4,9 +4,6 @@
 project(DpMM)
 cmake_minimum_required(VERSION 2.4.6)
 
-set(POD_NAME DpMM)
-include(cmake/pods.cmake)
-
 set(CMAKE_COLOR_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 #set( CMAKE_VERBOSE_MAKEFILE on )
@@ -47,7 +44,7 @@ if(NOT USE_OPENMP)
 	remove_cxx_debug_flag("-fopenmp")
 endif()
 
-set(COMPILE_TEST ON)
+set(COMPILE_TEST OFF)
 
 if(WIN32)
 	#windows configuration
@@ -117,11 +114,9 @@ message("BOOST libs:" ${Boost_LIBRARIES})
 
 include_directories(
   ./include
-  ./cuda
   ${EIGEN3_INCLUDE_DIR}
   ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include
   ${Boost_INCLUDE_DIR}
-  /usr/include
 )
 
 link_directories(
@@ -151,14 +146,6 @@ cuda_add_library(dpmm_cuda
   ./cuda/sufficientStatistics_kernel.cu
 )
 
-cuda_add_executable(testSphere ./test/sphere.cpp
-)
-
-target_link_libraries(testSphere
-${Boost_LIBRARIES}
-dpmm dpmm_cuda
-)
-
 cuda_add_executable(dpDirMM ./src/dpDirMM.cpp
 )
 target_link_libraries(dpDirMM
@@ -173,23 +160,12 @@ target_link_libraries(dpmmSampler
   dpmm dpmm_cuda
 )
 
-
-
 add_executable(generateSphericalData ./src/generateSphericalData.cpp
 )
 target_link_libraries(generateSphericalData
   ${Boost_LIBRARIES}
   dpmm dpmm_cuda
   )
-
-cuda_add_executable(myNaiveBayes
-	./test/naiveBayes.cpp
-)
-target_link_libraries(myNaiveBayes
-	${Boost_LIBRARIES}
-  dpmm dpmm_cuda
-)
-
 
 cuda_add_executable(dirMultiObsNaiveBayes
 	./src/dirMultiObsNaiveBayes.cpp
@@ -201,6 +177,15 @@ target_link_libraries(dirMultiObsNaiveBayes
 
 
 if( COMPILE_TEST )
+
+  cuda_add_executable(testSphere ./test/sphere.cpp
+    )
+
+  target_link_libraries(testSphere
+    ${Boost_LIBRARIES}
+    dpmm dpmm_cuda
+    )
+
 	cuda_add_executable(testDirMM ./test/dirMM.cpp
 	)
 	target_link_libraries(testDirMM
@@ -252,48 +237,28 @@ if( COMPILE_TEST )
       dpmm dpmm_cuda
   )
 
+cuda_add_executable(myNaiveBayes
+  ./test/naiveBayes.cpp
+  )
+target_link_libraries(myNaiveBayes
+  ${Boost_LIBRARIES}
+  dpmm dpmm_cuda
+  )
+
+
 endif()
 
 
-INSTALL(TARGETS dpmm dpmmSampler
+INSTALL(TARGETS dpmm dpmm_cuda dpmmSampler
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   COMPONENT compLib
   )
 
-pods_install_executables(dpmmSampler)
-pods_install_libraries(dpmm)
-#pods_install_headers(
-#  ./include/dpMM/niw.hpp
-#  ./include/dpMM/unifSphere.hpp
-#  ./include/dpMM/kmeans.hpp
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  ./include/dpMM/
-#  DESTINATION dpMM)
-
-
-#install(DIRECTORY include/ DESTINATION include/dpMM
-#  FILES_MATCHING PATTERN "*.h")
-#install(DIRECTORY cuda/ DESTINATION include/dpMM
-#  FILES_MATCHING PATTERN "*.h")
-#install(DIRECTORY include/ DESTINATION include/dpMM
-#  FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY include/dpMM DESTINATION include/dpMM
+  FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY include/dpMM DESTINATION include/dpMM
+  FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY include/nvidia DESTINATION include/nvidia
+  FILES_MATCHING PATTERN "*.h")

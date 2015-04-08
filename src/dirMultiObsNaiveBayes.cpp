@@ -318,7 +318,7 @@ int main(int argc, char **argv){
 				}else {
 					nu = nuIn[m];
 				}
-				double kappa = dNorm;
+//				double kappa = dNorm;
 				
 				MatrixXd Delta = MatrixXd::Identity(dNorm-1,dNorm-1);
 				if(deltaOffsetIn.empty()) {

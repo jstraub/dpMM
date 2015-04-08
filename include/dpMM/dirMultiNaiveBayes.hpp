@@ -132,7 +132,8 @@ void DirMultiNaiveBayes<T>::initialize_sampler() {
 
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng) :
-sampler_(NULL), dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()){
+ dir_(Matrix<T,2,1>::Ones(),rng), pi_(dir_.sample()),sampler_(NULL)
+{
 	//initialize the class from the file pointer given
 	in >> M_; 
 	in >> K_;
@@ -333,7 +334,8 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha,
 template<typename T>
 DirMultiNaiveBayes<T>::DirMultiNaiveBayes(const Dir<Cat<T>,T>& alpha, 
     const vector< vector<boost::shared_ptr<BaseMeasure<T> > > >& theta) :
- sampler_(NULL), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), M_(uint32_t(theta.size())), thetas_(theta) 
+ K_(alpha.K_), M_(uint32_t(theta.size())),dir_(alpha),
+  pi_(dir_.sample()), sampler_(NULL),thetas_(theta) 
 { };
 
 template<typename T>
