@@ -52,7 +52,7 @@ just wraps the call to dpmmSampler.
 using different algorithms. It is usually preferable to use the python script
 in python/dpmmSampler.py which wraps around this executable to provide an
 easier-to-use interface. 
-```
+    ```
 Allowed options:
   -h [ --help ]         produce help message
   --seed arg            seed for random number generator
@@ -77,10 +77,10 @@ Allowed options:
                         cols: different datapoints)
   -o [ --output ] arg   path to output labels .csv file (rows: time; cols: 
                         different datapoints)
-```
-Parameter arguments by model:
-- DpNiw (DP-GMM): nu kappa theta0 ... thetaD Delta00 Delta01 ... DeltaDD 
-- DpNiwSphereFull (DP-TGMM): nu Delta00 Delta01 ... Delta(D-1)(D-1)
+    ```
+    Parameter arguments by model:
+    - DpNiw (DP-GMM): nu kappa theta0 ... thetaD Delta00 Delta01 ... DeltaDD 
+    - DpNiwSphereFull (DP-TGMM): nu Delta00 Delta01 ... Delta(D-1)(D-1)
 
 - *generateSphericalData*: generate spherical data for synthetic data experiments.
 ```
