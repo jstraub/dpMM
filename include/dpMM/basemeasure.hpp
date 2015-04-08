@@ -7,8 +7,8 @@
 #include <stdint.h>
 #include <Eigen/Dense>
 
-#include "global.hpp"
-#include "clGMMData.hpp"
+#include <dpMM/global.hpp>
+#include <dpMM/clGMMData.hpp>
 
 using namespace Eigen;
 using std::cout;

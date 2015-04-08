@@ -8,9 +8,9 @@
 #include <vector>
 #include <Eigen/Dense>
 
-#include "gpuMatrix.hpp"
-#include "clGMMData.hpp"
-#include "timer.hpp"
+#include <dpMM/gpuMatrix.hpp>
+#include <dpMM/clGMMData.hpp>
+#include <dpMM/timer.hpp>
 
 using namespace Eigen;
 using std::vector;
