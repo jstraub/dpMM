@@ -266,7 +266,51 @@ INSTALL(TARGETS dpmm dpmmSampler
 pods_install_executables(dpmmSampler)
 pods_install_libraries(dpmm)
 pods_install_headers(
-  ./include/basemeasure.hpp
+  ./include/dpMM/niw.hpp
+  ./include/dpMM/unifSphere.hpp
+  ./include/dpMM/kmeans.hpp
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
+  ./include/dpMM/
   DESTINATION dpMM)
 
 
