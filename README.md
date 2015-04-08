@@ -78,12 +78,13 @@ Allowed options:
   -o [ --output ] arg   path to output labels .csv file (rows: time; cols: 
                         different datapoints)
     ```
-    Parameter arguments by model:
+    Parameter arguments by model (compare src/dpmmSampler.cpp and
+    python/dpmmSampler.py):
     - DpNiw (DP-GMM): nu kappa theta0 ... thetaD Delta00 Delta01 ... DeltaDD 
     - DpNiwSphereFull (DP-TGMM): nu Delta00 Delta01 ... Delta(D-1)(D-1)
 
 - *generateSphericalData*: generate spherical data for synthetic data experiments.
-```
+    ```
 Allowed options:
   -h [ --help ]         produce help message
   --seed arg            seed for random number generator
@@ -95,7 +96,7 @@ Allowed options:
   -d [ --delta ] arg    delta of NIW
   -o [ --output ] arg   path to output labels and data .csv file (rows: time; 
                         cols: different datapoints)
-```
+    ```
 
 ### Collaborators
 Julian Straub (jstraub) and Randi Cabezas (rcabezas)
