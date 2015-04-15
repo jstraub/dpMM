@@ -32,6 +32,7 @@ int main(int argc, char **argv){
 	("v,v", po::value<bool>(), "verbose output")
     ("params,p", po::value<string>(), 
       "path to file containing parameters (see class definition)")
+	("alpha,a", po::value<double>(), "alpha value")
 	("nu,n", po::value<std::vector<double> >()->multitoken(), "NIW mean prior strength to use for distributions")
 	("deltaOffset,d", po::value<std::vector<double> >()->multitoken(), "NIW sigma prior strength to use for distributions")
     ("input,i", po::value<string>(), 
@@ -58,6 +59,7 @@ int main(int argc, char **argv){
 	uint K=2; //num clusters
 	uint T=10; //iterations
 	uint M=2; //num docs
+	double alphaInput = 10; //weighting of the alpha
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
 	vector<uint> D(NumObs, 2);  //dimention of data 
@@ -75,7 +77,8 @@ int main(int argc, char **argv){
 		T = vm["T"].as<int>();
 	if (vm.count("v"))
 		verbose = vm["v"].as<bool>();
-
+	if (vm.count("a"))
+		alphaInput = vm["a"].as<double>();
 
 	//handle ompMaxNumber of threads
 	int Mproc = 1000000; 
@@ -255,7 +258,7 @@ int main(int argc, char **argv){
 
 		useBaseDist = baseDist;
 
-		VectorXd alpha = 10.0*VectorXd::Ones(K);
+		VectorXd alpha = (alphaInput)*VectorXd::Ones(K);
 
 		Dir<Catd,double> dir(alpha,&rndGen); 
 		vector <vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
@@ -322,7 +325,7 @@ int main(int argc, char **argv){
 				
 				MatrixXd Delta = MatrixXd::Identity(dNorm-1,dNorm-1);
 				if(deltaOffsetIn.empty()) {
-					Delta *= pow(15.0*M_PI/180.0,2); 
+					Delta *= pow(5.0*M_PI/180.0,2); 
 				} else {
 					Delta *= deltaOffsetIn[m]; 
 				}

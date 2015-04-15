@@ -483,10 +483,13 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 	}
 
 	for(int32_t m=0; m<M_; ++m) {
-	#ifndef _WINDOWS	
+	#ifdef _WINDOWS	
 		//#pragma omp parallel for
-	#endif
 		for(int32_t k=0; k<int32_t(K_); ++k) {
+	#else 
+		#pragma omp parallel for
+		for(int32_t k=0; k<int32_t(K_); ++k) {
+	#endif
 
 			if(dim(m,k)!=0) {
 
