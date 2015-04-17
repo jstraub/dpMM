@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     ("seed", po::value<int>(), "seed for random number generator")
     ("N,N", po::value<int>(), "number of input datapoints")
     ("D,D", po::value<int>(), "number of dimensions of the data")
-    ("T,T", po::value<int>(), "number of iterations")
+    ("T,T", po::value<int>(), "number of sampler iterations")
     ("alpha,a", po::value< vector<double> >()->multitoken(), 
       "alpha parameter of the DP (if single value assumes all alpha_i are the "
       "same")
@@ -52,9 +52,9 @@ int main(int argc, char **argv)
     ("silhouette,s", "flag to enable output of silhouett value of the last iteration")
     ("shuffle", "shuffle the data before processing")
     ("base", po::value<string>(), 
-      "which base measure to use (NIW, DpNiw, DpNiwSphereFull, "
-      " DpNiwSphere, NiwSphere, DirNiwSphereFull"
-      " NiwSphereUnifNoise, CrpvMF, DirvMF right now)")
+      "which base measure to use (StickNiw, DpNiw (DP-GMM), "
+      "DpNiwSphereFull (DP-TGMM), DpNiwSphere, NiwSphere, "
+      "DirNiwSphereFull" " NiwSphereUnifNoise, CrpvMF, DirvMF right now)")
     ("params,p", po::value< vector<double> >()->multitoken(), 
       "parameters of the base measure")
     ("brief", po::value< vector<double> >()->multitoken(), 
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
   }
 
   // which base distribution
-  string base = "NIW";
+  string base = "DpNiw";
   if(vm.count("base")) base = vm["base"].as<string>();
 
   if(base.compare("DpNiw") || base.compare("DirvMF")
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
   DpMM<double> *dpmm=NULL;
   DpMM<double> *dpmmf=NULL;
 //  Clusterer<double> *spkm = NULL;
-  if(!base.compare("NIW"))
+  if(!base.compare("StickNiw"))
   {
     MatrixXd Delta(D,D);
     VectorXd theta(D);

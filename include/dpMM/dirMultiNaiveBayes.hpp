@@ -621,27 +621,39 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
   {
     this->sampleLabels();
     this->sampleParameters();
-	if(verbose){
-		for(int m=0; m<int(M_); ++m) {
-			for(int k=0; k<int(K_); ++k) {
-					thetas_[m][k]->print();
-			}
-		}
-	}
-    if(verbose || t%100==0){
-		T iterLogJoint = this->logJoint(true) ; 
-		//log iterJoint Prob
-		logJointIterEval.push_back(t); 
-		logJointHist.push_back(iterLogJoint); 
+    if(verbose)
+    {
+      for(int m=0; m<int(M_); ++m) {
+        for(int k=0; k<int(K_); ++k) {
+          thetas_[m][k]->print();
+        }
+      }
+    }
+    if(verbose || t%100==0)
+    {
+      T iterLogJoint = this->logJoint(true) ; 
+      //log iterJoint Prob
+      logJointIterEval.push_back(t); 
+      logJointHist.push_back(iterLogJoint); 
 
-		if(Nd_<=10) {
-			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] label: " 
-    		<< this->labels().transpose()
-      		<< " [joint= " << std::setw(6) << iterLogJoint << "]"<< endl;
-		} else {
-			cout << "[" << std::setw(3)<< std::setfill('0')  << t <<"] joint= " 
-				 << std::setw(6) << iterLogJoint << endl;
-		}
+      if(Nd_<=10) {
+        cout << "[" << std::setw(3)<< std::setfill('0')  
+          << t <<"] label: " 
+          << this->labels().transpose()
+          << " [joint= " << std::setw(6) << iterLogJoint << "]"<< endl;
+      } else {
+        cout << "[" << std::setw(3)<< std::setfill('0')  
+          << t <<"] joint= " 
+          << std::setw(6) << iterLogJoint << endl;
+      }
+    }
+    if(verbose)
+    {
+      VectorXu Ns = counts<uint32_t,uint32_t>(this->labels(),K_).transpose();
+      uint32_t K = K_;
+      for(uint32_t k = 0; k<K_; ++k)
+        if (Ns(k) == 0) --K;
+      cout<<"@i "<<t<<": # "<<K<<" "<<std::setw(1) <<Ns.transpose() <<endl;
     }
   }
   //keeps the MAP label in memory
