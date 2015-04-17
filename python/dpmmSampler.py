@@ -37,6 +37,12 @@ elif base == 'DpNiwSphereFull':
   Delta = nu* ((5.*np.pi)/180.)**2 * np.eye(D-1)
   params = np.array([nu])
   params = np.r_[params,Delta.ravel()]
+elif base == 'DirNiwSphereFull':
+  Delta = nu* ((5.*np.pi)/180.)**2 * np.eye(D-1)
+  params = np.array([nu])
+  params = np.r_[params,Delta.ravel()]
+  K = 50
+  alpha = alpha/K  # FSD
 
 args = [os.path.dirname(os.path.realpath(__file__))+'/../build/dpmmSampler',
   '-N {}'.format(N),
@@ -54,8 +60,11 @@ print ' --------------------- '
 subp.call(' '.join(args),shell=True)
 
 z = np.loadtxt(re.sub('csv','lbl',dataPath),dtype=int,delimiter=' ')
-z = z/2 # to get from subcluster indices to cluster indices
-Ks = np.array([np.unique(z[t,:]).size for t in range(T)])
+if base in ['DpNiw','DpNiwSphereFull']:
+  z = z/2 # to get from subcluster indices to cluster indices
+  Ks = np.array([np.unique(z[t,:]).size for t in range(T)])
+else:
+  Ks = np.array([K for t in range(T)])
 
 logLikes = np.loadtxt(re.sub('csv','lbl',dataPath)+'_jointLikelihood.csv',delimiter=' ')
 print logLikes.shape

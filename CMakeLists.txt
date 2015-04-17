@@ -44,7 +44,7 @@ if(NOT USE_OPENMP)
 	remove_cxx_debug_flag("-fopenmp")
 endif()
 
-set(COMPILE_TEST OFF)
+set(COMPILE_TEST ON)
 
 if(WIN32)
 	#windows configuration
