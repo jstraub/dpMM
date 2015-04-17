@@ -34,6 +34,7 @@ public:
 
   virtual void sampleLabels();
   virtual void sampleParameters();
+  virtual void sampleFromPrior();
 
   virtual T logJoint();
   virtual const VectorXu& labels(){return z_;};
@@ -124,12 +125,13 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 #endif
 
   // init the parameters
-  if(thetas_.size() == 0)
-  {
-    cout<<"creating thetas"<<endl;
-    for (uint32_t k=0; k<K_; ++k)
-      thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
-  }
+//  if(thetas_.size() == 0)
+//  {
+  thetas_.clear(); // destrey eny previous thetas
+  cout<<"creating thetas"<<endl;
+  for (uint32_t k=0; k<K_; ++k)
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
+//  }
 //#pragma omp parallel for
 //  for(uint32_t k=0; k<K_; ++k)
 //    thetas_[k]->posterior(x_,z_,k);
@@ -176,6 +178,23 @@ void DirMM<T>::sampleParameters()
   {
 //    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
     thetas_[k]->posterior(x_,z_,k);
+//    thetas_[k]->print();
+  }
+};
+
+template<typename T>
+void DirMM<T>::sampleFromPrior()
+{
+//  Matrix<T,Dynamic,1> Ns = getCounts();
+//#pragma omp parallel for 
+//
+// simulate sampling from prior by not giving the posteriors any data
+  Matrix<T,Dynamic,Dynamic> x = Matrix<T,Dynamic,Dynamic>::Zero(D_,1);
+  VectorXu z = VectorXu::Ones(1)*(K_+1);
+  for(uint32_t k=0; k<K_; ++k)
+  {
+//    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
+    thetas_[k]->posterior(x,z,k);
 //    thetas_[k]->print();
   }
 };
