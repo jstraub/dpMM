@@ -11,26 +11,25 @@
 
 BOOST_AUTO_TEST_CASE(mf_test)
 {
-  MatrixXd Delta(3,3);
-  Delta << 1.0,0.0,0.0,
-        0.0,1.0,0.0,
-        0.0,0.0,1.0;
-  VectorXd theta(3);
-  theta << 1.0,1.0,1.0;
-  double nu = 100.0;
-  double kappa = 100.0;
-
   boost::mt19937 rndGen(1);
-  NIW<double> niw(Delta,theta,nu,kappa,&rndGen);
+  MatrixXd Delta = MatrixXd::Identity(2,2);
+  Delta *= pow(15.0*M_PI/180.,2);
+  IW<double> iw0(Delta,4,&rndGen);
+  std::vector<shared_ptr<IwTangent<double> > >thetas;
+  for(uint32_t k=0; k<6; ++k)
+    thetas.push_back(shared_ptr<IwTangent<double> >(
+          new IwTangent<double>(iw0,&rndGen)));
+  VectorXd alpha = VectorXd::Ones(6);
+  Dir<Cat<double>, double> dir(alpha,&rndGen);
+  MfPrior<double> mfPrior(dir,thetas,10);
 
-  NiwMarginalized<double> niwMargBase(niw);
 
-  VectorXd x(3);
-  x << 1.0,1.0,1.0;
-  cout<< niwMargBase.logLikelihood(x)<< endl;
+  VectorXd x(3,6);
+  x << 1.0,-1.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 1.0,-1.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.0, 1.0,-1.0;
 
-  NiwSampled<double> niwSampledBase(niw);
-
-  x << 1.0,1.0,1.0;
-  cout<< niwSampledBase.logLikelihood(x)<< endl;
+  VectorXu z = VectorXu::Zero(6);
+  mfPrior.posterior(x,z,0);
+  
 };

@@ -44,6 +44,9 @@ public:
   virtual shared_ptr<BaseMeasure<T> > getTheta(uint32_t k) 
     { return this->thetas_[k];};
 
+  virtual Dir<Cat<T>, T> Alpha(){ return dir_;}; 
+  virtual Cat<T> Pi(){ return pi_;}; 
+
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
@@ -189,7 +192,7 @@ void DirMM<T>::sampleFromPrior()
 //#pragma omp parallel for 
 //
 // simulate sampling from prior by not giving the posteriors any data
-  Matrix<T,Dynamic,Dynamic> x = Matrix<T,Dynamic,Dynamic>::Zero(D_,1);
+  Matrix<T,Dynamic,Dynamic> x = Matrix<T,Dynamic,Dynamic>::Zero(1,1);
   VectorXu z = VectorXu::Ones(1)*(K_+1);
   for(uint32_t k=0; k<K_; ++k)
   {

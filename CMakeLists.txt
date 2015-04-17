@@ -44,7 +44,7 @@ if(NOT USE_OPENMP)
 	remove_cxx_debug_flag("-fopenmp")
 endif()
 
-set(COMPILE_TEST OFF)
+set(COMPILE_TEST ON)
 
 if(WIN32)
 	#windows configuration
@@ -177,6 +177,18 @@ target_link_libraries(dirMultiObsNaiveBayes
 
 
 if( COMPILE_TEST )
+
+#  add_library(mf
+#    
+#  )
+
+  cuda_add_executable(testMF ./test/mf.cpp
+    )
+
+  target_link_libraries(testMF
+    ${Boost_LIBRARIES}
+    dpmm dpmm_cuda
+    )
 
   cuda_add_executable(testSphere ./test/sphere.cpp
     )

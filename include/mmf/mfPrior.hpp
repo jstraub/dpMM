@@ -6,8 +6,10 @@
 
 #include <Eigen/Dense>
 
-#include <dpMM/normalSphere.hpp>
 #include <dpMM/dirMM.hpp>
+#include <dpMM/iwTangent.hpp>
+#include <dpMM/karcherMean.hpp>
+#include <mmf/optimizationSO3_approx.hpp>
 
 /* 
  * Prior distribution for a Manhattan Frame. Assumes a uniform prior
@@ -17,22 +19,22 @@ template<typename T>
 class MfPrior
 {
 public:
-  // prior over the mixture over the six axes
-  DirMM<T> dirMM_; 
+  MfPrior(const Dir<Cat<T>, T>& alpha, const
+    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter);
 
-  MfPrior(const MfPrior<T>& mf);
+//  MfPrior(const MfPrior<T>& mf);
   ~MfPrior();
 
-  MfPrior<T>* copy();
-
+//  MfPrior<T>* copy();
+//
   MfPrior<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const
       VectorXu& z, uint32_t k);
-  MfPrior<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
-      VectorXu& z, uint32_t k);
-  // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
-  MfPrior<T> posteriorFromSS(const Matrix<T,Dynamic,1>& x);
-  MfPrior<T> posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
-      VectorXu& z, uint32_t k);
+//  MfPrior<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
+//      VectorXu& z, uint32_t k);
+//  // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+//  MfPrior<T> posteriorFromSS(const Matrix<T,Dynamic,1>& x);
+//  MfPrior<T> posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
+//      VectorXu& z, uint32_t k);
 
 //  MfPrior<T> posterior() const;
 //  void sample() const;
@@ -43,22 +45,51 @@ private:
   // how many iterations to sample internally for the MF posterior
   uint32_t T_;
 
-  void sample_(uint32_t T);
+  std::vector<shared_ptr<IwTangent<T> > > thetas_;
+  // prior over the mixture over the six axes
+  DirMM<T> dirMM_; 
+
+  OptSO3ApproxCpu<T> optSO3_;
+  Matrix<T,3,3> R_;
+
+  void sample_(uint32_t nIter);
 };
 
 // ----------------------------------------
 template<typename T>
 MfPrior<T>::MfPrior(const Dir<Cat<T>, T>& alpha, const
-    shared_ptr<NiwSphereFull<T> >& theta0, uint32_t T)
-  : dirMM_(alpha,theta,6), T_(T)
+    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter)
+  : T_(nIter), 
+    thetas_(thetas),
+    dirMM_(alpha,thetas_,6), optSO3_(5.0,0.05f)
+{
+    R_ = Matrix<T,3,3>::Identity();
+};
+
+template<typename T>
+MfPrior<T>::~MfPrior()
 {};
 
 template<typename T>
-MfPrior<T>::sample_(uint32_t T)
+void MfPrior<T>::sample_(uint32_t nIter)
 {
-  for(uint32_t t=0; t<T; ++t)
+  for(uint32_t t=0; t<nIter; ++t)
   {
+    // sample labels - assignments to MF axes
     dirMM_.sampleLabels();
+    // compute karcher means
+    Matrix<T,Dynamic,Dynamic> xTpS(x_.rows()-1,x_.cols()); 
+    Matrix<T,Dynamic, Dynamic> qKarch = karcherMeanMultiple<T>(
+        optSO3_.M(),x_,xTpS,dirMM_.labels(),6,30);
+    // sample new MF rotation
+    optSO3_.conjugateGradient(R_, qKarch, dirMM_.getCounts(), 100);
+    R_ = optSO3_.R();
+    // set tangent points of the iwTangent
+    for(uint32_t k=0; k<6; ++k)
+    {
+      thetas_[k]->setMean(optSO3_.M().col(k));
+    }
+    // sample covariances in the tangent spaces
     dirMM_.sampleParameters();
     // some output
     cout<<"@t "<<t<<": logJoint = "<<dirMM_.logJoint() 
@@ -68,7 +99,7 @@ MfPrior<T>::sample_(uint32_t T)
 }
 
 template<typename T>
-MfPrior<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
+MfPrior<T> MfPrior<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
       VectorXu& z, uint32_t k)
 {
   // count to know how big to make the data matrix
@@ -93,17 +124,19 @@ MfPrior<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
     // sample from prior
     dirMM_.sampleFromPrior();
   }
+  //TODO this does not hand over pi_ inside DirMM!
+  return MfPrior<T>(dirMM_.Alpha(), thetas_, T_);
 }
 
-template<typename T>
-MfPrior<T>::
-
-template<typename T>
-MfPrior<T>::
-
-template<typename T>
-MfPrior<T>::
-
-template<typename T>
-MfPrior<T>::
-
+//template<typename T>
+//MfPrior<T>::
+//
+//template<typename T>
+//MfPrior<T>::
+//
+//template<typename T>
+//MfPrior<T>::
+//
+//template<typename T>
+//MfPrior<T>::
+//
