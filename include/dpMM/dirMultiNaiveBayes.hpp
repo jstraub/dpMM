@@ -82,6 +82,9 @@ public:
 									 const vector<uint32_t> comp2eval =vector<uint32_t>());
   virtual void updatePDF();
 
+  vector<uint32_t> getLogEvalItersHist() {return logJointIterEval;}
+  vector<T> getLogJointHist() {return logJointHist;}
+
 protected: 
   virtual T evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, const uint32_t clusterInd, 
 					   const vector<uint32_t> comp2eval);
@@ -479,17 +482,24 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		}
 	}
 
-	for(uint32_t m=0; m<M_; ++m) {
+	for(int32_t m=0; m<M_; ++m) {
+	#ifdef _WINDOWS	
+		//#pragma omp parallel for
+		for(int32_t k=0; k<int32_t(K_); ++k) {
+	#else 
 		#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
+	#endif
+
 			if(dim(m,k)!=0) {
 
 				//Matrix<T,Dynamic,1> ssIn = Matrix<T,Dynamic,1>::Zero(x_[m].front().rows()); 
 				vector< Matrix<T,Dynamic,1> >dataIn;  
 				dataIn.reserve(dim(m,k)); 
-
+				
 				uint32_t count=0;
-				for(uint32_t d=0; d<Nd_; ++d) {
+
+				for(int32_t d=0; d<Nd_; ++d) {
 					if(z_[d]==k) {
 						int add_size =int(x_[m][d].cols()); 
 						//ssIn += x_[m][d]; //update iteration SS
@@ -528,32 +538,35 @@ T DirMultiNaiveBayes<T>::logJoint(bool verbose)
 {
   T logJoint = dir_.logPdf(pi_);
   if(verbose)
-  	cout<<"log p(pi)="<<logJoint<<" -> ";
+  	cout<<"\tlog p(pi)="<< logJoint << endl;
 
-  for (int32_t m=0; m<int32_t(M_); ++m)
-  {
-	  #pragma omp parallel for reduction(+:logJoint)  
-	  for (int32_t k=0; k<int32_t(K_); ++k)
-	  {
-		logJoint = logJoint + thetas_[m][k]->logPdfUnderPrior();
+  
+  for(int32_t m=0; m<int32_t(M_); ++m) {
+	  T logPriorM = 0; 
+	  #pragma omp parallel for reduction(+:logPriorM)  
+	  for (int32_t k=0; k<int32_t(K_); ++k) {
+		logPriorM = logPriorM + thetas_[m][k]->logPdfUnderPrior();
 	  }
+	  logJoint+=logPriorM; 
+	  if(verbose)
+	  	cout<<"\tlog p(theta_" << m << ")="<< logPriorM << endl;
+
   }
 
-  if(verbose)
-	cout<<"log p(pi)*p(theta)="<<logJoint<<" -> ";
-
-	for (int32_t m=0; m<int32_t(M_); ++m) 
-	{
-		#pragma omp parallel for reduction(+:logJoint)  
-		for (int32_t d=0; d<int32_t(Nd_); ++d)
-		{
-			logJoint = logJoint + thetas_[m][z_[d]]->logLikelihoodFromSS(x_[m][d]);
+	for (int32_t m=0; m<int32_t(M_); ++m) {
+		T logThetaM=0;
+		#pragma omp parallel for reduction(+:logThetaM)  
+		for (int32_t d=0; d<int32_t(Nd_); ++d) {
+			logThetaM = logThetaM + thetas_[m][z_[d]]->logLikelihoodFromSS(x_[m][d]);
 		}
+		logJoint += logThetaM; 
+		if(verbose)
+			cout<<"\tlog p(x|z,theta_" << m << ")=" << logThetaM << endl;
+		
 	}
-  
-  if(verbose)
-  	cout<<"log p(phi)*p(theta)*p(x|z,theta)="<<logJoint<<"]"<<endl;
-  
+    if(verbose)
+		cout<<"log p(pi)*p(theta)*p(x|z,theta)=" << logJoint << endl;
+
   return logJoint;
 };
 
@@ -592,7 +605,7 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
 		}
 	}
     if(verbose || t%100==0){
-		T iterLogJoint = this->logJoint(false) ; 
+		T iterLogJoint = this->logJoint(true) ; 
 		//log iterJoint Prob
 		logJointIterEval.push_back(t); 
 		logJointHist.push_back(iterLogJoint); 
@@ -915,14 +928,13 @@ vector<uint32_t> DirMultiNaiveBayes<T>::MAPLabels(const vector<vector<Matrix<T,D
 }
 
 template<typename T>
-MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n,
-    Matrix<T,Dynamic,Dynamic>& logLikes)
+MatrixXu DirMultiNaiveBayes<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes)
 {
   MatrixXu inds = MatrixXu::Zero(n,K_);
   logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
   
 #pragma omp parallel for 
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
