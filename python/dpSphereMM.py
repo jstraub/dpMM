@@ -92,7 +92,6 @@ else:
   for d in  range(D):
     x[d,:] /= norms
 
-
 if D < 3:
   fig = plt.figure()
   if D==2:

@@ -44,7 +44,7 @@ if(NOT USE_OPENMP)
 	remove_cxx_debug_flag("-fopenmp")
 endif()
 
-set(COMPILE_TEST OFF)
+set(COMPILE_TEST ON)
 
 if(WIN32)
 	#windows configuration
@@ -166,15 +166,6 @@ target_link_libraries(generateSphericalData
   ${Boost_LIBRARIES}
   dpmm dpmm_cuda
   )
-
-cuda_add_executable(dirMultiObsNaiveBayes
-	./src/dirMultiObsNaiveBayes.cpp
-)
-target_link_libraries(dirMultiObsNaiveBayes
-	${Boost_LIBRARIES}
-  dpmm dpmm_cuda
-)
-
 
 if( COMPILE_TEST )
 
