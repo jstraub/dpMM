@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <iostream>
+#include <vector>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/QR>
@@ -19,14 +20,20 @@
 //#include <mmf/defines.h>
 
 using namespace Eigen;
+using std::min;
+using std::max;
+using std::cout;
+using std::endl;
 
 template<typename T>
 class OptSO3ApproxCpu
 {
   public:
-  OptSO3ApproxCpu(T t_max = 5.0f, T dt = 0.05f)
-    : t_max_(t_max), dt_(dt), t_(0), R_(Matrix3f::Identity()) 
-  { };
+  OptSO3ApproxCpu(T t_max = 5.0, T dt = 0.05)
+    : t_max_(t_max), dt_(dt), t_(0)
+  { 
+    R_ = Matrix<T,3,3>::Identity();
+  };
 
   virtual ~OptSO3ApproxCpu()
   { };
@@ -38,7 +45,7 @@ class OptSO3ApproxCpu
       uint32_t maxIter=100);
 
   /* return a skew symmetric matrix from A */
-  Matrix3f enforceSkewSymmetry(const Matrix3f &A) const
+  Matrix<T,3,3> enforceSkewSymmetry(const Matrix<T,3,3> &A) const
   {return 0.5*(A-A.transpose());};
 
   const Matrix<T,3,3>& R() const {return R_;};
@@ -73,7 +80,7 @@ protected:
    * of cost function and updates R, and M_t_min
    */
   virtual T linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min, const
-      Matrix<T,3,3>& H, T t_max=1.0f, T dt=0.1f);
+      Matrix<T,3,3>& H, T t_max=1.0, T dt=0.1);
   /* convert a Rotation matrix R to a MF representaiton of the axes */
   void Rot2M(Matrix<T,3,3>& R, T *mu);
 };

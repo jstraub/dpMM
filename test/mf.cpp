@@ -12,9 +12,10 @@
 BOOST_AUTO_TEST_CASE(mf_test)
 {
   boost::mt19937 rndGen(1);
+  double nu = 4;
   MatrixXd Delta = MatrixXd::Identity(2,2);
-  Delta *= pow(15.0*M_PI/180.,2);
-  IW<double> iw0(Delta,4,&rndGen);
+  Delta *= pow(5.0*M_PI/180.,2)*nu;
+  IW<double> iw0(Delta,nu,&rndGen);
   std::vector<shared_ptr<IwTangent<double> > >thetas;
   for(uint32_t k=0; k<6; ++k)
     thetas.push_back(shared_ptr<IwTangent<double> >(
@@ -23,13 +24,24 @@ BOOST_AUTO_TEST_CASE(mf_test)
   Dir<Cat<double>, double> dir(alpha,&rndGen);
   MfPrior<double> mfPrior(dir,thetas,10);
 
-
-  VectorXd x(3,6);
-  x << 1.0,-1.0, 0.0, 0.0, 0.0, 0.0,
-       0.0, 0.0, 1.0,-1.0, 0.0, 0.0,
-       0.0, 0.0, 0.0, 0.0, 1.0,-1.0;
-
-  VectorXu z = VectorXu::Zero(6);
+  MatrixXd Sigma = MatrixXd::Identity(2,2);
+  Sigma *= pow(1.0*M_PI/180.,2);
+  uint32_t N = 100;
+  MatrixXd x(3,N*6);
+  MatrixXd R(3,3);
+  double theta = 30.*M_PI/180.;
+  R<<cos(theta), -sin(theta), 0.,
+     sin(theta),cos(theta) ,0.,
+     0,0,1.;
+  cout<<R<<endl;
+  cout<<" ..................... "<<endl;
+  for(uint32_t k=0; k<6; ++k)
+  {
+    NormalSphere<double> g(R*mfPrior.M().col(k),Sigma,&rndGen);
+    for(uint32_t i =0; i< N; ++i)
+      x.col(i+N*k) = g.sample(); 
+  }
+  VectorXu z = VectorXu::Zero(N*6);
   mfPrior.posterior(x,z,0);
   
 };

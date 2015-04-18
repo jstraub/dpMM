@@ -29,7 +29,7 @@
 //};
 
 template<typename T>
-double OptSO3ApproxCpu<T>::conjugateGradient(Matrix<T,3,3>& R, 
+T OptSO3ApproxCpu<T>::conjugateGradient(Matrix<T,3,3>& R, 
       const Matrix<T,Dynamic,Dynamic>& qKarch, 
       const Matrix<T,Dynamic,1>& Ns, uint32_t maxIter)
 {
@@ -48,7 +48,7 @@ double OptSO3ApproxCpu<T>::conjugateGradient(Matrix<T,3,3>& R,
   T res0 = this->evalCostFunction(R);
 //  T res0 = conjugateGradientPreparation_impl(R,N);
 //  dtPrep_ = t0.toctic("--- association ");
-  T resEnd = conjugateGradient_impl(R, res0, Ns.sum(), maxIter);
+  T resEnd = conjugateGradient_impl(R, res0, maxIter);
   conjugateGradientPostparation_impl(R);
 //  dtCG_ = t0.toctic("--- conjugateGradient");
   t_++; // keep track of timesteps 
@@ -97,7 +97,7 @@ T OptSO3ApproxCpu<T>::conjugateGradient_impl(Matrix<T,3,3>& R, T
 //  jsc::Timer t0;
   Matrix<T,3,3> G_prev, G, H, M_t_min, J;
 //  Matrix<T,3,3> R = R0;
-  vector<T> res(1,res0);
+  std::vector<T> res(1,res0);
 
 #ifndef NDEBUG
   cout<<"R0="<<endl<<R<<endl;
@@ -109,7 +109,7 @@ T OptSO3ApproxCpu<T>::conjugateGradient_impl(Matrix<T,3,3>& R, T
 //  jsc::Timer t1;
   for(uint32_t i =0; i<maxIter; ++i)
   {
-    computeJacobian(J,R,N);
+    computeJacobian(J,R);
 #ifndef NDEBUG
   cout<<"J="<<endl<<J<<endl;
 #endif
@@ -160,7 +160,7 @@ T OptSO3ApproxCpu<T>::evalCostFunction(Matrix<T,3,3>& R)
   T c = 0.0f;
   for (uint32_t j=0; j<6; ++j)
   { 
-    const T dot = max(-1.0f,min(1.0f,(qKarch_.col(j).transpose() * R.col(j/2))(0)));
+    const T dot = max((T)-1.0,min((T)1.0,(qKarch_.col(j).transpose() * R.col(j/2))(0)));
     if(j%2 ==0){
       c += Ns_(j) * acos(dot)* acos(dot);
     }else{
@@ -179,19 +179,18 @@ void OptSO3ApproxCpu<T>::computeJacobian(Matrix<T,3,3>&J,
   J = Matrix<T,3,3>::Zero();
 #ifndef NDEBUG
   cout<<"qKarch"<<endl<<qKarch_<<endl;
-  cout<<"xSums_"<<endl<<xSums_<<endl;
   cout<<"Ns_"<<endl<<Ns_<<endl;
 #endif
   for (uint32_t j=0; j<6; ++j)
   {
     // this is not using the robust cost function!
-    T dot = max(-1.0f,min(1.0f,(qKarch_.col(j).transpose() * R.col(j/2))(0)));
+    T dot = max((T)-1.0,min((T)1.0,(qKarch_.col(j).transpose() * R.col(j/2))(0)));
     T eps = acos(dot);
     // if dot -> 1 the factor in front of qKarch -> 0
     if(j%2 ==0){
       eps = acos(dot);
       if(-0.99< dot && dot < 0.99)
-        J.col(j/2) -= ((2.*Ns_(j)*eps)/(sqrt(1.f-dot*dot))) * qKarch_.col(j);
+        J.col(j/2) -= ((2.*Ns_(j)*eps)/(sqrt(1.-dot*dot))) * qKarch_.col(j);
       else if(dot >= 0.99)
       { // taylor series around 0.99 according to Mathematica
        J.col(j/2) -= (2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
@@ -207,7 +206,7 @@ void OptSO3ApproxCpu<T>::computeJacobian(Matrix<T,3,3>&J,
       dot *= -1.;
       eps = acos(dot);
       if(-0.99< dot && dot < 0.99)
-        J.col(j/2) += ((2.*Ns_(j)*eps)/(sqrt(1.f-dot*dot))) * qKarch_.col(j);
+        J.col(j/2) += ((2.*Ns_(j)*eps)/(sqrt(1.-dot*dot))) * qKarch_.col(j);
       else if(dot >= 0.99)
       { // taylor series around 0.99 according to Mathematica
        J.col(j/2) += (2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
@@ -328,10 +327,10 @@ T OptSO3ApproxCpu<T>::linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min,
 {
   Matrix<T,3,3> A = R.transpose() * H;
 
-  EigenSolver<MatrixXf> eig(A);
-  MatrixXcf U = eig.eigenvectors();
-  MatrixXcf invU = U.inverse();
-  VectorXcf d = eig.eigenvalues();
+  EigenSolver<Matrix<T,Dynamic,Dynamic> > eig(A);
+  Matrix<std::complex<T>,Dynamic,Dynamic > U = eig.eigenvectors();
+  Matrix<std::complex<T>,Dynamic,Dynamic > invU = U.inverse();
+  Matrix<std::complex<T>,Dynamic,Dynamic > d = eig.eigenvalues();
 #ifndef NDEBUG
   cout<<"A"<<endl<<A<<endl;
   cout<<"U"<<endl<<U<<endl;
@@ -345,8 +344,8 @@ T OptSO3ApproxCpu<T>::linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min,
   for(T t =0.0f; t<t_max; t+=dt)
   {
     //T t= ts[i_t];
-    VectorXcf expD = ((d*t).array().exp());
-    MatrixXf MN = (U*expD.asDiagonal()*invU).real();
+    Matrix<std::complex<T>,Dynamic,1> expD = ((d*t).array().exp());
+    Matrix<T,Dynamic,Dynamic> MN = (U*expD.asDiagonal()*invU).real();
     Matrix<T,3,3> R_t = R*MN.topLeftCorner(3,3);
 
     T detR = R_t.determinant();
@@ -368,9 +367,9 @@ T OptSO3ApproxCpu<T>::linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min,
         t_min = t;
       }
     }else{
-      cout<<"R_t is corrupted detR="<<detR
+      std::cout<<"R_t is corrupted detR="<<detR
         <<"; max deviation from I="<<maxDeviationFromI 
-        <<"; nans? "<<R_t(0,0)<<" f_t_min="<<f_t_min<<endl;
+        <<"; nans? "<<R_t(0,0)<<" f_t_min="<<f_t_min<<std::endl;
     }
   }
   if(f_t_min == 999999.0f) return f_t_min;
@@ -396,7 +395,7 @@ void OptSO3ApproxCpu<T>::Rot2M(Matrix<T,3,3>& R, T *mu)
 };
 
 template<typename T>
-Matrix<T,Dynamic,Dynamic> OptSO3ApproxCpu<T>::M()
+Matrix<T,Dynamic,Dynamic> OptSO3ApproxCpu<T>::M() const
 {
   Matrix<T,Dynamic,Dynamic> M(3,6);
   for(uint32_t k=0; k<6; ++k){
@@ -406,3 +405,6 @@ Matrix<T,Dynamic,Dynamic> OptSO3ApproxCpu<T>::M()
   }
   return M;
 };
+
+template class OptSO3ApproxCpu<double>;
+template class OptSO3ApproxCpu<float>;

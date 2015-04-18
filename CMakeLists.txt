@@ -183,6 +183,8 @@ if( COMPILE_TEST )
 #  )
 
   cuda_add_executable(testMF ./test/mf.cpp
+    ./src/iwTangent.cpp
+    ./src/optimizationSO3_approx.cpp
     )
 
   target_link_libraries(testMF

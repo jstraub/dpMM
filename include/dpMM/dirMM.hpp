@@ -75,16 +75,20 @@ protected:
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >&
-    theta, uint32_t K0) :
-  K0_(K0), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), theta0_(theta)
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const
+    shared_ptr<BaseMeasure<T> >& theta, uint32_t K0) :
+  K0_(K0), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
+  sampler_(NULL),
+  theta0_(theta)
 {};
 
 
 template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), thetas_(thetas)
+  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
+  sampler_(NULL),
+  thetas_(thetas)
 {};
 
 

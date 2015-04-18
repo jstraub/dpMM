@@ -15,7 +15,6 @@ template<typename T>
 class MfBase : public BaseMeasure<T>
 {
 public:
-  MF<T> mf_;
   MfBase(const MfPrior<T>& mfPrior);
   MfBase(const MfBase<T>& mfBase);
   ~MfBase();
@@ -56,6 +55,8 @@ public:
 //
 //  const Matrix<T,Dynamic,Dynamic>& Sigma() const {return normal_.Sigma();};
 private:
+  MF<T> mf_;
+  MfPrior<T> mf0_;
 
 };
 

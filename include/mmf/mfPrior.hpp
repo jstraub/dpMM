@@ -26,7 +26,7 @@ public:
   ~MfPrior();
 
 //  MfPrior<T>* copy();
-//
+
   MfPrior<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const
       VectorXu& z, uint32_t k);
 //  MfPrior<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
@@ -38,6 +38,8 @@ public:
 
 //  MfPrior<T> posterior() const;
 //  void sample() const;
+  Matrix<T,3,3> R() const {return optSO3_.R();};
+  Matrix<T,Dynamic,Dynamic> M() const {return optSO3_.M();};
 private:
   // data for this MF needed since we iterate over this data for
   // posterior inference
@@ -61,7 +63,7 @@ MfPrior<T>::MfPrior(const Dir<Cat<T>, T>& alpha, const
     std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter)
   : T_(nIter), 
     thetas_(thetas),
-    dirMM_(alpha,thetas_,6), optSO3_(5.0,0.05f)
+    dirMM_(alpha,thetas_[0],6), optSO3_(5.0,0.05)
 {
     R_ = Matrix<T,3,3>::Identity();
 };
@@ -73,21 +75,34 @@ MfPrior<T>::~MfPrior()
 template<typename T>
 void MfPrior<T>::sample_(uint32_t nIter)
 {
+  // get the pointers to the thetas in the DirMM so we can set the
+  // means
+  for(uint32_t k=0; k<6; ++k)
+  {
+    thetas_[k].reset(dynamic_cast<IwTangent<T>* >(
+          dirMM_.getTheta(k).get()));
+    thetas_[k]->setMean(optSO3_.M().col(k));
+  }
   for(uint32_t t=0; t<nIter; ++t)
   {
+    cout<<" -------------------- "<<endl;
     // sample labels - assignments to MF axes
     dirMM_.sampleLabels();
     // compute karcher means
-    Matrix<T,Dynamic,Dynamic> xTpS(x_.rows()-1,x_.cols()); 
+    Matrix<T,Dynamic,Dynamic> xTpS(x_.rows(),x_.cols()); 
     Matrix<T,Dynamic, Dynamic> qKarch = karcherMeanMultiple<T>(
         optSO3_.M(),x_,xTpS,dirMM_.labels(),6,30);
+    cout<<"qKarch: "<<endl<<qKarch<<endl;
     // sample new MF rotation
     optSO3_.conjugateGradient(R_, qKarch, dirMM_.getCounts(), 100);
     R_ = optSO3_.R();
+//    cout<<"R: "<<endl<<R_<<endl;
+    cout<<"M: "<<endl<<optSO3_.M()<<endl;
     // set tangent points of the iwTangent
     for(uint32_t k=0; k<6; ++k)
     {
       thetas_[k]->setMean(optSO3_.M().col(k));
+      dirMM_.getTheta(k)->print();
     }
     // sample covariances in the tangent spaces
     dirMM_.sampleParameters();

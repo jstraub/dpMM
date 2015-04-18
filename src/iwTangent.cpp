@@ -2,7 +2,7 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
 
-#include <dpMM/niwTangent.hpp>
+#include <dpMM/iwTangent.hpp>
 // ----------------------------------------------------------------------------
 
 template<typename T>
