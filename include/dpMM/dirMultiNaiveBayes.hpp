@@ -691,6 +691,14 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
     }
     if(verbose || t%int(floor(nIter/100.))==0)
     {
+      VectorXu Ns = counts<uint32_t,uint32_t>(
+          this->labels(),K_).transpose();
+      uint32_t K = K_;
+      for(uint32_t k = 0; k<K_; ++k)
+        if (Ns(k) == 0) --K;
+      cout<<"@i "<<t<<": # "
+        <<K<<" "<<std::setw(1)<<Ns.transpose() <<endl;
+
       T iterLogJoint = this->logJoint(true) ;
       //log iterJoint Prob
       logJointIterEval.push_back(t);
@@ -707,14 +715,14 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
           << std::setw(6) << iterLogJoint << endl;
       }
     }
-    if(verbose)
-    {
-      VectorXu Ns = counts<uint32_t,uint32_t>(this->labels(),K_).transpose();
-      uint32_t K = K_;
-      for(uint32_t k = 0; k<K_; ++k)
-        if (Ns(k) == 0) --K;
-      cout<<"@i "<<t<<": # "<<K<<" "<<std::setw(1) <<Ns.transpose() <<endl;
-    }
+//    if(verbose)
+//    {
+//      VectorXu Ns = counts<uint32_t,uint32_t>(this->labels(),K_).transpose();
+//      uint32_t K = K_;
+//      for(uint32_t k = 0; k<K_; ++k)
+//        if (Ns(k) == 0) --K;
+//      cout<<"@i "<<t<<": # "<<K<<" "<<std::setw(1) <<Ns.transpose() <<endl;
+//    }
   }
   //keeps the MAP label in memory
   this->MAPLabel();
