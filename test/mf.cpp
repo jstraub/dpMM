@@ -17,13 +17,14 @@ BOOST_AUTO_TEST_CASE(mf_test)
   MatrixXd Delta = MatrixXd::Identity(2,2);
   Delta *= pow(5.0*M_PI/180.,2)*nu;
   IW<double> iw0(Delta,nu,&rndGen);
-  std::vector<shared_ptr<IwTangent<double> > >thetas;
+  std::vector<shared_ptr<BaseMeasure<double> > >thetas;
   for(uint32_t k=0; k<6; ++k)
     thetas.push_back(shared_ptr<IwTangent<double> >(
           new IwTangent<double>(iw0,&rndGen)));
   VectorXd alpha = VectorXd::Ones(6);
   Dir<Cat<double>, double> dir(alpha,&rndGen);
-  MfPrior<double> mfPrior(dir,thetas,10);
+  DirMM<double> dirMM(dir,thetas);
+  MfPrior<double> mfPrior(dirMM,10);
 
   MatrixXd Sigma = MatrixXd::Identity(2,2);
   Sigma *= pow(1.0*M_PI/180.,2);

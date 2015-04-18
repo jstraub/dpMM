@@ -74,7 +74,7 @@ typedef MfBase<float> MfBasef;
 
 template<typename T>
 MfBase<T>::MfBase(const MfPrior<T>& mf0)
-  :  mf0_(mf0), mf_(mf0_.sample())
+  :  mf0_(mf0), mf_(mf0.sample())
 {
   mf0_.R_ = mf_.R();
 };

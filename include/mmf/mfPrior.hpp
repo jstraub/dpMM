@@ -22,8 +22,9 @@ template<typename T>
 class MfPrior
 {
 public:
-  MfPrior(const Dir<Cat<T>, T>& alpha, const
-    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter);
+//  MfPrior(const Dir<Cat<T>, T>& alpha, const
+//    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter);
+  MfPrior(const DirMM<T>& dirMM, uint32_t nIter); 
   MfPrior(const MfPrior<T>& mf); 
   ~MfPrior();
 
@@ -47,16 +48,21 @@ public:
   Matrix<T,Dynamic,Dynamic> M() const {return optSO3_.M();};
 
   const DirMM<T>& dirMM() const {return dirMM_;};
-  const shared_ptr<IwTangent<T> >& theta(uint32_t k) const 
-  {return thetas_[k];};
-  vector<shared_ptr<IwTangent<T> > > thetasDeepCopy() const 
+  IwTangent<T>* theta(uint32_t k) 
+  {return reinterpret_cast<IwTangent<T>* >(dirMM_.getTheta(k).get());};
+  const IwTangent<T>* theta(uint32_t k) const
   {
-    vector<shared_ptr<IwTangent<T> > > thetas;
-    for(uint32_t k=0; k<6; ++k)
-      thetas.push_back(shared_ptr<IwTangent<T> >(
-            thetas_[k]->copyNative()));
-    return thetas;
-  };
+//  { cout<<k<<" "<<dirMM_.getK()<<endl;
+//    cout<<(dirMM_.getTheta(k).get())<<endl;
+    return reinterpret_cast<IwTangent<T>* >(dirMM_.getTheta(k).get());};
+//  vector<shared_ptr<IwTangent<T> > > thetasDeepCopy() const 
+//  {
+//    vector<shared_ptr<IwTangent<T> > > thetas;
+//    for(uint32_t k=0; k<6; ++k)
+//      thetas.push_back(shared_ptr<IwTangent<T> >(
+//            thetas_[k]->copyNative()));
+//    return thetas;
+//  };
 
 
   // how many iterations to sample internally for the MF posterior
@@ -67,7 +73,7 @@ private:
 //  // posterior inference
 //  Matrix<T,Dynamic,Dynamic> x_; 
 
-  std::vector<shared_ptr<IwTangent<T> > > thetas_;
+//  std::vector<shared_ptr<IwTangent<T> > > thetas_;
   // prior over the mixture over the six axes
   DirMM<T> dirMM_; 
 
@@ -79,12 +85,20 @@ private:
 };
 
 // ----------------------------------------
+//template<typename T>
+//MfPrior<T>::MfPrior(const Dir<Cat<T>, T>& alpha, const
+//    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter)
+//  : T_(nIter), 
+////    thetas_(thetas),
+//    dirMM_(alpha,thetas_[0],6), optSO3_(5.0,0.05)
+//{
+//    R_ = Matrix<T,3,3>::Identity();
+//};
+
 template<typename T>
-MfPrior<T>::MfPrior(const Dir<Cat<T>, T>& alpha, const
-    std::vector<shared_ptr<IwTangent<T> > >& thetas, uint32_t nIter)
+MfPrior<T>::MfPrior(const DirMM<T>& dirMM, uint32_t nIter)
   : T_(nIter), 
-    thetas_(thetas),
-    dirMM_(alpha,thetas_[0],6), optSO3_(5.0,0.05)
+    dirMM_(dirMM), optSO3_(5.0,0.05)
 {
     R_ = Matrix<T,3,3>::Identity();
 };
@@ -93,7 +107,7 @@ template<typename T>
 MfPrior<T>::MfPrior(const MfPrior<T>& mfP)
   : T_(mfP.T_), 
   R_(mfP.R_), 
-  thetas_(mfP.thetasDeepCopy()),
+//  thetas_(mfP.thetasDeepCopy()),
   dirMM_(mfP.dirMM()),
   optSO3_(5.0,0.05)
 {};
@@ -110,37 +124,40 @@ void MfPrior<T>::sample_(const Matrix<T,Dynamic,Dynamic>& x,
   // means
   for(uint32_t k=0; k<6; ++k)
   {
-    thetas_[k].reset(dynamic_cast<IwTangent<T>* >(
-          dirMM_.getTheta(k).get()));
-    thetas_[k]->setMean(optSO3_.M().col(k));
+//    if(thetas_[k].get() != dirMM_.getTheta(k).get())
+//    {
+//      thetas_[k].reset(reinterpret_cast<IwTangent<T>* >(
+//            dirMM_.getTheta(k).get()));
+//    }
+    this->theta(k)->setMean(optSO3_.M().col(k));
   }
   for(uint32_t t=0; t<nIter; ++t)
   {
-    cout<<" -------------------- "<<endl;
+//    cout<<" -------------------- "<<endl;
     // sample labels - assignments to MF axes
     dirMM_.sampleLabels();
     // compute karcher means
     Matrix<T,Dynamic,Dynamic> xTpS(x.rows(),x.cols()); 
     Matrix<T,Dynamic, Dynamic> qKarch = karcherMeanMultiple<T>(
         optSO3_.M(),x,xTpS,dirMM_.labels(),6,30);
-    cout<<"qKarch: "<<endl<<qKarch<<endl;
+//    cout<<"qKarch: "<<endl<<qKarch<<endl;
     // sample new MF rotation
     optSO3_.conjugateGradient(R_, qKarch, dirMM_.getCounts(), 100);
     R_ = optSO3_.R();
-//    cout<<"R: "<<endl<<R_<<endl;
-    cout<<"M: "<<endl<<optSO3_.M()<<endl;
+////    cout<<"R: "<<endl<<R_<<endl;
+//    cout<<"M: "<<endl<<optSO3_.M()<<endl;
     // set tangent points of the iwTangent
     for(uint32_t k=0; k<6; ++k)
     {
-      thetas_[k]->setMean(optSO3_.M().col(k));
-      dirMM_.getTheta(k)->print();
+      this->theta(k)->setMean(optSO3_.M().col(k));
+//      dirMM_.getTheta(k)->print();
     }
     // sample covariances in the tangent spaces
     dirMM_.sampleParameters();
     // some output
-    cout<<"@t "<<t<<": logJoint = "<<dirMM_.logJoint() 
-      <<" #s "<<dirMM_.getCounts().transpose()
-      <<endl;
+//    cout<<"@t "<<t<<": logJoint = "<<dirMM_.logJoint() 
+//      <<" #s "<<dirMM_.getCounts().transpose()
+//      <<endl;
   }
 }
 
@@ -157,9 +174,7 @@ void MfPrior<T>::sample_(const Matrix<T,Dynamic,Dynamic>& x,
   // means
   for(uint32_t k=0; k<6; ++k)
   {
-    thetas_[k].reset(dynamic_cast<IwTangent<T>* >(
-          dirMM_.getTheta(k).get()));
-    thetas_[k]->setMean(optSO3_.M().col(k));
+    this->theta(k)->setMean(optSO3_.M().col(k));
   }
 
   Matrix<T,Dynamic,1> w(x.cols()); 
@@ -168,39 +183,39 @@ void MfPrior<T>::sample_(const Matrix<T,Dynamic,Dynamic>& x,
 
   for(uint32_t t=0; t<nIter; ++t)
   {
-    cout<<" -------------------- "<<endl;
+//    cout<<" -------------------- "<<endl;
     // sample labels - assignments to MF axes
     dirMM_.sampleLabels();
     // compute karcher means
     Matrix<T,Dynamic,Dynamic> xTpS(x.rows(),x.cols()); 
     Matrix<T,Dynamic, Dynamic> qKarch = karcherMeanMultipleWeighted<T>(
         optSO3_.M(),x,xTpS,w,dirMM_.labels(),6,30);
-    cout<<"qKarch: "<<endl<<qKarch<<endl;
-    cout<<"Mbefore: "<<endl<<optSO3_.M()<<endl;
-    cout<<"R: "<<endl<<R_<<endl;
+//    cout<<"qKarch: "<<endl<<qKarch<<endl;
+//    cout<<"Mbefore: "<<endl<<optSO3_.M()<<endl;
+//    cout<<"R: "<<endl<<R_<<endl;
     // compute counts for each of the 6 directions from SS
     Matrix<T,Dynamic,1> Ws = Matrix<T,Dynamic,1>::Zero(6); 
     for(uint32_t i=0; i<SS.size(); ++i)
       Ws(dirMM_.labels()(i)) += w(i);
-    cout<<"Ws: "<<Ws.transpose()<<endl;
-    cout<<"#s: "<<dirMM_.getCounts().transpose()<<endl;
+//    cout<<"Ws: "<<Ws.transpose()<<endl;
+//    cout<<"#s: "<<dirMM_.getCounts().transpose()<<endl;
     // sample new MF rotation
     optSO3_.conjugateGradient(R_, qKarch, Ws, 100);
     R_ = optSO3_.R();
-//    cout<<"R: "<<endl<<R_<<endl;
-    cout<<"M: "<<endl<<optSO3_.M()<<endl;
+////    cout<<"R: "<<endl<<R_<<endl;
+//    cout<<"M: "<<endl<<optSO3_.M()<<endl;
     // set tangent points of the iwTangent
     for(uint32_t k=0; k<6; ++k)
     {
-      thetas_[k]->setMean(optSO3_.M().col(k));
-      dirMM_.getTheta(k)->print();
+      this->theta(k)->setMean(optSO3_.M().col(k));
+//      dirMM_.getTheta(k)->print();
     }
     // sample covariances in the tangent spaces
     dirMM_.sampleParameters();
     // some output
-    cout<<"@t "<<t<<": logJoint = "<<dirMM_.logJoint() 
-      <<" #s "<<dirMM_.getCounts().transpose()
-      <<endl;
+//    cout<<"@t "<<t<<": logJoint = "<<dirMM_.logJoint() 
+//      <<" #s "<<dirMM_.getCounts().transpose()
+//      <<endl;
   }
 }
 
@@ -233,7 +248,7 @@ MF<T> MfPrior<T>::posteriorSample(const Matrix<T,Dynamic,Dynamic>& x,
   std::vector<NormalSphere<T> > TGs;
   for(uint32_t k=0; k<6; ++k)
   {
-    TGs.push_back(thetas_[k]->normalS_);
+    TGs.push_back(this->theta(k)->normalS_);
   }
   return MF<T>(optSO3_.R(),dirMM_.Pi(),TGs);
 }
@@ -269,7 +284,7 @@ MF<T> MfPrior<T>::posteriorFromSSsample(const
   std::vector<NormalSphere<T> > TGs;
   for(uint32_t k=0; k<6; ++k)
   {
-    TGs.push_back(thetas_[k]->normalS_);
+    TGs.push_back(this->theta(k)->normalS_);
   }
   return MF<T>(optSO3_.R(),dirMM_.Pi(),TGs);
 }
@@ -282,7 +297,7 @@ T MfPrior<T>::logPdf(const MF<T>& mf) const
   T logPdf = 0.;
   for(uint32_t k =0; k<6; ++k)
   {
-    logPdf += thetas_[k]->iw0_.logPdf(mf.Sigma(k));
+    logPdf += this->theta(k)->iw0_.logPdf(mf.Sigma(k));
   }
   return logPdf;
 };
@@ -294,7 +309,9 @@ MF<T> MfPrior<T>::sample() const
   Matrix<T,3,3> R = Matrix<T,3,3>::Identity();
 
   boost::uniform_01<T> unif;
-  double theta = unif(*(thetas_[0]->iw0_.pRndGen_));
+//  cout<<this->theta(0)<<endl;
+//  cout<<this->theta(0)->iw0_.pRndGen_<<endl;
+  double theta = unif(*(this->theta(0)->iw0_.pRndGen_));
   theta *= 2.*M_PI;
   R << cos(theta), -sin(theta), 0.0,
     sin(theta), cos(theta), 0.0,
@@ -302,13 +319,14 @@ MF<T> MfPrior<T>::sample() const
 
   Cat<T> pi = const_cast<Dir<Cat<T>,T>* >(&(dirMM_.Alpha()))->sample();
   std::vector<NormalSphere<T> > TGs;
+  IwTangent<T> iwT(*this->theta(0));
   for(uint32_t k =0; k<6; ++k)
   {
     //TODO fishy
-    thetas_[0]->sample();
     TGs.push_back(NormalSphere<T>(
           OptSO3ApproxCpu<T>::Rot2M(R).col(k), 
-          thetas_[0]->normalS_.Sigma(), thetas_[0]->iw0_.pRndGen_
+          iwT.iw0_.sample(), 
+          iwT.iw0_.pRndGen_
           ));
   }
   return MF<T>(R_,pi,TGs);

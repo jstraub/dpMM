@@ -46,7 +46,9 @@ public:
   virtual void setLabels(const VectorXu& z){z_ = z;};
   virtual uint32_t getK() const { return K_;};
   virtual const shared_ptr<BaseMeasure<T> >& getTheta(uint32_t k) const
-    { return this->thetas_[k];};
+    { assert(k<K_); return this->thetas_[k];};
+  virtual const vector<shared_ptr<BaseMeasure<T> > >& getThetas() const
+    { return this->thetas_;};
   virtual const shared_ptr<BaseMeasure<T> >& getTheta0() const
     { return this->theta0_;};
 
@@ -95,8 +97,18 @@ template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
-  sampler_(NULL), thetas_(thetas)
-{};
+  sampler_(NULL), thetas_(thetas),
+  theta0_(
+      shared_ptr<BaseMeasure<T> >(thetas[0]->copy()))
+{
+//  cout<<thetas_.size()<<endl;
+//  for(uint32_t k=0; k<thetas_.size(); ++k)
+//    cout<< "   "<<thetas_[k].get()<<endl;
+//  cout<<thetas_[0].get()<<endl;
+//  cout<<thetas_[0]->copy()<<endl;
+//
+//  theta0_ = shared_ptr<BaseMeasure<T> >(thetas_[0]->copy());
+};
 
 template<typename T>
 DirMM<T>::DirMM(const DirMM<T>& dirMM) 
@@ -105,13 +117,13 @@ DirMM<T>::DirMM(const DirMM<T>& dirMM)
   theta0_(shared_ptr<BaseMeasure<T> >(
         dirMM.getTheta0()->copy()))
 {
+  for(uint32_t k=0; k<  dirMM.getK(); ++k)
+  {
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(
+          dirMM.getTheta(k)->copy())); 
+  }
   if(dirMM.isInit())
   {
-    for(uint32_t k=0; k<  dirMM.getK(); ++k)
-    {
-      thetas_.push_back(shared_ptr<BaseMeasure<T> >(
-            dirMM.getTheta(k)->copy())); 
-    }
     x_ = dirMM.x();
     // bad boy
     z_ = const_cast<DirMM<T>* >(&dirMM)->labels();
@@ -141,11 +153,11 @@ Matrix<T,Dynamic,1> DirMM<T>::getCounts()
 template<typename T>
 void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 {
-  cout<<"init"<<endl;
+//  cout<<"init"<<endl;
   x_ = x;
   // randomly init labels from prior
   z_.setZero(x.cols());
-  cout<<"sample pi"<<endl;
+//  cout<<"sample pi"<<endl;
   pi_ = dir_.sample(); 
   if (K0_ < K_)
   {
@@ -154,7 +166,7 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
     pdf = pdf / pdf.sum(); // renormalize
     pi_.pdf(pdf);
   } 
-  cout<<"init pi="<<pi_.pdf().transpose()<<endl;
+//  cout<<"init pi="<<pi_.pdf().transpose()<<endl;
   pi_.sample(z_);
 
   pdfs_.setZero(x.cols(),K_);
@@ -168,7 +180,7 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 //  if(thetas_.size() == 0)
 //  {
   thetas_.clear(); // destrey eny previous thetas
-  cout<<"creating thetas"<<endl;
+//  cout<<"creating thetas"<<endl;
   for (uint32_t k=0; k<K_; ++k)
     thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
 //  }

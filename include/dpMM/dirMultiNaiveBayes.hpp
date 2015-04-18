@@ -302,7 +302,7 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
       Matrix<T,3,3>  R;
       Dir<Cat<T>, T> alpha(post_alpha,rng);
       Cat<T> pi(pi_pdf,rng);
-      std::vector<shared_ptr<IwTangent<T> > > iwTs;
+      std::vector<shared_ptr<BaseMeasure<T> > > iwTs;
       std::vector<NormalSphere<T> > TGs;
       uint32_t nIter;
 
@@ -341,10 +341,11 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
           for(uint32_t n=0; n<4; ++n) in >> Sigma(n/2,n%2); 		
           for(uint32_t n=0; n<3; ++n) in >> mu(n); 		
           TGs.push_back(NormalSphere<T>(mu,Sigma,rng));
-          iwTs[j]->normalS_ = TGs[j];
+          reinterpret_cast<IwTangent<T>* >(
+              iwTs[j].get())->normalS_=TGs[j];
         };
-
-        MfPrior<T> mfPrior(alpha, iwTs , nIter);
+        DirMM<T> dirMM(alpha,iwTs);
+        MfPrior<T> mfPrior(dirMM, nIter);
         MF<T> mf(R,pi,TGs);
 				//set
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(
@@ -688,7 +689,7 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
         }
       }
     }
-    if(verbose || t%100==0)
+    if(verbose || t%int(floor(nIter/100.))==0)
     {
       T iterLogJoint = this->logJoint(true) ;
       //log iterJoint Prob
@@ -886,7 +887,7 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
           reinterpret_cast<boost::shared_ptr<MfBase<T> >* >(
               &theta_base[k]);
 
-        out<< theta_iter->get()->mf0_.T_;
+        out<< theta_iter->get()->mf0_.T_<<endl;
 
 				//posterior
 				Dir<Cat<T>, T>  post = theta_iter->get()->mf0_.dirMM().Alpha();
@@ -898,13 +899,13 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
         out << theta_iter->get()->mf_.R().format(fullPresPrint)<<endl;
         for(uint32_t j=0; j<6; ++j)
         {
-          out<< theta_iter->get()->mf0_.theta(j)->iw0_.nu_;
-          out<< theta_iter->get()->mf0_.theta(j)->iw0_.Delta_;
-          out<< theta_iter->get()->mf0_.theta(j)->iw0_.scatter();
-          out<< theta_iter->get()->mf0_.theta(j)->iw0_.mean();
-          out<< theta_iter->get()->mf0_.theta(j)->iw0_.count();
-          out<< theta_iter->get()->mf0_.theta(j)->normalS_.Sigma();
-          out<< theta_iter->get()->mf0_.theta(j)->normalS_.getMean();
+          out<< theta_iter->get()->mf0_.theta(j)->iw0_.nu_ << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->iw0_.Delta_ << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->iw0_.scatter() << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->iw0_.mean() << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->iw0_.count() << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->normalS_.Sigma() << endl;
+          out<< theta_iter->get()->mf0_.theta(j)->normalS_.getMean() << endl;
         }
 				
 			} else {
