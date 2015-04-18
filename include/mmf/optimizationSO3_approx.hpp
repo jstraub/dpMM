@@ -9,7 +9,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/QR>
-#include <unsupported/Eigen/MatrixFunctions>
 
 // CUDA runtime
 #include <cuda_runtime.h>
