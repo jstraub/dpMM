@@ -261,7 +261,7 @@ int main(int argc, char **argv){
 		VectorXd alpha = (alphaInput)*VectorXd::Ones(K);
 
 		Dir<Catd,double> dir(alpha,&rndGen); 
-		vector <vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
+		vector<vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
 		thetas.reserve(NumObs);
 
 		//creates thetas  
@@ -368,27 +368,32 @@ int main(int argc, char **argv){
 			} else if(iequals(baseDist[m], "MF")) {
 				//sufficient statistics size:(D)x1
 				//[counts]
-
-				vector<boost::shared_ptr<BaseMeasure<double> > > dirSampled; 
-
-				for(int k=0; k<int(K); ++k) {
-					VectorXd alpha = VectorXd::Ones(D[m]);
-					int highProbPos = k%D[m];
-					if(nuIn.empty()) {
-						alpha *= 10; 	
-						alpha(highProbPos) = 10/2; 
-					} else { 
-						alpha *= nuIn[m];	
-						alpha(highProbPos) = nuIn[m]/2; 
-					}
-					
-					Dir<Catd,double> dirBase(alpha,&rndGen); 
-			
-					boost::shared_ptr<DirSampled<Catd, double> > tempBase( new DirSampled<Catd, double>(dirBase));
-					dirSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
-				}
-
-				thetas.push_back(dirSampled); 
+				vector<boost::shared_ptr<BaseMeasure<double> > > mfBases; 
+        for(uint32_t k=0; k<K; ++k)
+        {
+          uint32_t nIter = 100; // iterations of internal MF sampler
+          // mixture over the 6 different MF directions 
+          Matrix<double,Dynamic,1> alpha = Matrix<double,Dynamic,1>::Ones(6)*10;
+          Dir<Cat<double>, double> dir(alpha,&rndGen);
+          // tangent space IW priors
+          double nu = 4;
+          Matrix<double,Dynamic,Dynamic> Delta = 
+            Matrix<double,Dynamic,Dynamic>::Identity(2,2);
+          Delta *= pow(5.0*M_PI/180.,2)*nu;
+          IWd iw0(Delta,nu,&rndGen);
+          std::vector<shared_ptr<IwTangent<double> > > iwTs;
+          for(uint32_t j=0; j<6; ++j)  
+          {
+            iwTs.push_back(shared_ptr<IwTangent<double> >(
+                  new IwTangent<double>(iw0,&rndGen)));
+          }
+          MfPrior<double> mfPrior(dir, iwTs, nIter);
+//          MF<T> mf(R,pi,TGs);
+          mfBases.push_back(boost::shared_ptr<BaseMeasure<double> >(
+                new MfBase<double>(mfPrior)));
+        }
+        //set
+				thetas.push_back(mfBases);
 
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;

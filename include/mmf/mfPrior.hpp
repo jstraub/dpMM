@@ -6,6 +6,8 @@
 
 #include <Eigen/Dense>
 
+#include <boost/random/uniform_01.hpp>
+
 #include <dpMM/dirMM.hpp>
 #include <dpMM/iwTangent.hpp>
 #include <dpMM/karcherMean.hpp>
@@ -59,6 +61,7 @@ public:
 
   // how many iterations to sample internally for the MF posterior
   uint32_t T_;
+  Matrix<T,3,3> R_;
 private:
 //  // data for this MF needed since we iterate over this data for
 //  // posterior inference
@@ -69,7 +72,6 @@ private:
   DirMM<T> dirMM_; 
 
   OptSO3ApproxCpu<T> optSO3_;
-  Matrix<T,3,3> R_;
 
   void sample_(const Matrix<T,Dynamic,Dynamic>& x, uint32_t nIter);
   void sample_(const Matrix<T,Dynamic,Dynamic>& x, 
@@ -90,6 +92,7 @@ MfPrior<T>::MfPrior(const Dir<Cat<T>, T>& alpha, const
 template<typename T>
 MfPrior<T>::MfPrior(const MfPrior<T>& mfP)
   : T_(mfP.T_), 
+  R_(mfP.R_), 
   thetas_(mfP.thetasDeepCopy()),
   dirMM_(mfP.dirMM()),
   optSO3_(5.0,0.05)
@@ -173,10 +176,14 @@ void MfPrior<T>::sample_(const Matrix<T,Dynamic,Dynamic>& x,
     Matrix<T,Dynamic, Dynamic> qKarch = karcherMeanMultipleWeighted<T>(
         optSO3_.M(),x,xTpS,w,dirMM_.labels(),6,30);
     cout<<"qKarch: "<<endl<<qKarch<<endl;
+    cout<<"Mbefore: "<<endl<<optSO3_.M()<<endl;
+    cout<<"R: "<<endl<<R_<<endl;
     // compute counts for each of the 6 directions from SS
-    Matrix<T,Dynamic,1> Ws(6); 
+    Matrix<T,Dynamic,1> Ws = Matrix<T,Dynamic,1>::Zero(6); 
     for(uint32_t i=0; i<SS.size(); ++i)
       Ws(dirMM_.labels()(i)) += w(i);
+    cout<<"Ws: "<<Ws.transpose()<<endl;
+    cout<<"#s: "<<dirMM_.getCounts().transpose()<<endl;
     // sample new MF rotation
     optSO3_.conjugateGradient(R_, qKarch, Ws, 100);
     R_ = optSO3_.R();
@@ -283,7 +290,16 @@ T MfPrior<T>::logPdf(const MF<T>& mf) const
 template<typename T>
 MF<T> MfPrior<T>::sample() const
 {
+  //TODO sample from all SO3
   Matrix<T,3,3> R = Matrix<T,3,3>::Identity();
+
+  boost::uniform_01<T> unif;
+  double theta = unif(*(thetas_[0]->iw0_.pRndGen_));
+  theta *= 2.*M_PI;
+  R << cos(theta), -sin(theta), 0.0,
+    sin(theta), cos(theta), 0.0,
+    0.0,0.0,1.0;
+
   Cat<T> pi = const_cast<Dir<Cat<T>,T>* >(&(dirMM_.Alpha()))->sample();
   std::vector<NormalSphere<T> > TGs;
   for(uint32_t k =0; k<6; ++k)

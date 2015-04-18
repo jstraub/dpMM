@@ -13,7 +13,7 @@ set(CMAKE_BUILD_TYPE Release) # Release; debug; ...
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-option(USE_OPENMP "Uses OpenMP (default true)" ON)
+option(USE_OPENMP "Uses OpenMP (default true)" OFF)
 option(COMPILE_TEST "Specify whether to compile test programs (default true)" ON)
 
 
