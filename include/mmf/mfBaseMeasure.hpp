@@ -19,7 +19,7 @@ public:
   MfBase(const MfBase<T>& mfBase);
   ~MfBase();
 
-  virtual baseMeasureType getBaseMeasureType() const {return(MF); }
+  virtual baseMeasureType getBaseMeasureType() const {return(MF_T); }
 
   virtual BaseMeasure<T>* copy();
   virtual MfBase<T>* copyNative();
@@ -95,7 +95,7 @@ template<typename T>
 T MfBase<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
 {
 //  normal_.print();
-  T logLike = normal_.logPdf(x);
+  T logLike = mf_.logPdf(x);
 //  cout<<x.transpose()<<" -> " <<logLike<<endl;
 //  cout<<x.transpose()<<" -> " <<normal_.logPdfSlower(x)<<endl;
   return logLike;
@@ -130,14 +130,14 @@ template<typename T>
 void MfBase<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x,
     const VectorXu& z, uint32_t k)
 {
-  normal_ = niw0_.posterior(x,z,k).sample();
+  mf_ = mf0_.posterior(x,z,k).sample();
 };
 
 template<typename T>
 void MfBase<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x,
 	const VectorXu& z, uint32_t k)
 {
-	normal_ = niw0_.posterior(x,z,k).sample();
+	mf_ = mf0_.posterior(x,z,k).sample();
 }
 
 template<typename T>

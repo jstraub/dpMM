@@ -24,8 +24,10 @@ template<typename T>
 class DirMM : public DpMM<T>
 {
 public:
-  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta, uint32_t K0);
-  DirMM(const Dir<Cat<T>, T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >&
+      theta, uint32_t K0);
+  DirMM(const Dir<Cat<T>, T>& alpha, const
+      vector<shared_ptr<BaseMeasure<T> > >& thetas);
   virtual ~DirMM();
 
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);

@@ -14,83 +14,93 @@ class MF : public Distribution<T>
 {
 public:
 
-  MF(const Matrix<T,3,3>& R, const NormalSphere<T>& TGs,
-      boost::mt19937 *pRndGen);
-  MF(const Matrix<T,3,3>& R, const std::vector<NormalSphere<T> >& 
-    TGs, boost::mt19937 *pRndGen);
+//  MF(const Matrix<T,3,3>& R, const NormalSphere<T>& TGs,
+//      boost::mt19937 *pRndGen);
+  MF(const Matrix<T,3,3>& R, 
+      const Cat<T>& pi,
+      const std::vector<NormalSphere<T> >& TGs);
+//      boost::mt19937 *pRndGen);
   MF(const MF<T>& mf);
   ~MF();
-
-  MF<T>* copy();
-
-  MF<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
-    uint32_t k);
-  MF<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
-      VectorXu& z, uint32_t k);
-  // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
-  MF<T> posteriorFromSS(const Matrix<T,Dynamic,1>& x);
-  MF<T> posteriorFromSS(const vector<Matrix<T,Dynamic,1> >&x, const
-      VectorXu& z, uint32_t k);
-
-  MF<T> posterior() const;
 
   T logPdf(const Matrix<T,Dynamic,1>& x) const;
 
   const Matrix<T,3,3>& R() const {return R_;};
+  const Cat<T>& Pi() const {return pi_;};
   const Matrix<T,Dynamic,Dynamic>& Sigma(uint32_t j) const
   {return TGs_[j].Sigma();};
   const std::vector<NormalSphere<T> >& TGs() const
   {return TGs_;};
 
-  boost::mt19937 *pRndGen_;
+  void print();
+
+//  boost::mt19937 *pRndGen_;
 protected:
   Matrix<T,3,3> R_;
   std::vector<NormalSphere<T> > TGs_;
-  VectorXu z_; // assignment to MF axes
-
+  Cat<T> pi_;
 };
 
 
 // ------------------------------------------------------
 
+//template<typename T>
+//MF<T>::MF(const Matrix<T,3,3>& R, const NormalSphere<T>& TG,
+//      boost::mt19937 *pRndGen)
+//  : R_(R), TGs_(6,TG), pRndGen_(pRndGen)
+//{};
 template<typename T>
-MF<T>::MF(const Matrix<T,3,3>& R, const NormalSphere<T>& TG,
-      boost::mt19937 *pRndGen)
-  : R_(R), TGs_(6,TG), pRndGen_(pRndGen)
+MF<T>::MF(const Matrix<T,3,3>& R, 
+    const Cat<T>& pi,
+    const std::vector<NormalSphere<T> >& TGs)
+//    boost::mt19937 *pRndGen)
+  : Distribution<T>(NULL),
+    R_(R), TGs_(TGs), pi_(pi)
+//  pRndGen_(pRndGen)
 {};
 template<typename T>
-MF<T>::MF(const Matrix<T,3,3>& R, const std::vector<NormalSphere<T> >& 
-    TGs, boost::mt19937 *pRndGen)
-  : R_(R), TGs_(TGs), pRndGen_(pRndGen)
-{};
-template<typename T>
-MF(const MF<T>& mf)
-  : R_(mf.R()), TGs_(mf.TGs()), pRndGen_(mf.pRndGen_)
-{};
-
-template<typename T>
-~MF()
-{};
-
-template<typename T>
-MF<T>::logPdf(const Matrix<T,Dynamic,1>& x)
+MF<T>::MF(const MF<T>& mf)
+  : Distribution<T>(NULL),
+    R_(mf.R()), TGs_(mf.TGs()), pi_(mf.Pi()) //, pRndGen_(mf.pRndGen_)
 {};
 
 template<typename T>
-MF<T>::()
+MF<T>::~MF()
 {};
+
 template<typename T>
-MF<T>::()
-{};
+T MF<T>::logPdf(const Matrix<T,Dynamic,1>& x) const
+{
+  Matrix<T,Dynamic,1> logPdf(6);
+  logPdf.fill(0.);
+  for(uint32_t k=0; k<6; ++k)
+  {
+    logPdf(k)= pi_.logPdf(k) + TGs_[k].logPdf(x);
+//    cout<< (pi_.logPdf(k) + TGs_[k].logPdf(x)) << "\t";
+  }
+//  cout<<" -> "<<logPdf<<endl;
+  return logSumExp<T>(logPdf);
+};
+
 template<typename T>
-MF<T>::()
-{};
-template<typename T>
-MF<T>::()
-{};
-template<typename T>
-MF<T>::()
-{};
-template<typename T>
-MF<T>::()
-{};
+void MF<T>::print()
+{
+  cout<<" -- MF"
+    << R_<<endl
+    << pi_.pdf().transpose()<<endl;
+};
+//template<typename T>
+//MF<T>::()
+//{};
+//template<typename T>
+//MF<T>::()
+//{};
+//template<typename T>
+//MF<T>::()
+//{};
+//template<typename T>
+//MF<T>::()
+//{};
+//template<typename T>
+//MF<T>::()
+//{};

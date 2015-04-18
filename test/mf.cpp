@@ -8,6 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <mmf/mfPrior.hpp>
+#include <mmf/mf.hpp>
 
 BOOST_AUTO_TEST_CASE(mf_test)
 {
@@ -42,6 +43,13 @@ BOOST_AUTO_TEST_CASE(mf_test)
       x.col(i+N*k) = g.sample(); 
   }
   VectorXu z = VectorXu::Zero(N*6);
-  mfPrior.posterior(x,z,0);
+  MF<double> mf = mfPrior.posteriorSample(x,z,0);
+
+  mf.print();
+
+  for(uint32_t i =0; i< N*6; ++i)
+  {
+    cout<<mf.logPdf(x.col(i))<<endl;
+  }
   
 };

@@ -10,6 +10,7 @@
 #include <dpMM/iwTangent.hpp>
 #include <dpMM/karcherMean.hpp>
 #include <mmf/optimizationSO3_approx.hpp>
+#include <mmf/mf.hpp>
 
 /* 
  * Prior distribution for a Manhattan Frame. Assumes a uniform prior
@@ -27,7 +28,7 @@ public:
 
 //  MfPrior<T>* copy();
 
-  MfPrior<T> posterior(const Matrix<T,Dynamic,Dynamic>& x, const
+  MF<T> posteriorSample(const Matrix<T,Dynamic,Dynamic>& x, const
       VectorXu& z, uint32_t k);
 //  MfPrior<T> posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
 //      VectorXu& z, uint32_t k);
@@ -114,8 +115,8 @@ void MfPrior<T>::sample_(uint32_t nIter)
 }
 
 template<typename T>
-MfPrior<T> MfPrior<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
-      VectorXu& z, uint32_t k)
+MF<T> MfPrior<T>::posteriorSample(const Matrix<T,Dynamic,Dynamic>& x,
+    const VectorXu& z, uint32_t k)
 {
   // count to know how big to make the data matrix
   uint32_t Nk = 0;
@@ -139,8 +140,12 @@ MfPrior<T> MfPrior<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
     // sample from prior
     dirMM_.sampleFromPrior();
   }
-  //TODO this does not hand over pi_ inside DirMM!
-  return MfPrior<T>(dirMM_.Alpha(), thetas_, T_);
+  std::vector<NormalSphere<T> > TGs;
+  for(uint32_t k=0; k<6; ++k)
+  {
+    TGs.push_back(thetas_[k]->normalS_);
+  }
+  return MF<T>(optSO3_.R(),dirMM_.Pi(),TGs);
 }
 
 //template<typename T>

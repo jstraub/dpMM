@@ -17,7 +17,7 @@ using std::endl;
 //TODO add to remaining classes. I added them to the ones I found.. RC 10/29/14.
 enum baseMeasureType {BASE, NIW_SAMPLED, NIW_MARGINALIZED, 
 					  DIR_SAMPLED, NIW_TANGENT, NIW_SPHERE, 
-					  NIW_SPHERE_FULL, UNIF_SPHERE, MF}; 
+					  NIW_SPHERE_FULL, UNIF_SPHERE, MF_T}; 
 
 
 template<typename T>

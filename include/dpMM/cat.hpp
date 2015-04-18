@@ -51,6 +51,12 @@ public:
     return(-1); 
   };
 
+  T logPdf(uint32_t x) const 
+  {
+    assert(x < K_);
+    return(log(pdf_(x))); 
+  };
+
   T logPdfOfSS(const Matrix<T,Dynamic,1>& x) const 
   {
     
