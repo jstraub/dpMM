@@ -47,9 +47,10 @@ BOOST_AUTO_TEST_CASE(mf_test)
 
   mf.print();
 
-  for(uint32_t i =0; i< N*6; ++i)
+  for(uint32_t i =0; i< N*6; i+=N)
   {
     cout<<mf.logPdf(x.col(i))<<endl;
   }
-  
+  MF<double> mf2(mf);
+  mf2.print();
 };

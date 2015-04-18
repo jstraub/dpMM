@@ -176,6 +176,66 @@ Matrix<T,Dynamic,Dynamic> karcherMeanMultiple(const Matrix<T,Dynamic,Dynamic>& p
   return ps;
 }
 
+template <typename T>
+Matrix<T,Dynamic,Dynamic> karcherMeanMultipleWeighted(
+    const Matrix<T,Dynamic,Dynamic>& p0s,
+  const Matrix<T,Dynamic,Dynamic>& q, Matrix<T,Dynamic,Dynamic>& x, 
+  const Matrix<T,Dynamic,1>& w,
+  const VectorXu& z, uint32_t K, uint32_t maxIter)
+{
+  assert(p0s.cols() == K);
+  uint32_t D = p0s.rows();
+  uint32_t N = q.cols();
+
+  Matrix<T,Dynamic,Dynamic> x_mean(D,K);
+  Matrix<T,Dynamic,1> Ns(K);
+  Matrix<T,Dynamic,1> residuals(K);
+  Matrix<T,Dynamic,Dynamic> ps = p0s;
+  for(uint32_t k=0; k<K; ++k)
+    ps.col(k) /= ps.col(k).norm();
+
+  Sphere<T> M(D);
+  for(uint32_t t=0; t< maxIter; ++t)
+  {
+//    cout<<x.transpose()<<endl;
+    M.Log_ps(ps,q,z,x);
+//    cout<<q.rows()<<" "<<q.cols()<<endl;
+//    cout<<x.rows()<<" "<<x.cols()<<endl;
+//    cout<<x.transpose()<<endl;
+    //TODO: parallelize this?
+    x_mean.setZero();
+    Ns.setZero();
+    for(uint32_t i=0; i<N; ++i)
+    {
+      x_mean.col(z(i)) += w(i)*x.col(i);
+      Ns(z(i)) += w(i);
+    }
+#pragma omp parallel for
+    for(uint32_t k=0; k<K; ++k)
+      if(Ns(k) > 0)
+    {
+      x_mean.col(k) /= Ns(k);
+//      cout<<"karcherMeanMultiple: "<<endl<<x_mean<<endl;
+      ps.col(k) = M.Exp_p(ps.col(k),x_mean.col(k));
+      residuals(k) = x_mean.col(k).norm();
+    }else
+      residuals(k) = 0.0;
+//    Matrix<T,Dynamic,1> x_mean = x.rowwise().sum()/W; // weighted mean in TpS
+//    cout<<"w "<<w.transpose()<<endl;
+//    cout<<"W "<<W<<endl;
+//    cout<<"x_mean "<<x_mean.transpose()<<endl;
+    if((residuals.array() <1.e-8).all())
+    {
+#ifndef NDEBUG
+     cout<<"converged after "<<t<<" residuals = "<<residuals.transpose()<<endl;
+#endif
+      break;
+    }
+//      cout<<"@"<<t<<" residual="<<residuals.transpose()<<endl;
+  }
+  return ps;
+}
+
 
 //VectorXd karcherMeanWeighted(const VectorXd& p0,
 //  const MatrixXd& q, const VectorXd& w, uint32_t maxIter)

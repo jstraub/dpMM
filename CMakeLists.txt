@@ -134,6 +134,8 @@ add_library(dpmm
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
   ./src/sphere.cpp
+    ./src/iwTangent.cpp
+    ./src/optimizationSO3_approx.cpp
 )
 
 cuda_add_library(dpmm_cuda

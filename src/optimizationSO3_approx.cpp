@@ -397,11 +397,18 @@ void OptSO3ApproxCpu<T>::Rot2M(Matrix<T,3,3>& R, T *mu)
 template<typename T>
 Matrix<T,Dynamic,Dynamic> OptSO3ApproxCpu<T>::M() const
 {
+  return Rot2M(R_);
+};
+
+template<typename T>
+Matrix<T,Dynamic,Dynamic> OptSO3ApproxCpu<T>::Rot2M(const
+    Matrix<T,3,3>& R)
+{
   Matrix<T,Dynamic,Dynamic> M(3,6);
   for(uint32_t k=0; k<6; ++k){
     int j = k/2; // which of the rotation columns does this belong to
     T sign = (- T(k%2) +0.5f)*2.0f; // sign of the axis
-    M.col(k) = sign*R_.col(j);
+    M.col(k) = sign*R.col(j);
   }
   return M;
 };

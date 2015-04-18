@@ -28,6 +28,7 @@ public:
       theta, uint32_t K0);
   DirMM(const Dir<Cat<T>, T>& alpha, const
       vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const DirMM<T>& dirMM);
   virtual ~DirMM();
 
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
@@ -39,20 +40,25 @@ public:
   virtual void sampleFromPrior();
 
   virtual T logJoint();
-  virtual const VectorXu& labels(){return z_;};
-  virtual const VectorXu& getLabels(){return z_;};
+  virtual const Matrix<T,Dynamic,Dynamic>& x() const {return x_;};
+  virtual const VectorXu& labels() {return z_;};
+  virtual const VectorXu& getLabels() {return z_;};
   virtual void setLabels(const VectorXu& z){z_ = z;};
   virtual uint32_t getK() const { return K_;};
-  virtual shared_ptr<BaseMeasure<T> > getTheta(uint32_t k) 
+  virtual const shared_ptr<BaseMeasure<T> >& getTheta(uint32_t k) const
     { return this->thetas_[k];};
+  virtual const shared_ptr<BaseMeasure<T> >& getTheta0() const
+    { return this->theta0_;};
 
-  virtual Dir<Cat<T>, T> Alpha(){ return dir_;}; 
-  virtual Cat<T> Pi(){ return pi_;}; 
+  virtual const Dir<Cat<T>, T>& Alpha() const { return dir_;}; 
+  virtual const Cat<T>& Pi() const { return pi_;}; 
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
   Matrix<T,Dynamic,1> getCounts();
+
+  bool isInit() const { return sampler_!= NULL;};
 
 protected: 
   uint32_t K0_;  // that is the number of clusters that are initialized with data at the beginning (K0_ <= K_)
@@ -89,9 +95,34 @@ template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
   K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
-  sampler_(NULL),
-  thetas_(thetas)
+  sampler_(NULL), thetas_(thetas)
 {};
+
+template<typename T>
+DirMM<T>::DirMM(const DirMM<T>& dirMM) 
+  : K_(dirMM.getK()), dir_(dirMM.Alpha()), pi_(dirMM.Pi()), 
+  sampler_(NULL), 
+  theta0_(shared_ptr<BaseMeasure<T> >(
+        dirMM.getTheta0()->copy()))
+{
+  if(dirMM.isInit())
+  {
+    for(uint32_t k=0; k<  dirMM.getK(); ++k)
+    {
+      thetas_.push_back(shared_ptr<BaseMeasure<T> >(
+            dirMM.getTheta(k)->copy())); 
+    }
+    x_ = dirMM.x();
+    // bad boy
+    z_ = const_cast<DirMM<T>* >(&dirMM)->labels();
+    pdfs_.setZero(x_.cols(),K_);
+#ifdef CUDA
+    sampler_ = new SamplerGpu<T>(x_.cols(),K_,dir_.pRndGen_);
+#else 
+    sampler_ = new Sampler<T>(dir_.pRndGen_);
+#endif
+  }
+};
 
 
 template<typename T>

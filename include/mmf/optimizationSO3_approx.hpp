@@ -52,6 +52,8 @@ class OptSO3ApproxCpu
   /* matrix of the 6 directions of the MF */
   Matrix<T,Dynamic,Dynamic> M() const;
 
+  static Matrix<T,Dynamic,Dynamic> Rot2M(const Matrix<T,3,3>& R);
+
 protected:
   T t_max_, dt_;
   uint32_t t_; // timestep

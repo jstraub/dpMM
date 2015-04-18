@@ -65,7 +65,6 @@ public:
       VectorXu& z, uint32_t k);
   void posteriorFromSS(const Matrix<T,Dynamic,1> &x);
 
-
   void sample();
 
   T logPdfUnderPrior() const;

@@ -365,6 +365,31 @@ int main(int argc, char **argv){
 
 				thetas.push_back(dirSampled); 
 
+			} else if(iequals(baseDist[m], "MF")) {
+				//sufficient statistics size:(D)x1
+				//[counts]
+
+				vector<boost::shared_ptr<BaseMeasure<double> > > dirSampled; 
+
+				for(int k=0; k<int(K); ++k) {
+					VectorXd alpha = VectorXd::Ones(D[m]);
+					int highProbPos = k%D[m];
+					if(nuIn.empty()) {
+						alpha *= 10; 	
+						alpha(highProbPos) = 10/2; 
+					} else { 
+						alpha *= nuIn[m];	
+						alpha(highProbPos) = nuIn[m]/2; 
+					}
+					
+					Dir<Catd,double> dirBase(alpha,&rndGen); 
+			
+					boost::shared_ptr<DirSampled<Catd, double> > tempBase( new DirSampled<Catd, double>(dirBase));
+					dirSampled.push_back(boost::shared_ptr<BaseMeasure<double> >(tempBase));
+				}
+
+				thetas.push_back(dirSampled); 
+
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;
 				return(-1); 
