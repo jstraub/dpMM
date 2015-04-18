@@ -38,6 +38,7 @@ public:
 
   virtual void loadData(const vector<vector<Matrix<T,Dynamic,Dynamic> > > &x);//does nothing other than load data
   virtual void initialize(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x);
+  virtual void initializeNoParamSampling(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x);
   virtual void initialize(const vector<vector< Matrix<T,Dynamic,Dynamic> > >&x, VectorXu &z);
   virtual void initialize(const boost::shared_ptr<ClGMMData<T> >&cld)
     {cout<<"not supported"<<endl; assert(false);};
@@ -70,7 +71,12 @@ public:
 	  return(thetas_[m][k]);
   };
 
-  virtual vector<T> evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, const vector<uint32_t> clusterInd,
+  virtual void setTheta(uint32_t m, uint32_t k, boost::shared_ptr<BaseMeasure<T> > newTheta ) {
+	  thetas_[m][k] = newTheta;
+  };
+
+
+  virtual vector<T> evalLogLik(const vector<Matrix<T,Dynamic,1> > xnew, const vector<uint32_t> clusterInd, 
 							   const vector<uint32_t> comp2eval =vector<uint32_t>());
 
   virtual uint32_t sampleLabels(const vector<Matrix<T,Dynamic,1> > xnew,
@@ -419,6 +425,24 @@ void DirMultiNaiveBayes<T>::loadData(const vector<vector<Matrix<T,Dynamic,Dynami
   x_ = x;
   this->helper_setDims();
 }
+
+template<typename T>
+void DirMultiNaiveBayes<T>::initializeNoParamSampling(const vector< vector< Matrix<T,Dynamic,Dynamic> > > &x)
+{
+  // randomly init labels from prior
+  Nd_= uint32_t(x.front().size());
+
+  z_ = VectorXu::Zero(Nd_);
+  //init data and labels from given 
+  pi_.sample(z_); 
+  
+  x_ = x;
+
+  pdfs_.setZero(Nd_,K_);
+
+  this->initialize_sampler();
+  this->helper_setDims();
+};
 
 template<typename T>
 void DirMultiNaiveBayes<T>::initialize(const vector< vector< Matrix<T,Dynamic,Dynamic> > > &x)
