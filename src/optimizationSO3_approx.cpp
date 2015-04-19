@@ -190,33 +190,37 @@ void OptSO3ApproxCpu<T>::computeJacobian(Matrix<T,3,3>&J,
     if(j%2 ==0){
       eps = acos(dot);
       if(-0.99< dot && dot < 0.99)
-        J.col(j/2) -= ((2.*Ns_(j)*eps)/(sqrt(1.-dot*dot))) * qKarch_.col(j);
-      else if(dot >= 0.99)
+	  {
+		T temp = (2.*Ns_(j)*eps);
+		temp /=(sqrt(1.-dot*dot)); //separated this out for MSVC RC 4/18/15
+        J.col(j/2) -= (temp) * qKarch_.col(j);
+	  }else if(dot >= 0.99)
       { // taylor series around 0.99 according to Mathematica
-       J.col(j/2) -= (2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
-             *(-0.99 + dot) + 0.13506297338381046* (-0.99 + dot)*(-0.99 + dot))) *
-         qKarch_.col(j);
+	   T temp = 2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
+					*(-0.99 + dot) + 0.13506297338381046* (-0.99 + dot)*(-0.99 + dot));
+       J.col(j/2) -= (temp) *qKarch_.col(j);
       }else if (dot <= -0.99)
       {
-       J.col(j/2) -= (2.*Ns_(j)*(21.266813135156017 - 1108.2484926534892*(0.99
-               + dot) + 83235.29739487475*(0.99 + dot)*(0.99 + dot))) *
-         qKarch_.col(j);
+	   T temp = 2.*Ns_(j)*(21.266813135156017 - 1108.2484926534892*(0.99
+               + dot) + 83235.29739487475*(0.99 + dot)*(0.99 + dot));
+       J.col(j/2) -= (temp) *qKarch_.col(j);
       }
     }else{
       dot *= -1.;
       eps = acos(dot);
-      if(-0.99< dot && dot < 0.99)
-        J.col(j/2) += ((2.*Ns_(j)*eps)/(sqrt(1.-dot*dot))) * qKarch_.col(j);
-      else if(dot >= 0.99)
+      if(-0.99< dot && dot < 0.99) {
+		T temp = (2.*Ns_(j)*eps)/(sqrt(1.-dot*dot)); 
+        J.col(j/2) += (temp) * qKarch_.col(j);
+	  } else if(dot >= 0.99)
       { // taylor series around 0.99 according to Mathematica
-       J.col(j/2) += (2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
-             *(-0.99 + dot) + 0.13506297338381046* (-0.99 + dot)*(-0.99 + dot))) *
-         qKarch_.col(j);
+	   T temp = 2.*Ns_(j)*(1.0033467240646519 - 0.33601724502488395
+				*(-0.99 + dot) + 0.13506297338381046* (-0.99 + dot)*(-0.99 + dot));
+       J.col(j/2) += (temp) *qKarch_.col(j);
       }else if (dot <= -0.99)
       {
-       J.col(j/2) += (2.*Ns_(j)*(21.266813135156017 - 1108.2484926534892*(0.99
-               + dot) + 83235.29739487475*(0.99 + dot)*(0.99 + dot))) *
-         qKarch_.col(j);
+	   T temp = 2.*Ns_(j)*(21.266813135156017 - 1108.2484926534892*(0.99
+               + dot) + 83235.29739487475*(0.99 + dot)*(0.99 + dot));
+       J.col(j/2) += (temp) *qKarch_.col(j);
       }
     }
 //    cout<<" dot="<<dot<<" eps="<<eps<<" sqrt()="<<sqrt(1.f-dot*dot)

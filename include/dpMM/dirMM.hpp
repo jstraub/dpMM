@@ -199,7 +199,7 @@ void DirMM<T>::sampleLabels()
 //  cout<<pi_.pdf().transpose()<<endl;
   
 #pragma omp parallel for
-  for(uint32_t i=0; i<z_.size(); ++i)
+  for(int32_t i=0; i<z_.size(); ++i)
   {
     //TODO: could buffer this better
     // compute categorical distribution over label z_i
@@ -258,11 +258,11 @@ T DirMM<T>::logJoint()
   T logJoint = dir_.logPdf(pi_);
   cout<<"  [logJoint="<<logJoint<<" -> ";
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
     logJoint = logJoint + thetas_[k]->logPdfUnderPrior();
   cout<<" "<<logJoint<<" -> ";
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t i=0; i<z_.size(); ++i)
+  for (int32_t i=0; i<z_.size(); ++i)
     logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_.col(i));
   cout<<" "<<logJoint<<"]"<<endl;
   return logJoint;
@@ -276,7 +276,7 @@ MatrixXu DirMM<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLike
   logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
   
 #pragma omp parallel for 
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)

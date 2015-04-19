@@ -151,7 +151,7 @@ Matrix<T,Dynamic,Dynamic> karcherMeanMultiple(const Matrix<T,Dynamic,Dynamic>& p
       Ns(z(i)) ++;
     }
 #pragma omp parallel for
-    for(uint32_t k=0; k<K; ++k)
+    for(int32_t k=0; k<K; ++k)
       if(Ns(k) > 0)
     {
       x_mean.col(k) /= Ns(k);
@@ -211,7 +211,7 @@ Matrix<T,Dynamic,Dynamic> karcherMeanMultipleWeighted(
       Ns(z(i)) += w(i);
     }
 #pragma omp parallel for
-    for(uint32_t k=0; k<K; ++k)
+    for(int32_t k=0; k<K; ++k)
       if(Ns(k) > 0)
     {
       x_mean.col(k) /= Ns(k);
