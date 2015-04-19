@@ -20,6 +20,11 @@ using namespace Eigen;
 using std::endl; using std::cout;
 using boost::shared_ptr;
 
+#ifdef CUDA
+  #define SET_CUDA
+  #undef CUDA
+#endif
+
 template<typename T>
 class DirMM : public DpMM<T>
 {
@@ -306,6 +311,10 @@ MatrixXu DirMM<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLike
   cout<<inds<<endl;
   return inds;
 };
+
+#ifdef SET_CUDA
+  #define CUDA
+#endif
 
 //template<class T>
 //T DirMM<T>::avgIntraClusterDeviation()
