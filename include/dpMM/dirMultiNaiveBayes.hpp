@@ -298,6 +298,9 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
 //			uint32_t Diter = dim[m];
 //			T localCount;
 			Matrix<T,Dynamic,1> post_alpha(6), counts(6), pi_pdf(6);
+			post_alpha.fill(1);
+			counts.fill(0); 
+			pi_pdf.fill(0);
 
       Matrix<T,3,3>  R;
       Dir<Cat<T>, T> alpha(post_alpha,rng);
@@ -693,7 +696,7 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
         }
       }
     }
-    if(verbose || t%int(floor(nIter/100.))==0)
+    if(verbose || t%int(ceil(nIter/100.))==0)
     {
       VectorXu Ns = counts<uint32_t,uint32_t>(
           this->labels(),K_).transpose();
