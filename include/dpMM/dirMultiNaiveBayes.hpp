@@ -596,6 +596,10 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 				//update values
 				//thetas_[m][k]->posteriorFromSS(ssIn);
 
+//        if(thetas_[m][k]->getBaseMeasureType() == MF_T)
+//        {
+//          cout<<"MF "<<k<<" ---------------- "<<endl;
+//        }
 				//always sends zeros and look for zeros
 				thetas_[m][k]->posteriorFromSS(dataIn,VectorXu::Zero(dim(m,k)),0);
 				

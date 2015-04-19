@@ -340,6 +340,7 @@ T OptSO3ApproxCpu<T>::linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min,
   Matrix<T,3,3> R_t_min=R;
   T f_t_min = 999999.0f;
   T t_min = 0.0f;
+  bool ex = false;
   //for(int i_t =0; i_t<10; i_t++)
   for(T t =0.0f; t<t_max; t+=dt)
   {
@@ -367,12 +368,24 @@ T OptSO3ApproxCpu<T>::linesearch(Matrix<T,3,3>& R, Matrix<T,3,3>& M_t_min,
         t_min = t;
       }
     }else{
-      std::cout<<"R_t is corrupted detR="<<detR
+#ifndef NDEBUG
+      std::cout<<"@t "<<t<<" tMin "<<t_min
+        <<" R_t is corrupted detR="<<detR
         <<"; max deviation from I="<<maxDeviationFromI 
         <<"; nans? "<<R_t(0,0)<<" f_t_min="<<f_t_min<<std::endl;
+#endif
+//      cout<<R_t<<endl;
+//      cout<<expD<<endl;
+//      cout<<MN<<endl;
+//      cout<<" counts "<<Ns_<<endl;
+//      ex = true;
     }
   }
-  if(f_t_min == 999999.0f) return f_t_min;
+  if(f_t_min == 999999.0f) 
+  {
+    return f_t_min;
+  }
+//  if(ex)  exit(1);
   // case where the MN is nans
   R = R_t_min;
 #ifndef NDEBUG
