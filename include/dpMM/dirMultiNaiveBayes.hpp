@@ -347,12 +347,19 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
           reinterpret_cast<IwTangent<T>* >(
               iwTs[j].get())->normalS_=TGs[j];
         };
+        // labels -- not set
+        uint32_t Nk = 0;
+        in >> Nk;
+        VectorXu z(Nk);
+        for(uint32_t n=0; n<Nk; ++n) in >> z(n);
+        // build model
         DirMM<T> dirMM(alpha,iwTs);
         MfPrior<T> mfPrior(dirMM, nIter);
         MF<T> mf(R,pi,TGs);
 				//set
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(
               new MfBase<T>(mfPrior, mf)));
+
 			}
 
 		} else {
@@ -922,6 +929,10 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
           out<< theta_iter->get()->mf0_.theta(j)->normalS_.Sigma() << endl;
           out<< theta_iter->get()->mf0_.theta(j)->normalS_.getMean() << endl;
         }
+      
+        // output the labeling
+        out<<theta_iter->get()->mf0_.dirMM().labels().size()<<endl;
+	      out<<theta_iter->get()->mf0_.dirMM().labels().transpose()<<endl;
 				
 			} else {
 					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;

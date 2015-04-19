@@ -46,7 +46,7 @@ public:
 
   virtual T logJoint();
   virtual const Matrix<T,Dynamic,Dynamic>& x() const {return x_;};
-  virtual const VectorXu& labels() {return z_;};
+  virtual const VectorXu& labels() const {return z_;};
   virtual const VectorXu& getLabels() {return z_;};
   virtual void setLabels(const VectorXu& z){z_ = z;};
   virtual uint32_t getK() const { return K_;};
