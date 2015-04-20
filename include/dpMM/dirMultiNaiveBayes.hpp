@@ -311,48 +311,54 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
 
 			for(uint32_t k=0; k<K_; ++k)
 			{
-				in >> nIter;
-				//get dir alpha
-				for(uint32_t n=0; n<6; ++n) in >> post_alpha(n); 		
-				//get dir counts
-				for(uint32_t n=0; n<6; ++n) in >> counts(n); 		
-				//get pi pdf
-				for(uint32_t n=0; n<6; ++n) in >> pi_pdf(n); 		
-				alpha.alpha_ = post_alpha;
-				alpha.setCounts(counts);
-				pi.pdf(pi_pdf);
-				// get rotation
-				for(uint32_t n=0; n<9; ++n) in >> R(n/3,n%3); 		
-				for(uint32_t j=0; j<6; ++j)
-				{
-					// load IW in tangent space
-					Matrix<T,Dynamic,Dynamic> Delta(2,2);
-					Matrix<T,Dynamic,Dynamic> Scatter(2,2);
-					Matrix<T,Dynamic,1> mean(2);
-					T nu,count;
-					in >> nu;
-					for(uint32_t n=0; n<4; ++n) in >> Delta(n/2,n%2); 		
-					for(uint32_t n=0; n<4; ++n) in >> Scatter(n/2,n%2); 		
-					for(uint32_t n=0; n<2; ++n) in >> mean(n); 		
-					in >> count;
-					IW<T> iw(Delta,nu,Scatter,mean,count,rng);
-					iwTs.push_back(shared_ptr<IwTangent<T> >(
-						new IwTangent<T>(iw,rng)));
-					// load tangent space gaussians
-					Matrix<T,Dynamic,Dynamic> Sigma(2,2);
-					Matrix<T,Dynamic,1> mu(3);
-					for(uint32_t n=0; n<4; ++n) in >> Sigma(n/2,n%2); 		
-					for(uint32_t n=0; n<3; ++n) in >> mu(n); 		
-					TGs.push_back(NormalSphere<T>(mu,Sigma,rng));
-					reinterpret_cast<IwTangent<T>* >(
-						iwTs[j].get())->normalS_=TGs[j];
-				};
-				DirMM<T> dirMM(alpha,iwTs);
-				MfPrior<T> mfPrior(dirMM, nIter);
-				MF<T> mf(R,pi,TGs);
+        in >> nIter;
+        //get dir alpha
+        for(uint32_t n=0; n<6; ++n) in >> post_alpha(n); 		
+        //get dir counts
+        for(uint32_t n=0; n<6; ++n) in >> counts(n); 		
+        //get pi pdf
+        for(uint32_t n=0; n<6; ++n) in >> pi_pdf(n); 		
+        alpha.alpha_ = post_alpha;
+        alpha.setCounts(counts);
+        pi.pdf(pi_pdf);
+        // get rotation
+        for(uint32_t n=0; n<9; ++n) in >> R(n/3,n%3); 		
+        for(uint32_t j=0; j<6; ++j)
+        {
+          // load IW in tangent space
+          Matrix<T,Dynamic,Dynamic> Delta(2,2);
+          Matrix<T,Dynamic,Dynamic> Scatter(2,2);
+          Matrix<T,Dynamic,1> mean(2);
+          T nu,count;
+          in >> nu;
+          for(uint32_t n=0; n<4; ++n) in >> Delta(n/2,n%2); 		
+          for(uint32_t n=0; n<4; ++n) in >> Scatter(n/2,n%2); 		
+          for(uint32_t n=0; n<2; ++n) in >> mean(n); 		
+          in >> count;
+          IW<T> iw(Delta,nu,Scatter,mean,count,rng);
+          iwTs.push_back(shared_ptr<IwTangent<T> >(
+                new IwTangent<T>(iw,rng)));
+          // load tangent space gaussians
+          Matrix<T,Dynamic,Dynamic> Sigma(2,2);
+          Matrix<T,Dynamic,1> mu(3);
+          for(uint32_t n=0; n<4; ++n) in >> Sigma(n/2,n%2); 		
+          for(uint32_t n=0; n<3; ++n) in >> mu(n); 		
+          TGs.push_back(NormalSphere<T>(mu,Sigma,rng));
+          reinterpret_cast<IwTangent<T>* >(
+              iwTs[j].get())->normalS_=TGs[j];
+        };
+        // labels -- not set
+        uint32_t Nk = 0;
+        in >> Nk;
+        VectorXu z(Nk);
+        for(uint32_t n=0; n<Nk; ++n) in >> z(n);
+        // build model
+        DirMM<T> dirMM(alpha,iwTs);
+        MfPrior<T> mfPrior(dirMM, nIter);
+        MF<T> mf(R,pi,TGs);
 				//set
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(
-					new MfBase<T>(mfPrior, mf)));
+              new MfBase<T>(mfPrior, mf)));
 			}
 
 		} else {
@@ -551,6 +557,7 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 		 z_(d) = c;
 	 }
 
+	this->sampleParameters();
 };
 
 
@@ -573,7 +580,8 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		//#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#else
-		#pragma omp parallel for
+		//#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic)
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#endif
 
@@ -922,6 +930,10 @@ void DirMultiNaiveBayes<T>::dump_clean(std::ofstream &out){
           out<< theta_iter->get()->mf0_.theta(j)->normalS_.Sigma() << endl;
           out<< theta_iter->get()->mf0_.theta(j)->normalS_.getMean() << endl;
         }
+      
+        // output the labeling
+        out<<theta_iter->get()->mf0_.dirMM().labels().size()<<endl;
+	      out<<theta_iter->get()->mf0_.dirMM().labels().transpose()<<endl;
 				
 			} else {
 					std::cerr << "[DirMultiNaiveBayes::dump_clean] error saving...returning" << endl;
