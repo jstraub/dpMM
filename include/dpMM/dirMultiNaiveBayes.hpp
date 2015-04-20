@@ -295,22 +295,22 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
 			}
 
 		} else if(typeIter==MF_T) {
-//			uint32_t Diter = dim[m];
-//			T localCount;
+			//			uint32_t Diter = dim[m];
+			//			T localCount;
 			Matrix<T,Dynamic,1> post_alpha(6), counts(6), pi_pdf(6);
 			post_alpha.fill(1);
 			counts.fill(0); 
 			pi_pdf.fill(0);
 
-      Matrix<T,3,3>  R;
-      Dir<Cat<T>, T> alpha(post_alpha,rng);
-      Cat<T> pi(pi_pdf,rng);
-      std::vector<shared_ptr<BaseMeasure<T> > > iwTs;
-      std::vector<NormalSphere<T> > TGs;
-      uint32_t nIter;
+			Matrix<T,3,3>  R;
+			Dir<Cat<T>, T> alpha(post_alpha,rng);
+			Cat<T> pi(pi_pdf,rng);
+			std::vector<shared_ptr<BaseMeasure<T> > > iwTs;
+			std::vector<NormalSphere<T> > TGs;
+			uint32_t nIter;
 
 			for(uint32_t k=0; k<K_; ++k)
-      {
+			{
         in >> nIter;
         //get dir alpha
         for(uint32_t n=0; n<6; ++n) in >> post_alpha(n); 		
@@ -359,7 +359,6 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
 				//set
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(
               new MfBase<T>(mfPrior, mf)));
-
 			}
 
 		} else {
@@ -558,6 +557,7 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 		 z_(d) = c;
 	 }
 
+	this->sampleParameters();
 };
 
 
@@ -580,7 +580,8 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		//#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#else
-		#pragma omp parallel for
+		//#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic)
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#endif
 

@@ -121,7 +121,7 @@ T MfBase<T>::logLikelihood(const Matrix<T,Dynamic,1>& x) const
   return logLike;
 };
 
-// assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
+
 template<typename T>
 T MfBase<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 {
