@@ -295,64 +295,64 @@ DirMultiNaiveBayes<T>::DirMultiNaiveBayes(std::ifstream &in, boost::mt19937 *rng
 			}
 
 		} else if(typeIter==MF_T) {
-//			uint32_t Diter = dim[m];
-//			T localCount;
+			//			uint32_t Diter = dim[m];
+			//			T localCount;
 			Matrix<T,Dynamic,1> post_alpha(6), counts(6), pi_pdf(6);
 			post_alpha.fill(1);
 			counts.fill(0); 
 			pi_pdf.fill(0);
 
-      Matrix<T,3,3>  R;
-      Dir<Cat<T>, T> alpha(post_alpha,rng);
-      Cat<T> pi(pi_pdf,rng);
-      std::vector<shared_ptr<BaseMeasure<T> > > iwTs;
-      std::vector<NormalSphere<T> > TGs;
-      uint32_t nIter;
+			Matrix<T,3,3>  R;
+			Dir<Cat<T>, T> alpha(post_alpha,rng);
+			Cat<T> pi(pi_pdf,rng);
+			std::vector<shared_ptr<BaseMeasure<T> > > iwTs;
+			std::vector<NormalSphere<T> > TGs;
+			uint32_t nIter;
 
 			for(uint32_t k=0; k<K_; ++k)
-      {
-        in >> nIter;
-        //get dir alpha
-        for(uint32_t n=0; n<6; ++n) in >> post_alpha(n); 		
-        //get dir counts
-        for(uint32_t n=0; n<6; ++n) in >> counts(n); 		
-        //get pi pdf
-        for(uint32_t n=0; n<6; ++n) in >> pi_pdf(n); 		
-        alpha.alpha_ = post_alpha;
-        alpha.setCounts(counts);
-        pi.pdf(pi_pdf);
-        // get rotation
-        for(uint32_t n=0; n<9; ++n) in >> R(n/3,n%3); 		
-        for(uint32_t j=0; j<6; ++j)
-        {
-          // load IW in tangent space
-          Matrix<T,Dynamic,Dynamic> Delta(2,2);
-          Matrix<T,Dynamic,Dynamic> Scatter(2,2);
-          Matrix<T,Dynamic,1> mean(2);
-          T nu,count;
-          in >> nu;
-          for(uint32_t n=0; n<4; ++n) in >> Delta(n/2,n%2); 		
-          for(uint32_t n=0; n<4; ++n) in >> Scatter(n/2,n%2); 		
-          for(uint32_t n=0; n<2; ++n) in >> mean(n); 		
-          in >> count;
-          IW<T> iw(Delta,nu,Scatter,mean,count,rng);
-          iwTs.push_back(shared_ptr<IwTangent<T> >(
-                new IwTangent<T>(iw,rng)));
-          // load tangent space gaussians
-          Matrix<T,Dynamic,Dynamic> Sigma(2,2);
-          Matrix<T,Dynamic,1> mu(3);
-          for(uint32_t n=0; n<4; ++n) in >> Sigma(n/2,n%2); 		
-          for(uint32_t n=0; n<3; ++n) in >> mu(n); 		
-          TGs.push_back(NormalSphere<T>(mu,Sigma,rng));
-          reinterpret_cast<IwTangent<T>* >(
-              iwTs[j].get())->normalS_=TGs[j];
-        };
-        DirMM<T> dirMM(alpha,iwTs);
-        MfPrior<T> mfPrior(dirMM, nIter);
-        MF<T> mf(R,pi,TGs);
+			{
+				in >> nIter;
+				//get dir alpha
+				for(uint32_t n=0; n<6; ++n) in >> post_alpha(n); 		
+				//get dir counts
+				for(uint32_t n=0; n<6; ++n) in >> counts(n); 		
+				//get pi pdf
+				for(uint32_t n=0; n<6; ++n) in >> pi_pdf(n); 		
+				alpha.alpha_ = post_alpha;
+				alpha.setCounts(counts);
+				pi.pdf(pi_pdf);
+				// get rotation
+				for(uint32_t n=0; n<9; ++n) in >> R(n/3,n%3); 		
+				for(uint32_t j=0; j<6; ++j)
+				{
+					// load IW in tangent space
+					Matrix<T,Dynamic,Dynamic> Delta(2,2);
+					Matrix<T,Dynamic,Dynamic> Scatter(2,2);
+					Matrix<T,Dynamic,1> mean(2);
+					T nu,count;
+					in >> nu;
+					for(uint32_t n=0; n<4; ++n) in >> Delta(n/2,n%2); 		
+					for(uint32_t n=0; n<4; ++n) in >> Scatter(n/2,n%2); 		
+					for(uint32_t n=0; n<2; ++n) in >> mean(n); 		
+					in >> count;
+					IW<T> iw(Delta,nu,Scatter,mean,count,rng);
+					iwTs.push_back(shared_ptr<IwTangent<T> >(
+						new IwTangent<T>(iw,rng)));
+					// load tangent space gaussians
+					Matrix<T,Dynamic,Dynamic> Sigma(2,2);
+					Matrix<T,Dynamic,1> mu(3);
+					for(uint32_t n=0; n<4; ++n) in >> Sigma(n/2,n%2); 		
+					for(uint32_t n=0; n<3; ++n) in >> mu(n); 		
+					TGs.push_back(NormalSphere<T>(mu,Sigma,rng));
+					reinterpret_cast<IwTangent<T>* >(
+						iwTs[j].get())->normalS_=TGs[j];
+				};
+				DirMM<T> dirMM(alpha,iwTs);
+				MfPrior<T> mfPrior(dirMM, nIter);
+				MF<T> mf(R,pi,TGs);
 				//set
 				thetaM.push_back(boost::shared_ptr<BaseMeasure<T> >(
-              new MfBase<T>(mfPrior, mf)));
+					new MfBase<T>(mfPrior, mf)));
 			}
 
 		} else {
