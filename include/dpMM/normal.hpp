@@ -43,6 +43,8 @@ public:
   T logPdfSlower(const Matrix<T,Dynamic,Dynamic>& x) const;
   T logPdf(const Matrix<T,Dynamic,Dynamic>& scatter, 
       const Matrix<T,Dynamic,1>& mean, T count) const;
+  T logPdfSlower(const Matrix<T,Dynamic,Dynamic>& scatter, 
+      const Matrix<T,Dynamic,1>& mean, T count) const;
   T logPdf(const Matrix<T,Dynamic,Dynamic>& scatter, T count) const;
 
   Matrix<T,Dynamic,1> sample();
