@@ -558,6 +558,7 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 		 z_(d) = c;
 	 }
 
+	this->sampleParameters();
 };
 
 
@@ -580,7 +581,8 @@ void DirMultiNaiveBayes<T>::sampleParameters()
 		//#pragma omp parallel for
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#else
-		#pragma omp parallel for
+		//#pragma omp parallel for
+		#pragma omp parallel for schedule(dynamic)
 		for(int32_t k=0; k<int32_t(K_); ++k) {
 	#endif
 
