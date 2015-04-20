@@ -27,8 +27,8 @@ __device__ uint rand_xorshift(uint rng_state)
 #define N_PER_THREAD 1
 
 template<typename T>
-__global__ void choiceMult_kernel(T* pdfs, uint32_t *z, uint32_t N, uint32_t M,
-  uint32_t seed)
+__global__ void choiceMult_kernel(T* pdfs, uint32_t *z, uint32_t N,
+    uint32_t M, uint32_t seed)
 {
   //int tid = threadIdx.x;
   int idx = (threadIdx.x + blockIdx.x*blockDim.x)*N_PER_THREAD;

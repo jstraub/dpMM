@@ -1000,38 +1000,38 @@ vector<T> DirMultiNaiveBayes<T>::evalLogLik(const vector<Matrix<T,Dynamic,1> > x
 }
 
 
-template <typename T>
-uint32_t DirMultiNaiveBayes<T>::labels_sample_max(const vector<Matrix<T,Dynamic,1> > xnew,
-												  const vector<uint32_t> comp2eval, const bool return_MAP_labels)
+  template <typename T>
+uint32_t DirMultiNaiveBayes<T>::labels_sample_max(const
+    vector<Matrix<T,Dynamic,1> > xnew, const vector<uint32_t>
+    comp2eval, const bool return_MAP_labels)
 {
-	/* xnew in the form x[docs][m][SS] */
+  /* xnew in the form x[docs][m][SS] */
+  VectorXd logPdf_z = pi_.pdf().array().log();
 
-VectorXd logPdf_z = pi_.pdf().array().log();
+  for(int32_t m=0; m<comp2eval.size(); ++m)
+  {
+    for(int32_t k=0; k<int32_t(K_); ++k)
+    {
+      logPdf_z[k] += thetas_[comp2eval[m]][k]->logLikelihoodFromSS(
+          xnew[m]);
+    }
+  }
 
-for(int32_t m=0; m<comp2eval.size(); ++m)
-{
-	for(int32_t k=0; k<int32_t(K_); ++k)
-	{
-		logPdf_z[k] += thetas_[comp2eval[m]][k]->logLikelihoodFromSS(xnew[m]);
-	}
-}
+  // make pdf sum to 1. and exponentiate
+  Matrix<T,Dynamic,Dynamic> pdfLocal =  Matrix<T,Dynamic,Dynamic>(1,K_);
+  pdfLocal = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
 
-// make pdf sum to 1. and exponentiate
-Matrix<T,Dynamic,Dynamic> pdfLocal =  Matrix<T,Dynamic,Dynamic>(1,K_);
+  VectorXu zout = VectorXu(1);
 
-pdfLocal = (logPdf_z.array()-logSumExp(logPdf_z)).exp().matrix().transpose();
-
-VectorXu zout = VectorXu(1);
-
-if(return_MAP_labels) {
-	// return MAP label
-	int r,c;
-	pdfLocal.maxCoeff(&r, &c);
-	zout(0) = c;
-} else {
-	// sample z_i
-	sampler_->sampleDiscPdf(pdfLocal,zout);
-}
+  if(return_MAP_labels) {
+    // return MAP label
+    int r,c;
+    pdfLocal.maxCoeff(&r, &c);
+    zout(0) = c;
+  } else {
+    // sample z_i
+    sampler_->sampleDiscPdf(pdfLocal,zout);
+  }
 
   return(zout(0));
 };
