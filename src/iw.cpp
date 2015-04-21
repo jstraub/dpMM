@@ -43,8 +43,8 @@ void IW<T>::resetSufficientStatistics()
 };
 
 template<typename T>
-IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
-    uint32_t k, uint32_t zDivider)
+IW<T> IW<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const
+    VectorXu& z, uint32_t k, uint32_t zDivider)
 {
   resetSufficientStatistics();
 //  cout<<"posterior for indicators "<<k<<endl;

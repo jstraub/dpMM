@@ -36,6 +36,7 @@ public:
   DirMM(const DirMM<T>& dirMM);
   virtual ~DirMM();
 
+  virtual void reset();
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
   virtual void initialize(const shared_ptr<ClGMMData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
@@ -197,6 +198,21 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 };
 
 template<typename T>
+void DirMM<T>::reset()
+{
+  x_ = Matrix<T,Dynamic,Dynamic>::Zero(0,theta0_->getDim());
+  z_ = VectorXu::Zero(0);
+  pi_ = dir_.sample(); 
+  pdfs_.setZero(0,K_);
+  delete sampler_;
+  sampler_ = NULL;
+
+  thetas_.clear(); // delete any previous thetas
+  for (uint32_t k=0; k<K_; ++k)
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
+};
+
+template<typename T>
 void DirMM<T>::sampleLabels()
 {
   // obtain posterior categorical under labels
@@ -229,7 +245,7 @@ void DirMM<T>::sampleLabels()
 template<typename T>
 void DirMM<T>::sampleParameters()
 {
-  Matrix<T,Dynamic,1> Ns = getCounts();
+//  Matrix<T,Dynamic,1> Ns = getCounts();
 //#pragma omp parallel for 
   for(uint32_t k=0; k<K_; ++k)
   {

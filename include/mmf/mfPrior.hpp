@@ -243,7 +243,9 @@ MF<T> MfPrior<T>::posteriorSample(const Matrix<T,Dynamic,Dynamic>& x,
     sample_(x_,T_);
   }else{
     // sample from prior
-    dirMM_.sampleFromPrior();
+    dirMM_.reset();
+    dirMM_.sampleParameters();
+//    dirMM_.sampleFromPrior();
   }
   std::vector<NormalSphere<T> > TGs;
   for(uint32_t k=0; k<6; ++k)
@@ -279,7 +281,9 @@ MF<T> MfPrior<T>::posteriorFromSSsample(const
     sample_(x_,SS,T_);
   }else{
     // sample from prior
-    dirMM_.sampleFromPrior();
+    dirMM_.reset();
+    dirMM_.sampleParameters();
+//    dirMM_.sampleFromPrior();
   }
   std::vector<NormalSphere<T> > TGs;
   for(uint32_t k=0; k<6; ++k)
