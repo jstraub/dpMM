@@ -112,7 +112,8 @@ public:
     return u;
   };
 
-  virtual void setPdfs(const boost::shared_ptr<GpuMatrix<T> >& pdfs, bool logScale);
+  virtual void setPdfs(const boost::shared_ptr<GpuMatrix<T> >& pdfs,
+      bool logScale);
 
   virtual void sampleDiscLogPdfUnNormalized(
       const Matrix<T,Dynamic,Dynamic>& pdfs, VectorXu& z);

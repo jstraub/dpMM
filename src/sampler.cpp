@@ -90,8 +90,8 @@ template class Sampler<float>;
 // ----------------------------------------------------------------------------
 template<typename T>
 SamplerGpu<T>::SamplerGpu(uint32_t N, uint32_t K, boost::mt19937* pRndGen)
-  : Sampler<T>(pRndGen), pdfs_(new GpuMatrix<T>(N,K)), logNormalizers_(N,1),
-  z_(N), r_(N)
+  : Sampler<T>(pRndGen), pdfs_(new GpuMatrix<T>(N,K)), 
+  logNormalizers_(N,1), z_(N), r_(N)
 {};
 
 template<typename T>
@@ -99,7 +99,8 @@ SamplerGpu<T>::~SamplerGpu()
 {};
 
 template<typename T>
-void SamplerGpu<T>::setPdfs(const boost::shared_ptr<GpuMatrix<T> >& pdfs, bool logScale)
+void SamplerGpu<T>::setPdfs(const boost::shared_ptr<GpuMatrix<T> >&
+    pdfs, bool logScale)
 {
   pdfs_ = pdfs;
   z_.resize(pdfs_->rows(),1);
@@ -110,19 +111,23 @@ void SamplerGpu<T>::sampleUnif(Matrix<T,Dynamic,1>& r)
 {
   assert(r.size() == r_.rows());
   unifGpu(r_.data(), r_.rows(), 
-    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+    static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+        *4294967296)));
   r_.get(r);
 };
 
 template<typename T>
-void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool logScale)
+void SamplerGpu<T>::sampleDiscPdf(T *d_pdfs, const spVectorXu& z, bool
+    logScale)
 {
   if(logScale)
     choiceMultLogPdfGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
-      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
   else
     choiceMultGpu(d_pdfs, z_.data(), pdfs_->rows(), pdfs_->cols(),
-      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
   z_.get(z);
 };
 
@@ -136,8 +141,10 @@ void SamplerGpu<T>::sampleDiscPdf()
     z_.setZero();
   }
   // internally we use logPdf
-  choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
-      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+  choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), 
+      pdfs_->cols(),
+      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
 };
 
 template<typename T>
@@ -146,14 +153,18 @@ void SamplerGpu<T>::sampleDiscPdf(const Matrix<T,Dynamic,Dynamic>& pdfs,
 {
   if(pdfs.cols()==1) {z.setZero(); return;}
   pdfs_->set(pdfs);
+  z_.resize(pdfs_->rows(),1);
   if(!z_.isInit()){z_.set(z);}
 //cout<<pdfs<<endl;
   if(logScale)
-    choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
-      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+    choiceMultLogPdfGpu(pdfs_->data(), z_.data(), pdfs_->rows(), 
+        pdfs_->cols(),
+        static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
   else
     choiceMultGpu(pdfs_->data(), z_.data(), pdfs_->rows(), pdfs_->cols(),
-      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
 
   z_.get(z);
 //cout<<z<<endl;
@@ -182,9 +193,12 @@ void SamplerGpu<T>::sampleDiscLogPdfUnNormalized(const
 {
   if(logPdfs.cols()==1) {z.setZero(); return;}
   pdfs_->set(logPdfs);
+  z_.resize(pdfs_->rows(),1);
   if(!z_.isInit()){z_.set(z);}
-  choiceMultLogPdfUnNormalizedGpu(pdfs_->data(), z_.data(), pdfs_->rows(), 
-    pdfs_->cols(), static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)*4294967296)));
+  choiceMultLogPdfUnNormalizedGpu(pdfs_->data(), z_.data(), 
+      pdfs_->rows(), pdfs_->cols(), 
+      static_cast<uint32_t>(floor(this->unif_(*this->pRndGen_)
+          *4294967296)));
   z_.get(z);
 }
 
@@ -194,7 +208,8 @@ void SamplerGpu<T>::logNormalizer(uint32_t dk, uint32_t K)
 {
   logNormalizers_.resize(pdfs_->rows(),K/dk);
   logNormalizers_.setZero();
-  logNormalizerGpu(pdfs_->data(),logNormalizers_.data(),dk,K,pdfs_->rows());
+  logNormalizerGpu(pdfs_->data(),logNormalizers_.data(),dk,K,
+      pdfs_->rows());
 };
 
 template<typename T>

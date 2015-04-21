@@ -1,4 +1,4 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>                    
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>
  * Licensed under the MIT license. See the license file LICENSE.
  */
 
@@ -52,14 +52,14 @@ BOOST_AUTO_TEST_CASE( dir_test)
   boost::mt19937 rndGen(1);
   Dir<Cat<double>,double> dir(alpha,&rndGen);
   VectorXd piPdf = dir.sample().pdf();
-  
+
   BOOST_CHECK_EQUAL(piPdf.size(),alpha.size());
 
   cout<<"-- sampling a bit"<<endl;
   cout<<"alpha="<<alpha.transpose()<<endl;
   for(uint32_t t=0; t<10; ++t)
     cout<<"piPdf="<<dir.sample().pdf().transpose()<<endl;
-  
+
   boost::mt19937 rndGen2(1);
   Dir<Catd,double> dir2(alpha,&rndGen2);
   VectorXd piPdf2 = dir2.sample().pdf();
@@ -91,18 +91,18 @@ BOOST_AUTO_TEST_CASE( cat_test)
   double z3 = cat3.sample();
 
   BOOST_CHECK_EQUAL(cat.pdf_.size(), cat3.pdf_.size());
-  
+
 
   VectorXu z(1000);
   cat.sample(z);
   cout<<"-- sampling a bit"<<endl;
   cout<<"pdf="<<pdf.transpose()<<endl;
   cout<<"z="<<z.transpose()<<endl;
-  
+
   VectorXd pdfEmp = Cat<double>(z,&rndGen).pdf();
   BOOST_CHECK_EQUAL(pdfEmp.size(), cat.pdf().size());
   cout<<"pdf from counts="<<pdfEmp.transpose()<<endl;
-  
+
   VectorXf pdff = pdf.cast<float>();
   Cat<float> catf(pdff,&rndGen);
 }
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( cat_test)
 BOOST_AUTO_TEST_CASE(iw_test)
 {
   cout<<"----------------------- iw ----------------------"<<endl;
-  
+
   MatrixXd Delta(3,3);
   Delta << 1.0,0.0,0.0,
         0.0,1.0,0.0,
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(iw_test)
 BOOST_AUTO_TEST_CASE( gauss_test)
 {
   cout<<"----------------------- gauss ----------------------"<<endl;
-  
+
   MatrixXd Sigma(3,3);
   Sigma << 1.0,0.0,0.0,
         0.0,1.0,0.0,
@@ -182,13 +182,62 @@ BOOST_AUTO_TEST_CASE( gauss_test)
   Normal<double> normalS(mu2D,Sigma2D,&rndGen);
   cout<<" logPDf "<<normalS.logPdf(x2D)<<endl;
 
+// check the sufficient statistics machinery
+  VectorXd SS(13);
+  SS <<                      120,
+         -18.3223543707169,
+          5.02645593390708,
+       -0.0572298238878314,
+          2.79777673293449,
+        -0.767573133190367,
+       0.00873808845092194,
+        -0.767573133190367,
+         0.210748312679343,
+      -0.00239897955468155,
+       0.00873808845092194,
+      -0.00239897955468155,
+      2.73160817868802e-05;
+
+  double count = SS(0);
+  Matrix<double,Dynamic,1> mean(3);
+  if(count>0)
+	  mean = SS.middleRows(1,3)/count;
+  else
+	  mean = Matrix<double,Dynamic,1>::Zero(3); //this should not matter since everything gets multiplied by 0 counts
+
+  cout<<"SS "<<SS.transpose()<<endl;
+  cout<<"count "<<count<<endl;
+  cout<<"xSum "<<SS.middleRows(1,3).transpose()<<endl;
+  cout<<"mean "<<mean.transpose()<<endl;
+
+  double* datPtr = const_cast<double*>(&(SS.data()[(3+1)]));
+  Matrix<double,Dynamic,Dynamic> scatter = 
+    Map<Matrix<double,Dynamic,Dynamic> >(datPtr,3,3);
+  cout<<"outerSum "<<scatter<<endl;
+  scatter -= (mean*mean.transpose())*count;
+  cout<<"scatter "<<endl<<scatter<<endl;
+
+  Sigma << 0.0314229552991203,      -0.00429368708799009,
+        -0.000853036009326598,
+        -0.00429368708799009 ,       0.0292337474264411,
+        -5.82413154649128e-05,
+        -0.000853036009326598 ,    -5.82413154649128e-05,
+        0.000564454579403038;
+  cout<<"Sigma "<<endl<<Sigma<<endl;
+  mu <<  -0.04866953611, -0.02217239974,-0.02938455595 ;
+  cout<<"mu "<<mu.transpose()<<endl;
+  Normal<double> g(mu, Sigma,&rndGen);
+  cout<<"logPdf      : "<< g.logPdf(scatter,mean,count)<<endl;
+  cout<<"logPdfSlower: "<< g.logPdfSlower(scatter,mean,count)<<endl;
+  cout<<"logDetSigma : "<< g.logDetSigma()<<endl;
+
 }
 
 
 BOOST_AUTO_TEST_CASE( vMF_test)
 {
   cout<<"----------------------- vMF ----------------------"<<endl;
-  
+
   VectorXd m0(3);
   m0 << 0.0,0.0,1.0;
   double t0 = 0.01;
@@ -223,7 +272,7 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 
 //BOOST_AUTO_TEST_CASE( niw_test) { cout<<"----------------------- niw
 //----------------------"<<endl;
-//  
+//
 //  uint32_t D =3;
 //  MatrixXd Delta(D,D);
 //  Delta << 1.0,0.0,0.0,
@@ -240,7 +289,7 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 //  for(uint32_t t=0; t<10; ++t)
 //  {
 //    Normal<double> Norm = niw.sample();
-//	Norm.print(); 
+//	Norm.print();
 //    cout<<"logPdf="<<niw.logPdf(Norm)<<endl;
 //  }
 //  cout<<" comparing NIW against Jasons implementation ------"<<endl;
@@ -260,13 +309,13 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 //    sum += spx->col(i);
 //    Outer += spx->col(i)*spx->col(i).transpose();
 //  }
-//  cout<<"Outer"<<endl<<Outer<<endl; 
-//  cout<<"sum"<<endl<<sum<<endl; 
-//  cout<<"1/N*sum*sum.T"<<endl<<sum*sum.transpose()/count<<endl; 
-//  cout<<"sum*sum.T"<<endl<<sum*sum.transpose()<<endl; 
+//  cout<<"Outer"<<endl<<Outer<<endl;
+//  cout<<"sum"<<endl<<sum<<endl;
+//  cout<<"1/N*sum*sum.T"<<endl<<sum*sum.transpose()/count<<endl;
+//  cout<<"sum*sum.T"<<endl<<sum*sum.transpose()<<endl;
 //  MatrixXd Scatter = Outer - sum*sum.transpose() / count;
 //  VectorXd mean = sum/count;
-//  cout<<"Scatter"<<endl<<Scatter<<endl; 
+//  cout<<"Scatter"<<endl<<Scatter<<endl;
 //
 //  niw.scatter() = Scatter;
 //  niw.mean() = mean;
@@ -286,21 +335,21 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 //  niw_sampled niwJason(3,kappa,nu,thetaOverKappa.data(),DeltaOverNu.data());
 //  niwJason.set_stats(count,sum.data(),Outer.data());
 //  niwJason.update_posteriors();
-// 
+//
 //  Map<MatrixXd> DeltaPost(niwJason.Delta,D,D);
 //  Map<VectorXd> thetaPost(niwJason.theta,D);
 //  cout<<"--- Jason posterior:"<<endl;
-//  cout<<"nu="<<niwJason.nu<<" kappa="<<niwJason.kappa<<endl; 
+//  cout<<"nu="<<niwJason.nu<<" kappa="<<niwJason.kappa<<endl;
 //  cout<<"delta"<<endl<<DeltaPost<<endl;
 //  cout<<"theta "<<thetaPost.transpose()<<endl;
 //  cout<<"--- Jasons adapted to julians:"<<endl;
 //  cout<<"delta"<<endl<<DeltaPost*niwJason.nu<<endl;
 //  cout<<"theta "<<thetaPost.transpose()*niwJason.kappa<<endl;
-//  
+//
 //  cout<<" ----- marginal probability of data under NIW"<<endl;
 //  cout<<" Julian: "<<niw.logPdfMarginalized()<<endl;
 //  cout<<" Jason:  "<<niwJason.data_loglikelihood_marginalized()<<endl;
-//  
+//
 //  BOOST_CHECK(fabs(niw.logPdfMarginalized() - niwJason.data_loglikelihood_marginalized())<1e-3);
 //
 //  cout<<"------------------ merge test -----------------------"<<endl;
@@ -316,7 +365,7 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 //    sumB << 1,10,0;
 //  MatrixXd ScatterB = OuterB ;//- count*sum*sum.transpose();
 //  VectorXd meanB = sumB/countB;
-//  cout<<"Scatter"<<endl<<ScatterB<<endl; 
+//  cout<<"Scatter"<<endl<<ScatterB<<endl;
 //
 //  niwB.scatter() = ScatterB;
 //  niwB.mean() = meanB;
@@ -339,7 +388,7 @@ BOOST_AUTO_TEST_CASE( vMF_test)
 //  niwJasonB.merge_with(niwJason, false);
 ////  niwJasonB.update_posteriors();
 //  cout<<"--- Jason posterior after merge:"<<endl;
-//  cout<<"nu="<<niwJasonB.nu<<" kappa="<<niwJasonB.kappa<<endl; 
+//  cout<<"nu="<<niwJasonB.nu<<" kappa="<<niwJasonB.kappa<<endl;
 //  cout<<"delta"<<endl<<DeltaPostB<<endl;
 //  cout<<"theta "<<thetaPostB.transpose()<<endl;
 //  cout<<"--- Jasons adapted to julians:"<<endl;
