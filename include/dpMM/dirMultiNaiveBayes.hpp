@@ -556,8 +556,6 @@ void DirMultiNaiveBayes<T>::MAPLabel()
 		 pdfs_.row(d).maxCoeff(&r, &c);
 		 z_(d) = c;
 	 }
-
-	this->sampleParameters();
 };
 
 
@@ -741,6 +739,7 @@ void DirMultiNaiveBayes<T>::inferAll(uint32_t nIter, bool verbose)
   }
   //keeps the MAP label in memory
   this->MAPLabel();
+  this->sampleParameters();
 }
 
 
