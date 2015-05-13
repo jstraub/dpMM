@@ -51,6 +51,7 @@ int main(int argc, char **argv)
     ("nopropose,n", "flag to disable the propsal of splits and merges")
     ("silhouette,s", "flag to enable output of silhouett value of the last iteration")
     ("shuffle", "shuffle the data before processing")
+    ("rowData", "switch to cols: dimensions and rows: data points")
     ("base", po::value<string>(), 
       "which base measure to use (StickNiw, DpNiw (DP-GMM), "
       "DpNiwSphereFull (DP-TGMM), DpNiwSphere, NiwSphere, "
@@ -65,6 +66,10 @@ int main(int argc, char **argv)
       "datapoints)")
     ("output,o", po::value<string>(), 
       "path to output labels .csv file (rows: time; cols: different "
+      "datapoints)")
+    ("Nho", po::value<int>(), "number of heldout datapoints")
+    ("heldout", po::value<string>(), 
+      "path to heldout dataset .csv file (rows: dimensions; cols: different "
       "datapoints)")
     ;
 
@@ -87,6 +92,8 @@ int main(int argc, char **argv)
   // number of iterations
   uint32_t T=100;
   if (vm.count("T")) T = vm["T"].as<int>();
+  uint32_t Nho = 0; // number of helout data points
+  if (vm.count("Nho")) Nho = vm["Nho"].as<int>();
   uint32_t N=100;
   if (vm.count("N")) N = vm["N"].as<int>();
   uint32_t D=2;
@@ -137,35 +144,51 @@ int main(int argc, char **argv)
       cout<<"shuffling input"<<endl;
       std::random_shuffle(ind.begin(),ind.end());
     }
-    for (uint32_t j=0; j<D; ++j)
+    if(vm.count("rowData"))
+    {
       for (uint32_t i=0; i<N; ++i)
-        fin>>x(j,ind[i]);
+        for (uint32_t j=0; j<D; ++j)
+          fin>>x(j,ind[i]);
+    }else{
+      for (uint32_t j=0; j<D; ++j)
+        for (uint32_t i=0; i<N; ++i)
+          fin>>x(j,ind[i]);
+    }
     fin.close();
   }
 
-  shared_ptr<MatrixXd> spho(NULL); //(new MatrixXd(D,N));
+  shared_ptr<MatrixXd> spho; //(new MatrixXd(D,N));
   string pathHO ="";
   if(vm.count("heldout")) pathHO = vm["heldout"].as<string>();
-  if (!pathHO.compare(""))
+  if (pathHO.compare("") != 0)
   {
     cout<<"loading heldout data set from "<<pathHO<<endl;
+    cout<<"Nho = "<<Nho<<endl;
     ifstream fin(pathHO.data(),ifstream::in);
-    uint32_t Nho = 0;
-    uint32_t Dho = 0;
-    fin >> Dho >> Nho;
+//    uint32_t Nho = 0;
+//    uint32_t Dho = 0;
+//    fin >> Dho >> Nho;
     spho = shared_ptr<MatrixXd>(new MatrixXd(D,N));
-    for (uint32_t j=0; j<D; ++j)
+    if(vm.count("rowData"))
+    {
       for (uint32_t i=0; i<Nho; ++i)
-        fin>>ho(j,ind[i]);
+        for (uint32_t j=0; j<D; ++j)
+          fin>>(*spho)(j,ind[i]);
+    }else{
+      for (uint32_t j=0; j<D; ++j)
+        for (uint32_t i=0; i<Nho; ++i)
+          fin>>(*spho)(j,ind[i]);
+    }
     fin.close();
   }
 
   // which base distribution
   string base = "DpNiw";
   if(vm.count("base")) base = vm["base"].as<string>();
+  cout<<"will use base: "<<base<<endl;
 
-  if(base.compare("DpNiw") || base.compare("DirvMF")
-    || base.compare("CrpvMF") ){
+  if(base.compare("DpNiwSphere") == 0 || base.compare("DirvMF") ==0
+    || base.compare("CrpvMF")==0 ){
     cout<<"check unit length "<<endl;
     // normalize to unit length
     int err = 0;
@@ -706,7 +729,7 @@ int main(int argc, char **argv)
 //      VectorXd Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
 //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
       dpmm->sampleParameters();
-      if(spho.get() == NULL)
+      if(Nho == 0)
       {
         const VectorXu& z = dpmm->getLabels().transpose();
         for (uint32_t i=0; i<z.size()-1; ++i) 
@@ -717,7 +740,7 @@ int main(int argc, char **argv)
       }
       dpmm->sampleLabels();
 
-      if(spho.get() == NULL)
+      if(Nho == 0)
       {
         VectorXd Ns = dpmm->getCounts();
         cout<<"--  counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
@@ -736,7 +759,7 @@ int main(int argc, char **argv)
         //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
       }
 
-      if(spho.get() != NULL)
+      if(Nho > 0)
       {
         double dt = t0.toc() ;
         double hoLogLike = 0;
