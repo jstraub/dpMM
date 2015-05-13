@@ -40,6 +40,9 @@ public:
   virtual uint32_t getK() const = 0;
   virtual double logJoint() { return 0.0;}; 
 
+  virtual double evalLogLikelihood(const Matrix<T,Dynamic,1>& x){
+    return 0;}
+
 //  virtual MatrixXu mostLikelyInds(uint32_t n) 
 //{ return MatrixXu::Zero(n,1);};
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes)

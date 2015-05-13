@@ -126,13 +126,8 @@ int main(int argc, char **argv)
   if(vm.count("input")) pathIn = vm["input"].as<string>();
   if (!pathIn.compare(""))
   {
-    for(uint32_t i=0; i<N; ++i)
-      if(i<N/2)
-      {
-        x.col(i) << VectorXd::Zero(D);
-      }else{
-        x.col(i) << 2.0*VectorXd::Ones(D);
-      }
+    cout<<"please specify an input dataset"<<endl;
+    exit(1);
   }else{
     cout<<"loading data from "<<pathIn<<endl;
     ifstream fin(pathIn.data(),ifstream::in);
@@ -145,6 +140,24 @@ int main(int argc, char **argv)
     for (uint32_t j=0; j<D; ++j)
       for (uint32_t i=0; i<N; ++i)
         fin>>x(j,ind[i]);
+    fin.close();
+  }
+
+  shared_ptr<MatrixXd> spho(NULL); //(new MatrixXd(D,N));
+  string pathHO ="";
+  if(vm.count("heldout")) pathHO = vm["heldout"].as<string>();
+  if (!pathHO.compare(""))
+  {
+    cout<<"loading heldout data set from "<<pathHO<<endl;
+    ifstream fin(pathHO.data(),ifstream::in);
+    uint32_t Nho = 0;
+    uint32_t Dho = 0;
+    fin >> Dho >> Nho;
+    spho = shared_ptr<MatrixXd>(new MatrixXd(D,N));
+    for (uint32_t j=0; j<D; ++j)
+      for (uint32_t i=0; i<Nho; ++i)
+        fin>>ho(j,ind[i]);
+    fin.close();
   }
 
   // which base distribution
@@ -670,19 +683,21 @@ int main(int argc, char **argv)
 
     ofstream fout(pathOut.data(),ofstream::out);
     ofstream foutJointLike((pathOut+"_jointLikelihood.csv").data(),ofstream::out);
+    ofstream foutHoLogLike((pathOut+"_hoLogLike.csv").data(),ofstream::out);
     ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
     ofstream foutCovs((pathOut+"_covs.csv").data(),ofstream::out);
 
-      const VectorXu& z = dpmm->getLabels().transpose();
-      for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(ind[i])<<" ";
-      fout<<z(ind[z.size()-1])<<endl;
-      foutJointLike<<dpmm->logJoint()<<endl;
-      dpmm->dump(foutMeans,foutCovs);
+    const VectorXu& z = dpmm->getLabels().transpose();
+    for (uint32_t i=0; i<z.size()-1; ++i) 
+      fout<<z(ind[i])<<" ";
+    fout<<z(ind[z.size()-1])<<endl;
+    foutJointLike<<dpmm->logJoint()<<endl;
+    dpmm->dump(foutMeans,foutCovs);
 
     for (uint32_t t=0; t<T; ++t)
     {
       cout<<"------------ t="<<t<<" -------------"<<endl;
+      Timer t0;
       // sample clusters from the base measure to fill up to K clusters 
       // only if we are not proposing splits and merges to make sure that the
       // number of clusters stays the originally intended one
@@ -691,21 +706,24 @@ int main(int argc, char **argv)
 //      VectorXd Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
 //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
       dpmm->sampleParameters();
-
-
-      const VectorXu& z = dpmm->getLabels().transpose();
-      for (uint32_t i=0; i<z.size()-1; ++i) 
-        fout<<z(ind[i])<<" ";
-      fout<<z(ind[z.size()-1])<<endl;
-      foutJointLike<<dpmm->logJoint()<<endl;
-      dpmm->dump(foutMeans,foutCovs);
-      
+      if(spho.get() == NULL)
+      {
+        const VectorXu& z = dpmm->getLabels().transpose();
+        for (uint32_t i=0; i<z.size()-1; ++i) 
+          fout<<z(ind[i])<<" ";
+        fout<<z(ind[z.size()-1])<<endl;
+        foutJointLike<<dpmm->logJoint()<<endl;
+        dpmm->dump(foutMeans,foutCovs);
+      }
       dpmm->sampleLabels();
 
-      VectorXd Ns = dpmm->getCounts();
-      cout<<"--  counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
-      cout<<"    K="<<dpmm->getK();
-      cout<<"    logJoint= "<<dpmm->logJoint()<<endl;
+      if(spho.get() == NULL)
+      {
+        VectorXd Ns = dpmm->getCounts();
+        cout<<"--  counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
+        cout<<"    K="<<dpmm->getK();
+        cout<<"    logJoint= "<<dpmm->logJoint()<<endl;
+      }
 
       if(proposeSplitMerge)
       {
@@ -716,6 +734,19 @@ int main(int argc, char **argv)
         dpmm->proposeSplits();
         //      Ns = counts(dpmm->getLabels(),dpmm->getK()*2).transpose();
         //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
+      }
+
+      if(spho.get() != NULL)
+      {
+        double dt = t0.toc() ;
+        double hoLogLike = 0;
+        // evaluate the heldout word log likelihood
+        for(uint32_t i=0; i<spho->cols(); ++i)
+        {
+          hoLogLike += dpmm->evalLogLikelihood(spho->col(i));
+        }
+        hoLogLike /= spho->cols();
+        foutHoLogLike << hoLogLike << " " << dt << endl;
       }
     }
     fout.close();

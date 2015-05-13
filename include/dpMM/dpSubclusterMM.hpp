@@ -76,6 +76,8 @@ public:
 
   MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
+  virtual double evalLogLikelihood(const Matrix<T,Dynamic,1>& x);
+
   Matrix<T,Dynamic,1> getCounts();
 
   void dump(std::ofstream& fOutMeans, std::ofstream& fOutCovs);
@@ -1269,6 +1271,17 @@ double DpSubclusterMM<B,T>::logJoint()
     }
   return logJoint;
 }
+
+template<class B, typename T>
+double DpSubclusterMM<B,T>::evalLogLikelihood(const Matrix<T,Dynamic,1>& x)
+{
+  Matrix<T,Dynamic,1> logLikes = sticks_;
+  for(uint32_t k=0; k< K_; ++k)
+  {
+    logLikes[k] += thetas_[k]->logLikelihood(x);
+  }
+  return logSumExp<T>(logLikes);
+};
 
 template<class B, typename T>
 MatrixXu DpSubclusterMM<B,T>::mostLikelyInds(uint32_t n, 
