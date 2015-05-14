@@ -1276,10 +1276,12 @@ template<class B, typename T>
 double DpSubclusterMM<B,T>::evalLogLikelihood(const Matrix<T,Dynamic,1>& x)
 {
   Matrix<T,Dynamic,1> logLikes = sticks_;
+//  cout<<"--: "<<logLikes.transpose()<<" | "<<logSumExp<T>(logLikes)<<endl;
   for(uint32_t k=0; k< K_; ++k)
   {
     logLikes[k] += thetas_[k]->logLikelihood(x);
   }
+//  cout<<logLikes.transpose()<<endl;
   return logSumExp<T>(logLikes);
 };
 

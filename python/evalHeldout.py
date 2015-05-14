@@ -3,15 +3,22 @@ import numpy as np
 import subprocess as subp
 
 rootPath = "/scratch/amps/synthdata/"
-dataPath = "train-000.log"
-heldoutPath = "test-000.log"
+dataPath = "train-100.log"
+heldoutPath = "test-100.log"
 outName = dataPath+"_out"
+
+if True:
+  x = np.loadtxt(rootPath+dataPath)
+  import matplotlib.pyplot as plt
+  plt.figure()
+  plt.plot(x[:,0],x[:,1])
+  plt.show()
 
 reRun = True
 
 cfg =dict()
 cfg['K'] = 1;
-cfg['T'] = 100
+cfg['T'] = 300
 cfg['J'] = 1
 cfg['N'] = 10000
 cfg['Nho'] = 1000
@@ -22,7 +29,7 @@ alpha = [1.]*cfg['K']
 
 nu = 4.
 Delta = nu * np.eye(D)
-kappa = 0.1
+kappa = 0.000001
 thetaa = np.zeros(D)
 params = np.array([nu,kappa])
 params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
@@ -41,10 +48,16 @@ args = ['../build/dpmmSampler',
   '-i {}'.format(rootPath+dataPath),
   '--heldout {}'.format(rootPath+heldoutPath),
   '-o {}'.format(outName+'.lbl'),
-  '--params '+' '.join([str(p) for p in params])]
+  '--params '+' '.join(['{:.9f}'.format(p) for p in params])]
 if reRun:
   print ' '.join(args)
   print ' --------------------- '
   time.sleep(3)
   err = subp.call(' '.join(args),shell=True)
+
+hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
+print hoLogLike[:,0].T
+#import matplotlib.pyplot as plt
+#plt.figure()
+
 
