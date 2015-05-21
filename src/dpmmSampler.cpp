@@ -155,6 +155,7 @@ int main(int argc, char **argv)
           fin>>x(j,ind[i]);
     }
     fin.close();
+    cout << x.col(0).transpose()<<endl;
   }
 
   shared_ptr<MatrixXd> spho; //(new MatrixXd(D,N));
@@ -173,13 +174,14 @@ int main(int argc, char **argv)
     {
       for (uint32_t i=0; i<Nho; ++i)
         for (uint32_t j=0; j<D; ++j)
-          fin>>(*spho)(j,ind[i]);
+          fin>>(*spho)(j,i);
     }else{
       for (uint32_t j=0; j<D; ++j)
         for (uint32_t i=0; i<Nho; ++i)
-          fin>>(*spho)(j,ind[i]);
+          fin>>(*spho)(j,i);
     }
     fin.close();
+    cout << spho->col(0).transpose()<<endl;
   }
 
   // which base distribution
@@ -770,6 +772,8 @@ int main(int argc, char **argv)
         }
         hoLogLike /= spho->cols();
         foutHoLogLike << hoLogLike << " " << dt << endl;
+
+        cout<<"--- "<<hoLogLike << " " << dt << endl;
       }
     }
     fout.close();
