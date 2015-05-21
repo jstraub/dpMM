@@ -3,15 +3,18 @@ import numpy as np
 import subprocess as subp
 
 rootPath = "/scratch/amps/synthdata/"
-dataPath = "train-100.log"
-heldoutPath = "test-100.log"
+rootPath = "/home/jstraub/workspace/research/dpMMshared/data/synthdata/"
+dataPath = "train-001.log"
+heldoutPath = "test-001.log"
 outName = dataPath+"_out"
 
 if True:
   x = np.loadtxt(rootPath+dataPath)
+  ho = np.loadtxt(rootPath+heldoutPath)
   import matplotlib.pyplot as plt
   plt.figure()
-  plt.plot(x[:,0],x[:,1])
+  plt.plot(x[:,0],x[:,1],'.')
+  plt.plot(ho[:,0],ho[:,1],'r.')
   plt.show()
 
 reRun = True
