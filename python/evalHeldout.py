@@ -12,6 +12,9 @@ if False:
   plt.show()
 
 reRun = True
+reRun = False
+plotZ = False
+plotHo = False
 
 cfg =dict()
 cfg['K'] = 40;
@@ -48,9 +51,10 @@ thetaa = np.zeros(D)
 params = np.array([nu,kappa])
 params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
 
-reRun = False
-import matplotlib.pyplot as plt
-fig = plt.figure()
+if plotZ or plotHo:
+  import matplotlib.pyplot as plt
+if plotHo:
+  fig = plt.figure()
 for i in range(30):
   if not genSynth:
     rootPath = "/scratch/amps/"
@@ -80,8 +84,18 @@ for i in range(30):
     time.sleep(3)
     err = subp.call(' '.join(args),shell=True)
 
-  hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
-  print hoLogLike[:,0].T
-  plt.plot(np.arange(hoLogLike.shape[0]),hoLogLike[:,0])
+  if plotHo:
+    hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
+    print hoLogLike[:,0].T
+    plt.plot(np.arange(hoLogLike.shape[0]),hoLogLike[:,0])
+  if plotZ:
+    x = np.loadtxt(rootPath+dataPath)
+    z = np.loadtxt(outName+'.lbl')
+    K = np.unique(z).max()+1
+    fig2 = plt.figure()
+    for k in range(K):
+      if np.count_nonzero(z==k) >0:
+        plt.plot(x[z==k,0],x[z==k,1])
+    plt.savefig(outName+'.lbl.png',figure=fig2)
 plt.savefig('test.png',figure=fig)
 
