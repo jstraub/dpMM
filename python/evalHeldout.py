@@ -13,11 +13,11 @@ if False:
 reRun = True
 
 cfg =dict()
-cfg['K'] = 40;
+cfg['K'] = 10;
 cfg['T'] = 1000
 cfg['J'] = 1
-cfg['N'] = 10000
-cfg['Nho'] = 1000
+cfg['N'] = 100000
+cfg['Nho'] = 10000
 cfg['D'] = D = 2
 cfg['base'] = "DpNiw"
 
@@ -38,7 +38,7 @@ if genSynth:
   cfg['N'] = 180
   cfg['Nho'] = 20
 
-alpha = [1.]*cfg['K']
+alpha = [5.5]*cfg['K']
 
 nu = 4.
 Delta = nu * np.eye(D)
@@ -47,9 +47,9 @@ thetaa = np.zeros(D)
 params = np.array([nu,kappa])
 params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
 
-reRun = False
-import matplotlib.pyplot as plt
-fig = plt.figure()
+#reRun = False
+#import matplotlib.pyplot as plt
+#fig = plt.figure()
 for i in range(30):
   if not genSynth:
     rootPath = "/scratch/amps/"
@@ -81,6 +81,6 @@ for i in range(30):
 
   hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
   print hoLogLike[:,0].T
-  plt.plot(np.arange(hoLogLike.shape[0]),hoLogLike[:,0])
-plt.savefig('test.png',figure=fig)
+#  plt.plot(np.arange(hoLogLike.shape[0]),hoLogLike[:,0])
+#plt.savefig('test.png',figure=fig)
 
