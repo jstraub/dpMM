@@ -169,7 +169,7 @@ int main(int argc, char **argv)
 //    uint32_t Nho = 0;
 //    uint32_t Dho = 0;
 //    fin >> Dho >> Nho;
-    spho = shared_ptr<MatrixXd>(new MatrixXd(D,N));
+    spho = shared_ptr<MatrixXd>(new MatrixXd(D,Nho));
     if(vm.count("rowData"))
     {
       for (uint32_t i=0; i<Nho; ++i)
@@ -712,12 +712,15 @@ int main(int argc, char **argv)
     ofstream foutMeans((pathOut+"_means.csv").data(),ofstream::out);
     ofstream foutCovs((pathOut+"_covs.csv").data(),ofstream::out);
 
-    const VectorXu& z = dpmm->getLabels().transpose();
-    for (uint32_t i=0; i<z.size()-1; ++i) 
-      fout<<z(ind[i])<<" ";
-    fout<<z(ind[z.size()-1])<<endl;
-    foutJointLike<<dpmm->logJoint()<<endl;
-    dpmm->dump(foutMeans,foutCovs);
+    if(Nho == 0)
+    { // not output to save time
+      const VectorXu& z = dpmm->getLabels().transpose();
+      for (uint32_t i=0; i<z.size()-1; ++i) 
+        fout<<z(ind[i])<<" ";
+      fout<<z(ind[z.size()-1])<<endl;
+      foutJointLike<<dpmm->logJoint()<<endl;
+      dpmm->dump(foutMeans,foutCovs);
+    }
 
     for (uint32_t t=0; t<T; ++t)
     {
@@ -732,7 +735,7 @@ int main(int argc, char **argv)
 //      cout<<"-- counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
       dpmm->sampleParameters();
       if(Nho == 0)
-      {
+      { // not output to save time
         const VectorXu& z = dpmm->getLabels().transpose();
         for (uint32_t i=0; i<z.size()-1; ++i) 
           fout<<z(ind[i])<<" ";
@@ -743,7 +746,7 @@ int main(int argc, char **argv)
       dpmm->sampleLabels();
 
       if(Nho == 0)
-      {
+      { // not output to save time
         VectorXd Ns = dpmm->getCounts();
         cout<<"--  counts= "<<Ns.transpose()<<" sum="<<Ns.sum()<<endl;
         cout<<"    K="<<dpmm->getK();
@@ -768,6 +771,7 @@ int main(int argc, char **argv)
         // evaluate the heldout word log likelihood
         for(uint32_t i=0; i<spho->cols(); ++i)
         {
+//          cout<<spho->col(i).transpose()<<" = "<<dpmm->evalLogLikelihood(spho->col(i))<<endl;
           hoLogLike += dpmm->evalLogLikelihood(spho->col(i));
         }
         hoLogLike /= spho->cols();
@@ -775,6 +779,7 @@ int main(int argc, char **argv)
 
         cout<<"--- "<<hoLogLike << " " << dt << endl;
       }
+
     }
     fout.close();
     foutJointLike.close();

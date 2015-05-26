@@ -2,19 +2,29 @@ import time
 import numpy as np 
 import subprocess as subp
 
+# render and plot without X
+#import matplotlib as mpl
+#mpl.use('Agg')
 
 if False:
   x = np.loadtxt(rootPath+dataPath)
+  ho = np.loadtxt(rootPath+heldoutPath)
   import matplotlib.pyplot as plt
   plt.figure()
-  plt.plot(x[:,0],x[:,1])
+  plt.plot(x[:,0],x[:,1],'.')
+  plt.plot(ho[:,0],ho[:,1],'r.')
   plt.show()
 
 reRun = True
+reRun = False
+plotZ = True 
+plotZ = False 
+plotHo = False
+plotHo = True
 
 cfg =dict()
 cfg['K'] = 10;
-cfg['T'] = 1000
+cfg['T'] = 500
 cfg['J'] = 1
 cfg['N'] = 100000
 cfg['Nho'] = 10000
@@ -47,16 +57,17 @@ thetaa = np.zeros(D)
 params = np.array([nu,kappa])
 params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
 
-#reRun = False
-#import matplotlib.pyplot as plt
-#fig = plt.figure()
+if plotZ or plotHo:
+  import matplotlib.pyplot as plt
+if plotHo:
+  fig = plt.figure(1)
+#  hoLogLikes = np.zeros
 for i in range(30):
   if not genSynth:
     rootPath = "/scratch/amps/"
     dataPath = "train-{:03d}.log".format(i)
     heldoutPath = "test-{:03d}.log".format(i)
     outName = rootPath+'results/'+dataPath+"_out"
-
   args = ['../build/dpmmSampler',
     '--seed {}'.format(int(time.time()*100000) - 100000*int(time.time())),
   #  '-s', # print silhouette
@@ -78,9 +89,37 @@ for i in range(30):
     print ' --------------------- '
     time.sleep(3)
     err = subp.call(' '.join(args),shell=True)
-
-  hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
-  print hoLogLike[:,0].T
-#  plt.plot(np.arange(hoLogLike.shape[0]),hoLogLike[:,0])
-#plt.savefig('test.png',figure=fig)
+  if plotHo:
+    hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")
+    #print hoLogLike[:,0].T
+    plt.figure(1)
+    plt.plot(np.cumsum(hoLogLike[:,1])/1000.,hoLogLike[:,0])
+  if plotZ:
+    T = cfg['T']
+    x = np.loadtxt(rootPath+dataPath)
+    z = np.loadtxt(outName+'.lbl').astype(np.int)[-1,:]/2
+    means = np.loadtxt(outName+'.lbl_means.csv')
+    covs = np.loadtxt(outName+'.lbl_covs.csv')
+    K = np.unique(z).max()+1
+    print "K=",K
+    fig2 = plt.figure(2)
+    for k in range(K):
+      if np.count_nonzero(z==k) >0:
+        plt.plot(x[z==k,0],x[z==k,1],'.')
+        mean = means[(T-1)*2:T*2, k*3+2];
+        print mean
+        plt.plot(mean[0],mean[1],'xr')
+        cov = covs[(T-1)*2:T*2, (k*3+2)*D:(k*3+3)*D];
+        L = np.linalg.cholesky(cov)
+        print cov
+        c = np.zeros((2,40))
+        for  i,theta in enumerate(np.linspace(0,np.pi*2,40)):
+          c[0,i] = np.cos(theta)
+          c[1,i] = np.sin(theta)
+        c = (3*(L.dot(c)).T + mean).T
+        plt.plot(c[0,:],c[1,:],'r')
+    plt.savefig(outName+'.lbl.png',dpi=300,figure=fig2)
+if plotHo:
+  plt.figure(1)
+  plt.savefig(rootPath+'results/hologLikes.png',figure=fig)
 
