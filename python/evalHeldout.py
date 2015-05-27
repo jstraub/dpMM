@@ -15,16 +15,16 @@ if False:
   plt.plot(ho[:,0],ho[:,1],'r.')
   plt.show()
 
-reRun = True
 reRun = False
+reRun = True
 plotZ = True 
 plotZ = False 
-plotHo = False
 plotHo = True
+plotHo = False
 
 cfg =dict()
 cfg['K'] = 10;
-cfg['T'] = 500
+cfg['T'] = 5000
 cfg['J'] = 1
 cfg['N'] = 100000
 cfg['Nho'] = 10000
@@ -65,6 +65,7 @@ if plotHo:
 for i in range(30):
   if not genSynth:
     rootPath = "/scratch/amps/"
+    rootPath = "/data/vision/scratch/fisher/jstraub/amps/"
     dataPath = "train-{:03d}.log".format(i)
     heldoutPath = "test-{:03d}.log".format(i)
     outName = rootPath+'results/'+dataPath+"_out"
