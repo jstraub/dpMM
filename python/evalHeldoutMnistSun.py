@@ -13,7 +13,7 @@ plotHo = False
 
 cfg =dict()
 cfg['K'] = 1;
-cfg['T'] = 5000
+cfg['T'] = 2000
 cfg['J'] = 1
 cfg['D'] = D = 20
 cfg['base'] = "DpNiw"
@@ -21,7 +21,7 @@ cfg['base'] = "DpNiw"
 alpha = [5.]*cfg['K']
 
 nu = D+2.
-Delta = nu * np.eye(D) * 1e-6
+Delta = nu * np.eye(D) * 1e6
 kappa = 0.001
 thetaa = np.zeros(D)
 params = np.array([nu,kappa])
@@ -59,7 +59,7 @@ for dataSet in ['mnist','sun']:
   if reRun:
     print ' '.join(args)
     print ' --------------------- '
-    time.sleep(6)
+    time.sleep(2)
     err = subp.call(' '.join(args),shell=True)
   if plotHo:
     hoLogLike = np.loadtxt(outName+'.lbl'+"_hoLogLike.csv")

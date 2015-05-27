@@ -156,6 +156,11 @@ int main(int argc, char **argv)
     }
     fin.close();
     cout << x.col(0).transpose()<<endl;
+    cout << x.col(1).transpose()<<endl;
+    cout << x.col(2).transpose()<<endl;
+    cout << x.col(3).transpose()<<endl;
+    cout << x.col(4).transpose()<<endl;
+    cout << x.col(5).transpose()<<endl;
   }
 
   shared_ptr<MatrixXd> spho; //(new MatrixXd(D,N));
@@ -771,7 +776,7 @@ int main(int argc, char **argv)
         // evaluate the heldout word log likelihood
         for(uint32_t i=0; i<spho->cols(); ++i)
         {
-//          cout<<spho->col(i).transpose()<<" = "<<dpmm->evalLogLikelihood(spho->col(i))<<endl;
+          cout<<spho->col(i).transpose()<<" = "<<dpmm->evalLogLikelihood(spho->col(i))<<endl;
           hoLogLike += dpmm->evalLogLikelihood(spho->col(i));
         }
         hoLogLike /= spho->cols();
