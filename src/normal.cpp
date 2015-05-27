@@ -77,8 +77,8 @@ T Normal<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& x) const
       << "x="<<x.transpose()<< "mu_="<<mu_.transpose());
 
 #endif
-  cout<<(-0.5*LOG_2PI*D_)<<" "<<(-0.5*logDetSigma_)<<" "<<(-0.5*((x-mu_).transpose()*SigmaLDLT_.solve(x-mu_)).sum() )<<endl;;
-  cout<<(Sigma_.eigenvalues()).array().log()<<endl;
+//  cout<<(-0.5*LOG_2PI*D_)<<" "<<(-0.5*logDetSigma_)<<" "<<(-0.5*((x-mu_).transpose()*SigmaLDLT_.solve(x-mu_)).sum() )<<endl;;
+//  cout<<(Sigma_.eigenvalues()).array().log()<<endl;
   return -0.5*(LOG_2PI*D_ + logDetSigma_
 //      +((x-mu_).transpose()*Sigma_.inverse()*(x-mu_)).sum() );
   +((x-mu_).transpose()*SigmaLDLT_.solve(x-mu_)).sum() );

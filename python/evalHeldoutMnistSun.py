@@ -13,7 +13,7 @@ plotHo = False
 
 cfg =dict()
 cfg['K'] = 1;
-cfg['T'] = 2000
+cfg['T'] = 200
 cfg['J'] = 1
 cfg['D'] = D = 20
 cfg['base'] = "DpNiw"
@@ -31,10 +31,11 @@ if plotHo:
   fig = plt.figure(1)
 #  hoLogLikes = np.zeros
 rootPath = "/scratch/amps/mnistsun/"
-for dataSet in ['mnist','sun']:
-  dataPath = dataSet+"Train20.txt"
+rootPath = "/data/vision/scratch/fisher/jstraub/amps/mnistsun/"
+for dataSet in ['mnist20','sun20','lf3']:
+  dataPath = dataSet+"_train.txt"
   x = np.loadtxt(rootPath+dataPath)
-  heldoutPath = dataSet+"Test20.txt"
+  heldoutPath = dataSet+"_test.txt"
   ho = np.loadtxt(rootPath+heldoutPath)
   cfg['N'] = x.shape[0]
   cfg['Nho'] = ho.shape[0]

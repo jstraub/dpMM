@@ -776,7 +776,7 @@ int main(int argc, char **argv)
         // evaluate the heldout word log likelihood
         for(uint32_t i=0; i<spho->cols(); ++i)
         {
-          cout<<spho->col(i).transpose()<<" = "<<dpmm->evalLogLikelihood(spho->col(i))<<endl;
+//          cout<<spho->col(i).transpose()<<" = "<<dpmm->evalLogLikelihood(spho->col(i))<<endl;
           hoLogLike += dpmm->evalLogLikelihood(spho->col(i));
         }
         hoLogLike /= spho->cols();
