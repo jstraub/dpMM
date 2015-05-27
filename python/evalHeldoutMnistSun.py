@@ -13,7 +13,7 @@ plotHo = False
 
 cfg =dict()
 cfg['K'] = 1;
-cfg['T'] = 200
+cfg['T'] = 2000
 cfg['J'] = 1
 cfg['D'] = D = 20
 cfg['base'] = "DpNiw"
