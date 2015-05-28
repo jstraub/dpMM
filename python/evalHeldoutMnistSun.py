@@ -20,25 +20,35 @@ cfg['base'] = "DpNiw"
 
 alpha = [5.]*cfg['K']
 
-nu = D+2.
-Delta = nu * np.eye(D) * 1e6
-kappa = 0.001
-thetaa = np.zeros(D)
-params = np.array([nu,kappa])
-params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
 
 if plotHo:
   fig = plt.figure(1)
 #  hoLogLikes = np.zeros
 rootPath = "/scratch/amps/mnistsun/"
 rootPath = "/data/vision/scratch/fisher/jstraub/amps/mnistsun/"
-for dataSet in ['mnist20','sun20','lf3']:
+for dataSet in ['lf3','mnist20','sun20']:
   dataPath = dataSet+"_train.txt"
   x = np.loadtxt(rootPath+dataPath)
   heldoutPath = dataSet+"_test.txt"
   ho = np.loadtxt(rootPath+heldoutPath)
   cfg['N'] = x.shape[0]
+  cfg['D'] = D = x.shape[1]
   cfg['Nho'] = ho.shape[0]
+
+  if dataSet in ['mnist20','sun20']:
+    nu = D+2.
+    Delta = nu * np.eye(D) * 1e6
+    kappa = 0.001
+    thetaa = np.zeros(D)
+    params = np.array([nu,kappa])
+    params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
+  elif dataSet in ['lf3']:
+    nu = D+2.
+    Delta = nu * np.eye(D)*0.1
+    kappa = 0.01
+    thetaa = np.zeros(D)
+    params = np.array([nu,kappa])
+    params = np.r_[params,thetaa.ravel(),Delta.ravel()] 
 
   outName = rootPath+'results/'+dataPath+"_out"
   args = ['../build/dpmmSampler',
