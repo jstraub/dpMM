@@ -17,15 +17,20 @@
 #include <dpMM/iw.hpp>
 #include <dpMM/sphere.hpp>
 #include <dpMM/karcherMean.hpp>
-#include <dpMM/clGMMData.hpp>
 
 using namespace Eigen;
 using std::endl;
 using std::cout;
 
-/* Actually just places an IW prior on covariances in the tangent plane */
+/* Actually just places an IW prior on covariances in the tangent
+ * plane. 
+ *
+ * The point of tangentcy has to be set "manually". This makes the
+ * clase usefull for models that externaly update the point of tangency
+ * such as the Manhattan Frame 
+ */
 template<typename T>
-class NiwSphere : public BaseMeasure<T>
+class IwTangent : public BaseMeasure<T>
 {
 public:
 
@@ -33,13 +38,13 @@ public:
   Sphere<T> S_;
   NormalSphere<T> normalS_; // normal on sphere
 
-  NiwSphere(const IW<T>& iw, boost::mt19937* pRndGen);
-  ~NiwSphere();
+  IwTangent(const IW<T>& iw, boost::mt19937* pRndGen);
+  ~IwTangent();
 
   virtual BaseMeasure<T>* copy();
-  virtual NiwSphere<T>* copyNative();
+  virtual IwTangent<T>* copyNative();
 
-  virtual baseMeasureType getBaseMeasureType() const {return(NIW_SPHERE); }
+  virtual baseMeasureType getBaseMeasureType() const {return(NIW_TANGENT); }
 
   /* for any point on the sphere; maps into T_muS and rotates north first */
   virtual T logLikelihood(const Matrix<T,Dynamic,1>& x) const ;
@@ -69,13 +74,13 @@ public:
 
   T logPdfUnderPrior() const;
   T logPdfUnderPriorMarginalized() const;
-  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<NiwSphere<T> >& other) const;
+//  T logPdfUnderPriorMarginalizedMerged(const shared_ptr<IwTangent<T> >& other) const;
 
   void print() const;
   virtual uint32_t getDim() const {return(uint32_t(normalS_.D_));}; 
 
-  virtual NiwSphere<T>* merge(const NiwSphere<T>& other);
-  void fromMerge(const NiwSphere<T>& niwA, const NiwSphere<T>& niwB);
+//  virtual IwTangent<T>* merge(const IwTangent<T>& other);
+//  void fromMerge(const IwTangent<T>& niwA, const IwTangent<T>& niwB);
 
   const Matrix<T,Dynamic,Dynamic>& scatter() const {return iw0_.scatter();};
   Matrix<T,Dynamic,Dynamic>& scatter() {return iw0_.scatter();};
@@ -89,13 +94,13 @@ public:
 
 private:
 
-  void computeMergedSS( const NiwSphere<T>& niwA, 
-    const NiwSphere<T>& niwB, Matrix<T,Dynamic,Dynamic>& scatterM, 
-    Matrix<T,Dynamic,1>& muM, T& countM) const;
+//  void computeMergedSS( const IwTangent<T>& niwA, 
+//    const IwTangent<T>& niwB, Matrix<T,Dynamic,Dynamic>& scatterM, 
+//    Matrix<T,Dynamic,1>& muM, T& countM) const;
 
 
 };
 
-typedef NiwSphere<double> NiwSphered;
-typedef NiwSphere<float> NiwSpheref;
+typedef IwTangent<double> IwTangentd;
+typedef IwTangent<float> IwTangentf;
 

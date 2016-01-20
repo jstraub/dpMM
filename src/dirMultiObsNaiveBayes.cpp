@@ -32,6 +32,7 @@ int main(int argc, char **argv){
 	("v,v", po::value<bool>(), "verbose output")
     ("params,p", po::value<string>(), 
       "path to file containing parameters (see class definition)")
+	("alpha,a", po::value<double>(), "alpha value")
 	("nu,n", po::value<std::vector<double> >()->multitoken(), "NIW mean prior strength to use for distributions")
 	("deltaOffset,d", po::value<std::vector<double> >()->multitoken(), "NIW sigma prior strength to use for distributions")
     ("input,i", po::value<string>(), 
@@ -58,6 +59,7 @@ int main(int argc, char **argv){
 	uint K=2; //num clusters
 	uint T=10; //iterations
 	uint M=2; //num docs
+	double alphaInput = 10; //weighting of the alpha
 
 	vector<uint> N(NumObs, 100) ; //num data points (total)
 	vector<uint> D(NumObs, 2);  //dimention of data 
@@ -75,7 +77,8 @@ int main(int argc, char **argv){
 		T = vm["T"].as<int>();
 	if (vm.count("v"))
 		verbose = vm["v"].as<bool>();
-
+	if (vm.count("a"))
+		alphaInput = vm["a"].as<double>();
 
 	//handle ompMaxNumber of threads
 	int Mproc = 1000000; 
@@ -255,10 +258,10 @@ int main(int argc, char **argv){
 
 		useBaseDist = baseDist;
 
-		VectorXd alpha = 10.0*VectorXd::Ones(K);
+		VectorXd alpha = (alphaInput)*VectorXd::Ones(K);
 
 		Dir<Catd,double> dir(alpha,&rndGen); 
-		vector <vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
+		vector<vector<boost::shared_ptr<BaseMeasure<double> > > > thetas;
 		thetas.reserve(NumObs);
 
 		//creates thetas  
@@ -322,7 +325,7 @@ int main(int argc, char **argv){
 				
 				MatrixXd Delta = MatrixXd::Identity(dNorm-1,dNorm-1);
 				if(deltaOffsetIn.empty()) {
-					Delta *= pow(15.0*M_PI/180.0,2); 
+					Delta *= pow(5.0*M_PI/180.0,2); 
 				} else {
 					Delta *= deltaOffsetIn[m]; 
 				}
@@ -362,6 +365,37 @@ int main(int argc, char **argv){
 
 				thetas.push_back(dirSampled); 
 
+			} else if(iequals(baseDist[m], "MF")) {
+				//sufficient statistics size:(D)x1
+				//[counts]
+				vector<boost::shared_ptr<BaseMeasure<double> > > mfBases; 
+        for(uint32_t k=0; k<K; ++k)
+        {
+          uint32_t nIter = 30; // iterations of internal MF sampler
+          // mixture over the 6 different MF directions 
+          Matrix<double,Dynamic,1> alpha = Matrix<double,Dynamic,1>::Ones(6)*10;
+          Dir<Cat<double>, double> dir(alpha,&rndGen);
+          // tangent space IW priors
+          double nu = 4;
+          Matrix<double,Dynamic,Dynamic> Delta = 
+            Matrix<double,Dynamic,Dynamic>::Identity(2,2);
+          Delta *= pow(5.0*M_PI/180.,2)*nu;
+          IWd iw0(Delta,nu,&rndGen);
+          std::vector<shared_ptr<BaseMeasure<double> > > iwTs;
+          for(uint32_t j=0; j<6; ++j)  
+          {
+            iwTs.push_back(shared_ptr<IwTangent<double> >(
+                  new IwTangent<double>(iw0,&rndGen)));
+          }
+          DirMM<double> dirMM(dir,iwTs);
+          MfPrior<double> mfPrior(dirMM, nIter);
+//          MF<T> mf(R,pi,TGs);
+          mfBases.push_back(boost::shared_ptr<BaseMeasure<double> >(
+                new MfBase<double>(mfPrior)));
+        }
+        //set
+				thetas.push_back(mfBases);
+
 			} else {
 				cerr << "error with base distributions (check help) ... returning." << endl;
 				return(-1); 
@@ -374,8 +408,6 @@ int main(int argc, char **argv){
 
 	Timer tlocal;
 	tlocal.tic();
-
-	
   
 	cout << "multiObsNaiveBayesian Clustering:" << endl; 
 	cout << "Ndocs=" << M << endl; 
@@ -386,8 +418,6 @@ int main(int argc, char **argv){
 	cout << endl; 
 
 	cout << "Num Cluster = " << K << ", (" << T << " iterations)." << endl;
-
-
 
 	naive_samp->inferAll(T,verbose);
 

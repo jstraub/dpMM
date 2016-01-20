@@ -77,6 +77,7 @@ public:
 //
   const Matrix<T,Dynamic,1>& counts() const {return counts_;};
   Matrix<T,Dynamic,1>& counts() {return counts_;};
+  void setCounts(const Matrix<T,Dynamic,1>& counts) {counts_ = counts;};
   T count() const {return counts_.sum();};
 
   void computeMergedSS( const Dir<Disc,T>& dirA, 

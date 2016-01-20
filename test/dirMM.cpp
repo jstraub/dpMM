@@ -122,14 +122,6 @@ BOOST_AUTO_TEST_CASE(dirMM_Sphere_test)
   MatrixXd x(3,N);
   MatrixXd mus = sampleClustersOnSphere<double>(x, K);
 
-  for(uint32_t t=0; t<10; ++t)
-  {
-    niwSp->posterior(x,VectorXu::Zero(N),1);
-    cout<<"@i="<<t<<endl;
-    cout<<niwSp->Sigma()<<endl;
-    cout<<niwSp->getMean().transpose()<<endl;
-  }
-
   dirGMM_sp.initialize(x);
 
   cout<<"true means: "<<endl<<mus<<endl;

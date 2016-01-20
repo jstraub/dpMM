@@ -134,6 +134,8 @@ add_library(dpmm
   ./src/niwSphere.cpp
   ./src/niwSphereFull.cpp
   ./src/sphere.cpp
+    ./src/iwTangent.cpp
+    ./src/optimizationSO3_approx.cpp
 )
 
 cuda_add_library(dpmm_cuda
@@ -167,7 +169,30 @@ target_link_libraries(generateSphericalData
   dpmm dpmm_cuda
   )
 
+cuda_add_executable(dirMultiObsNaiveBayes
+	./src/dirMultiObsNaiveBayes.cpp
+)
+target_link_libraries(dirMultiObsNaiveBayes
+	${Boost_LIBRARIES}
+  dpmm dpmm_cuda
+)
+
+
 if( COMPILE_TEST )
+
+#  add_library(mf
+#    
+#  )
+
+  cuda_add_executable(testMF ./test/mf.cpp
+    ./src/iwTangent.cpp
+    ./src/optimizationSO3_approx.cpp
+    )
+
+  target_link_libraries(testMF
+    ${Boost_LIBRARIES}
+    dpmm dpmm_cuda
+    )
 
   cuda_add_executable(testSphere ./test/sphere.cpp
     )

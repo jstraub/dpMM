@@ -20,33 +20,53 @@ using namespace Eigen;
 using std::endl; using std::cout;
 using boost::shared_ptr;
 
+#ifdef CUDA
+  #define SET_CUDA
+  #undef CUDA
+#endif
+
 template<typename T>
 class DirMM : public DpMM<T>
 {
 public:
-  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >& theta, uint32_t K0);
-  DirMM(const Dir<Cat<T>, T>& alpha, const vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const Dir<Cat<T>, T>& alpha, const shared_ptr<BaseMeasure<T> >&
+      theta, uint32_t K0);
+  DirMM(const Dir<Cat<T>, T>& alpha, const
+      vector<shared_ptr<BaseMeasure<T> > >& thetas);
+  DirMM(const DirMM<T>& dirMM);
   virtual ~DirMM();
 
+  virtual void reset();
   virtual void initialize(const Matrix<T,Dynamic,Dynamic>& x);
   virtual void initialize(const shared_ptr<ClGMMData<T> >& cld)
     {cout<<"not supported"<<endl; assert(false);};
 
   virtual void sampleLabels();
   virtual void sampleParameters();
+  virtual void sampleFromPrior();
 
   virtual T logJoint();
-  virtual const VectorXu& labels(){return z_;};
-  virtual const VectorXu& getLabels(){return z_;};
+  virtual const Matrix<T,Dynamic,Dynamic>& x() const {return x_;};
+  virtual const VectorXu& labels() const {return z_;};
+  virtual const VectorXu& getLabels() {return z_;};
   virtual void setLabels(const VectorXu& z){z_ = z;};
   virtual uint32_t getK() const { return K_;};
-  virtual shared_ptr<BaseMeasure<T> > getTheta(uint32_t k) 
-    { return this->thetas_[k];};
+  virtual const shared_ptr<BaseMeasure<T> >& getTheta(uint32_t k) const
+    { assert(k<K_); return this->thetas_[k];};
+  virtual const vector<shared_ptr<BaseMeasure<T> > >& getThetas() const
+    { return this->thetas_;};
+  virtual const shared_ptr<BaseMeasure<T> >& getTheta0() const
+    { return this->theta0_;};
+
+  virtual const Dir<Cat<T>, T>& Alpha() const { return dir_;}; 
+  virtual const Cat<T>& Pi() const { return pi_;}; 
 
 //  virtual MatrixXu mostLikelyInds(uint32_t n);
   virtual MatrixXu mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLikes);
 
   Matrix<T,Dynamic,1> getCounts();
+
+  bool isInit() const { return sampler_!= NULL;};
 
 protected: 
   uint32_t K0_;  // that is the number of clusters that are initialized with data at the beginning (K0_ <= K_)
@@ -71,17 +91,56 @@ protected:
 
 
 template<typename T>
-DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const shared_ptr<BaseMeasure<T> >&
-    theta, uint32_t K0) :
-  K0_(K0), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), theta0_(theta)
+DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, const
+    shared_ptr<BaseMeasure<T> >& theta, uint32_t K0) :
+  K0_(K0), K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
+  sampler_(NULL),
+  theta0_(theta)
 {};
 
 
 template<typename T>
 DirMM<T>::DirMM(const Dir<Cat<T>,T>& alpha, 
     const vector<shared_ptr<BaseMeasure<T> > >& thetas) :
-  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), thetas_(thetas)
-{};
+  K_(alpha.K_), dir_(alpha), pi_(dir_.sample()), 
+  sampler_(NULL), thetas_(thetas),
+  theta0_(
+      shared_ptr<BaseMeasure<T> >(thetas[0]->copy()))
+{
+//  cout<<thetas_.size()<<endl;
+//  for(uint32_t k=0; k<thetas_.size(); ++k)
+//    cout<< "   "<<thetas_[k].get()<<endl;
+//  cout<<thetas_[0].get()<<endl;
+//  cout<<thetas_[0]->copy()<<endl;
+//
+//  theta0_ = shared_ptr<BaseMeasure<T> >(thetas_[0]->copy());
+};
+
+template<typename T>
+DirMM<T>::DirMM(const DirMM<T>& dirMM) 
+  : K_(dirMM.getK()), dir_(dirMM.Alpha()), pi_(dirMM.Pi()), 
+  sampler_(NULL), 
+  theta0_(shared_ptr<BaseMeasure<T> >(
+        dirMM.getTheta0()->copy()))
+{
+  for(uint32_t k=0; k<  dirMM.getK(); ++k)
+  {
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(
+          dirMM.getTheta(k)->copy())); 
+  }
+  if(dirMM.isInit())
+  {
+    x_ = dirMM.x();
+    // bad boy
+    z_ = const_cast<DirMM<T>* >(&dirMM)->labels();
+    pdfs_.setZero(x_.cols(),K_);
+#ifdef CUDA
+    sampler_ = new SamplerGpu<T>(x_.cols(),K_,dir_.pRndGen_);
+#else 
+    sampler_ = new Sampler<T>(dir_.pRndGen_);
+#endif
+  }
+};
 
 
 template<typename T>
@@ -100,11 +159,11 @@ Matrix<T,Dynamic,1> DirMM<T>::getCounts()
 template<typename T>
 void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 {
-  cout<<"init"<<endl;
+//  cout<<"init"<<endl;
   x_ = x;
   // randomly init labels from prior
   z_.setZero(x.cols());
-  cout<<"sample pi"<<endl;
+//  cout<<"sample pi"<<endl;
   pi_ = dir_.sample(); 
   if (K0_ < K_)
   {
@@ -113,7 +172,7 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
     pdf = pdf / pdf.sum(); // renormalize
     pi_.pdf(pdf);
   } 
-  cout<<"init pi="<<pi_.pdf().transpose()<<endl;
+//  cout<<"init pi="<<pi_.pdf().transpose()<<endl;
   pi_.sample(z_);
 
   pdfs_.setZero(x.cols(),K_);
@@ -124,17 +183,33 @@ void DirMM<T>::initialize(const Matrix<T,Dynamic,Dynamic>& x)
 #endif
 
   // init the parameters
-  if(thetas_.size() == 0)
-  {
-    cout<<"creating thetas"<<endl;
-    for (uint32_t k=0; k<K_; ++k)
-      thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
-  }
+//  if(thetas_.size() == 0)
+//  {
+  thetas_.clear(); // destrey eny previous thetas
+//  cout<<"creating thetas"<<endl;
+  for (uint32_t k=0; k<K_; ++k)
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
+//  }
 //#pragma omp parallel for
 //  for(uint32_t k=0; k<K_; ++k)
 //    thetas_[k]->posterior(x_,z_,k);
 //  for (uint32_t k=0; k<K_; ++k)
 //    thetas_[k].initialize(x_,z_);
+};
+
+template<typename T>
+void DirMM<T>::reset()
+{
+  x_ = Matrix<T,Dynamic,Dynamic>::Zero(0,theta0_->getDim());
+  z_ = VectorXu::Zero(0);
+  pi_ = dir_.sample(); 
+  pdfs_.setZero(0,K_);
+  delete sampler_;
+  sampler_ = NULL;
+
+  thetas_.clear(); // delete any previous thetas
+  for (uint32_t k=0; k<K_; ++k)
+    thetas_.push_back(shared_ptr<BaseMeasure<T> >(theta0_->copy()));
 };
 
 template<typename T>
@@ -145,7 +220,7 @@ void DirMM<T>::sampleLabels()
 //  cout<<pi_.pdf().transpose()<<endl;
   
 #pragma omp parallel for
-  for(uint32_t i=0; i<z_.size(); ++i)
+  for(int32_t i=0; i<z_.size(); ++i)
   {
     //TODO: could buffer this better
     // compute categorical distribution over label z_i
@@ -170,12 +245,29 @@ void DirMM<T>::sampleLabels()
 template<typename T>
 void DirMM<T>::sampleParameters()
 {
-  Matrix<T,Dynamic,1> Ns = getCounts();
+//  Matrix<T,Dynamic,1> Ns = getCounts();
 //#pragma omp parallel for 
   for(uint32_t k=0; k<K_; ++k)
   {
 //    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
     thetas_[k]->posterior(x_,z_,k);
+//    thetas_[k]->print();
+  }
+};
+
+template<typename T>
+void DirMM<T>::sampleFromPrior()
+{
+//  Matrix<T,Dynamic,1> Ns = getCounts();
+//#pragma omp parallel for 
+//
+// simulate sampling from prior by not giving the posteriors any data
+  Matrix<T,Dynamic,Dynamic> x = Matrix<T,Dynamic,Dynamic>::Zero(1,1);
+  VectorXu z = VectorXu::Ones(1)*(K_+1);
+  for(uint32_t k=0; k<K_; ++k)
+  {
+//    cout<<"k:"<<k<<" "<<Ns(k)<<" ";
+    thetas_[k]->posterior(x,z,k);
 //    thetas_[k]->print();
   }
 };
@@ -187,11 +279,11 @@ T DirMM<T>::logJoint()
   T logJoint = dir_.logPdf(pi_);
   cout<<"  [logJoint="<<logJoint<<" -> ";
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
     logJoint = logJoint + thetas_[k]->logPdfUnderPrior();
   cout<<" "<<logJoint<<" -> ";
 #pragma omp parallel for reduction(+:logJoint)  
-  for (uint32_t i=0; i<z_.size(); ++i)
+  for (int32_t i=0; i<z_.size(); ++i)
     logJoint = logJoint + thetas_[z_[i]]->logLikelihood(x_.col(i));
   cout<<" "<<logJoint<<"]"<<endl;
   return logJoint;
@@ -205,7 +297,7 @@ MatrixXu DirMM<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLike
   logLikes = Matrix<T,Dynamic,Dynamic>::Ones(n,K_);
   
 #pragma omp parallel for 
-  for (uint32_t k=0; k<K_; ++k)
+  for (int32_t k=0; k<K_; ++k)
   {
     for (uint32_t i=0; i<z_.size(); ++i)
       if(z_(i) == k)
@@ -235,6 +327,10 @@ MatrixXu DirMM<T>::mostLikelyInds(uint32_t n, Matrix<T,Dynamic,Dynamic>& logLike
   cout<<inds<<endl;
   return inds;
 };
+
+#ifdef SET_CUDA
+  #define CUDA
+#endif
 
 //template<class T>
 //T DirMM<T>::avgIntraClusterDeviation()

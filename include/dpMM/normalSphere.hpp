@@ -15,7 +15,7 @@ template<typename T>
 class NormalSphere : public Distribution<T>
 {
 public:
-  uint32_t D_; // dimension of the space
+  uint32_t D_; // dimension of the ambient space
 
   NormalSphere(const Matrix<T,Dynamic,1>& mu, 
       const Matrix<T,Dynamic,Dynamic>& Sigma, boost::mt19937* pRndGen);

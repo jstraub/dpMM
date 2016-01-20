@@ -110,6 +110,20 @@ T Normal<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& scatter,
 }
 
 template<typename T>
+T Normal<T>::logPdfSlower(const Matrix<T,Dynamic,Dynamic>& scatter, 
+      const Matrix<T,Dynamic,1>& mean, T count) const
+{
+	Matrix<T,1,Dynamic> meanT = mean.transpose();
+	Matrix<T,Dynamic,Dynamic> CovMu= 
+    Sigma_.fullPivHouseholderQr().solve(mu_);
+	return -0.5*((LOG_2PI*D_ + logDetSigma_)*count 
+		+ count*(mu_.transpose()*CovMu).sum() 
+		-2.*count*(meanT*CovMu).sum()
+		+(Sigma_.fullPivHouseholderQr().solve(
+      scatter + mean*meanT*count)).trace());
+}
+
+template<typename T>
 T Normal<T>::logPdf(const Matrix<T,Dynamic,Dynamic>& scatter, T count) const
 {
   assert(false);

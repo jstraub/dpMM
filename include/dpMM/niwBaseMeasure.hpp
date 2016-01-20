@@ -1,7 +1,7 @@
-/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>                    
+/* Copyright (c) 2015, Julian Straub <jstraub@csail.mit.edu>, Randi Cabezas <rcabezas@csail.mit.edu>
  * Licensed under the MIT license. See the license file LICENSE.
  */
- 
+
 
 #pragma once
 
@@ -17,8 +17,8 @@ template<typename T>
 class NiwMarginalized : public BaseMeasure<T>
 {
 public:
-  NIW<T> niw0_; 
-  NIW<T> niw_; 
+  NIW<T> niw0_;
+  NIW<T> niw_;
 
   NiwMarginalized(const NIW<T>& niw);
   ~NiwMarginalized();
@@ -29,13 +29,13 @@ public:
 
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
 
-  void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
+  void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
       uint32_t k);
 
   T logPdfUnderPrior() const;
 
   void print() const ;
-  virtual uint32_t getDim() const {return(uint32_t(niw_.D_));}; 
+  virtual uint32_t getDim() const {return(uint32_t(niw_.D_));};
 };
 
 /*
@@ -45,7 +45,7 @@ template<typename T>
 class NiwSampled : public BaseMeasure<T>
 {
 public:
-  NIW<T> niw0_; 
+  NIW<T> niw0_;
   Normal<T> normal_;
 
   NiwSampled(const NIW<T>& niw);
@@ -53,16 +53,16 @@ public:
   ~NiwSampled();
 
   virtual baseMeasureType getBaseMeasureType() const {return(NIW_SAMPLED); }
-  
+
   virtual BaseMeasure<T>* copy();
   virtual NiwSampled<T>* copyNative();
 
   T logLikelihood(const Matrix<T,Dynamic,1>& x) const;
-  T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const 
+  T logLikelihood(const Matrix<T,Dynamic,Dynamic>& x, uint32_t i) const
     {return logLikelihood(x.col(i));};
   // assumes vector [N, sum(x), flatten(sum(outer(x,x)))]
   T logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const;
-  void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z, 
+  void posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu& z,
     uint32_t k);
   void posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const
       VectorXu& z, uint32_t k);
@@ -82,7 +82,7 @@ public:
   void fromMerge(const NiwSampled<T>& niwA, const NiwSampled<T>& niwB);
 
   void print() const;
-  virtual uint32_t getDim() const {return(uint32_t(normal_.D_));}; 
+  virtual uint32_t getDim() const {return(uint32_t(normal_.D_));};
 
   const Matrix<T,Dynamic,Dynamic>& scatter() const {return niw0_.scatter();};
   const Matrix<T,Dynamic,1>& mean() const {return niw0_.mean();};
@@ -109,7 +109,7 @@ NiwSampled<T>::NiwSampled(const NIW<T>& niw)
 template<typename T>
 NiwSampled<T>::NiwSampled(const NIW<T>& niw, const Normal<T> &normal)
  : niw0_(niw), normal_(normal)
-{}; 
+{};
 
 template<typename T>
 NiwSampled<T>::~NiwSampled()
@@ -148,16 +148,17 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 //  normal_.print();
   uint32_t D = niw0_.D_;
   T count = x(0);
-  Matrix<T,Dynamic,1> mean;
-  if(count>0) 
+  Matrix<T,Dynamic,1> mean(D);
+  if(count>0)
 	  mean = x.middleRows(1,D)/count;
   else
 	  mean = Matrix<T,Dynamic,1>::Zero(D); //this should not matter since everything gets multiplied by 0 counts
 
   //NOTE: Eigen::Map does not like const data, so this cast is needed to strip const data from input
   //alternatively the input could be changed to non-const, but this is cleaner from the outside
-  T* datPtr = const_cast<T*>(&(x.data()[(D+1)])); 
-  Matrix<T,Dynamic,Dynamic> scatter =  Map<Matrix<T,Dynamic,Dynamic> >(datPtr,D,D);
+  T* datPtr = const_cast<T*>(&(x.data()[(D+1)]));
+  Matrix<T,Dynamic,Dynamic> scatter = 
+    Map<Matrix<T,Dynamic,Dynamic> >(datPtr,D,D);
   scatter -= (mean*mean.transpose())*count;
 
   T logLike = normal_.logPdf(scatter,mean,count);
@@ -167,27 +168,27 @@ T NiwSampled<T>::logLikelihoodFromSS(const Matrix<T,Dynamic,1>& x) const
 };
 
 template<typename T>
-void NiwSampled<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, 
+void NiwSampled<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x,
     const VectorXu& z, uint32_t k)
 {
   normal_ = niw0_.posterior(x,z,k).sample();
 };
 
 template<typename T>
-void NiwSampled<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, 
-	const VectorXu& z, uint32_t k) 
+void NiwSampled<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x,
+	const VectorXu& z, uint32_t k)
 {
 	normal_ = niw0_.posterior(x,z,k).sample();
 }
 
 template<typename T>
-void NiwSampled<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > &x, const VectorXu& z, uint32_t k) 
+void NiwSampled<T>::posteriorFromSS(const vector<Matrix<T,Dynamic,1> > &x, const VectorXu& z, uint32_t k)
 {
 	normal_ = niw0_.posteriorFromSS(x,z,k).sample();
 }
 
 template<typename T>
-void NiwSampled<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x) 
+void NiwSampled<T>::posteriorFromSS(const Matrix<T,Dynamic,1> &x)
 {
 	normal_ = niw0_.posteriorFromSS(x).sample();
 }
@@ -214,8 +215,8 @@ T NiwSampled<T>::logPdfUnderPriorMarginalizedMerged(
 };
 
 template<typename T>
-void NiwSampled<T>::fromMerge(const NiwSampled<T>& niwA, 
-  const NiwSampled<T>& niwB) 
+void NiwSampled<T>::fromMerge(const NiwSampled<T>& niwA,
+  const NiwSampled<T>& niwB)
 {
   niw0_.fromMerge(niwA.niw0_,niwB.niw0_);
   normal_ = niw0_.posterior().sample();
@@ -232,7 +233,7 @@ NiwSampled<T>* NiwSampled<T>::merge(const NiwSampled<T>& other)
 
 
 template<typename T>
-void NiwSampled<T>::sample() 
+void NiwSampled<T>::sample()
 {
   normal_ = niw0_.posterior().sample();
 };
@@ -271,7 +272,7 @@ template<typename T>
 void NiwMarginalized<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x,
     const VectorXu& z, uint32_t k)
 {
-  niw_ = niw0_.posterior(x,z,k); 
+  niw_ = niw0_.posterior(x,z,k);
 };
 
 template<typename T>
@@ -279,7 +280,7 @@ T NiwMarginalized<T>::logPdfUnderPrior() const
 {
   // 0 since we integrate over parameters -> there is no parameters for which
   // we would want to eval a pdf
-  return 0.0; 
+  return 0.0;
 };
 
 template<typename T>

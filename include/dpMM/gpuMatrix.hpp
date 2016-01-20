@@ -60,7 +60,8 @@ struct GpuMatrix
   };
   void getAsync(T* A, uint32_t rows, uint32_t cols, cudaStream_t& stream);
 
-  void copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offset, uint32_t rows);
+  void copyFromGpu(T* d_A, uint32_t N, uint32_t step, uint32_t offset,
+      uint32_t rows);
 
   void resize(uint32_t rows, uint32_t cols);
 
@@ -69,7 +70,9 @@ struct GpuMatrix
   T* data(){ assert(initialized_); return data_;};
   bool isInit(){return initialized_;};
 
-  void print(){cout<<rows_<<";"<<cols_<<" init="<<(initialized_?'y':'n')<<endl;};
+  void print(){
+    cout<<rows_<<";"<<cols_<<" init="<<(initialized_?'y':'n')<<endl;
+  };
 
   static cudaStream_t createStream() 
   {
