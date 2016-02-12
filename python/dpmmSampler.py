@@ -50,7 +50,10 @@ args = [os.path.dirname(os.path.realpath(__file__))+'/../build/dpmmSampler',
 
 print ' '.join(args)
 print ' --------------------- '
-subp.call(' '.join(args),shell=True)
+ret = subp.call(' '.join(args),shell=True)
+print ret
+if not ret:
+  print "Please make sure the sampler is compiled and located at ./build/dpmmSampler"
 
 z = np.loadtxt(re.sub('csv','lbl',dataPath),dtype=int,delimiter=' ')
 z = z/2 # to get from subcluster indices to cluster indices

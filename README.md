@@ -54,7 +54,8 @@ It has been tested under Mac OS (10.9.4) with:
 
 ### Getting Started
 
-Get started quickly by looking at `python/dpmmSampler.py`. It simply loads a
+After compiling the sampler executable as described above,
+get started quickly by looking at `python/dpmmSampler.py`. It simply loads a
 dataset and runs the sub-cluster split/merge algorithm with different base
 measures:
 ```
