@@ -569,7 +569,8 @@ void DpSubclusterMM<B,T>::sampleParameters_()
 //    // to decide internally about splitability
 //    thetas_[k]->updateAvgLogLikeData(); 
 
-  T total = sticks_.sum();
+  boost::random::gamma_distribution<> gammaRest(alpha_);
+  T total = sticks_.sum() + gammaRest(*pRndGen_);
   sticks_ = (sticks_.array().log() - log(total)).matrix();
 
   assert(fabs(logSumExp(sticks_)) <1e-6);
