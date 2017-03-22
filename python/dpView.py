@@ -31,6 +31,7 @@ cfg['path'] = '/home/jstraub/workspace/research/vpCluster/data/'
 cfg['path'] = '~/workspace/research/vpCluster/data/'
 cfg['outputPath'] = '/data/vision/scratch/fisher/jstraub/dpMM/'
 cfg['path'] = '/data/vision/scratch/fisher/jstraub/dpMM/nyu2/'
+cfg['path'] = '../data/'
 #cfg['base'] = 'DpNiwSphereFull';
 #cfg['base'] = 'spkm';
 #cfg['base'] = 'DpNiw';
@@ -63,6 +64,8 @@ if 'single' in mode:
   name = '3boxes_moreTilted_0' #segments really well - has far distance!!! [k=4]
   name = 'table_1'
   name = 'kitchen_0016_252'
+  name = 'MIT_hallway_0'
+  name = 'MIT_hallway_1'
   names = [name]
 elif 'multi' in mode:
   names = []
@@ -112,6 +115,9 @@ for ind in rndInds:
   rgbd.load(cfg['path']+name)
   if 'disp' in mode:
     rgbd.showRgbd(fig=fig0)
+    plt.show()
+#    rgbd.showPc()
+#    mlab.show(stop=True)
   rgbd.getPc()
   print np.max(rgbd.d)
   nAll = rgbd.getNormals(algo=algo)
