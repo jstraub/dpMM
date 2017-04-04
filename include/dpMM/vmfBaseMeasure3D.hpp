@@ -99,6 +99,7 @@ void vMFbase3D<T>::posterior(const Matrix<T,Dynamic,Dynamic>& x, const VectorXu&
     uint32_t k)
 { 
   vmfPrior_.getSufficientStatistics(x,z,k);
+  std::cout << vmfPrior_.xSum_.transpose() << " " << vmfPrior_.count_ << std::endl;
   vmf_ = vmfPrior_.sampleFromPosterior();
 };
 
@@ -111,6 +112,7 @@ void vMFbase3D<T>::posterior(const vector<Matrix<T,Dynamic,Dynamic> >&x, const V
 template<typename T>
 void vMFbase3D<T>::sample()
 {
+  vmf_ = vmfPrior_.sample();
 };
 
 template<typename T>
@@ -128,7 +130,7 @@ T vMFbase3D<T>::logPdfUnderPrior() const
 template<typename T>
 T vMFbase3D<T>::logPdfUnderPriorMarginalized() const
 {
-  return 0.;
+  return vmfPrior_.logPdfMarginalized();
 };
 
 template<typename T>

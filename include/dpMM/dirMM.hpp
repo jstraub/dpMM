@@ -227,7 +227,7 @@ void DirMM<T>::sampleLabels()
     VectorXd logPdf_z = pi_.pdf().array().log();
     for(uint32_t k=0; k<K_; ++k)
     {
-//      cout<<thetas_[k].logLikelihood(x_.col(i))<<" ";
+//      cout<<thetas_[k]->logLikelihood(x_.col(i))<<" ";
       logPdf_z[k] += thetas_[k]->logLikelihood(x_.col(i));
     }
 //    cout<<endl;

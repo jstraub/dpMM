@@ -11,6 +11,7 @@
 #include <dpMM/niwBaseMeasure.hpp>
 #include <dpMM/niwSphere.hpp>
 #include <dpMM/vmfBaseMeasure.hpp>
+#include <dpMM/vmfBaseMeasure3D.hpp>
 
 BOOST_AUTO_TEST_CASE(crpMM_test)
 {
@@ -113,7 +114,7 @@ BOOST_AUTO_TEST_CASE(crpMM_Sphere_test)
 
 BOOST_AUTO_TEST_CASE(crpMM_vMF_test)
 {
-  cout<<"------ sampling -- Dir-vMF"<<endl;
+  cout<<"------ sampling -- CRP-vMF"<<endl;
 
   double a0 = 2.0;
   double b0 = 1.7;
@@ -125,6 +126,51 @@ BOOST_AUTO_TEST_CASE(crpMM_vMF_test)
 
   vMFpriorFull<double> vMFprior(m0,t0,a0,b0,&rndGen);
   shared_ptr<vMFbase<double> > vMFsampled( new vMFbase<double>(vMFprior));
+  
+  double alpha = 1.0;
+  CrpMM<double> dirvMF_sp(alpha,vMFsampled,1,&rndGen);
+  
+  uint32_t N=100;
+  uint32_t K=2;
+  MatrixXd x(3,N);
+  MatrixXd mus = sampleClustersOnSphere<double>(x, K);
+
+  dirvMF_sp.initialize(x);
+
+  cout<<"true means: "<<endl<<mus<<endl;
+  cout<<dirvMF_sp.labels().transpose()<<endl;
+  for(uint32_t t=0; t<100; ++t)
+  {
+    dirvMF_sp.sampleParameters();
+//    for(uint32_t k=0; k<dirvMF_sp.getK(); ++k)
+//    {
+//      cout<<"  k: "<<k<<" "<<endl; 
+//      dirvMF_sp.getTheta(k)->print();
+//    }
+    dirvMF_sp.sampleLabels();
+    cout<<"@t="<<t<<" "<<dirvMF_sp.labels().transpose()
+      <<" logJoint="<<dirvMF_sp.logJoint()<<endl;
+  }
+//  MatrixXd logLikes;
+//  MatrixXu inds = dirvMF_sp.mostLikelyInds(5,logLikes);
+//  cout<<"most likely indices"<<endl;
+//  cout<<inds<<endl;
+  cout<<"----------------------------------------"<<endl;
+};
+
+BOOST_AUTO_TEST_CASE(crpMM_vMFanalytic_test)
+{
+  cout<<"------ sampling -- CRP-vMF (new with analytic marginalization)"<<endl;
+
+  double a0 = 1.0;
+  double b0 = 0.1;
+  VectorXd m0(3);
+  m0 << 1.0,0.0,0.0;
+
+  boost::mt19937 rndGen(9191);
+
+  vMFprior<double> vMFprior(m0,a0,b0,&rndGen);
+  shared_ptr<vMFbase3D<double> > vMFsampled( new vMFbase3D<double>(vMFprior));
   
   double alpha = 1.0;
   CrpMM<double> dirvMF_sp(alpha,vMFsampled,1,&rndGen);

@@ -28,13 +28,13 @@ class vMFprior : public Distribution<T>
   void getSufficientStatistics(const Matrix<T,Dynamic,Dynamic> &x, 
     const VectorXu& z, uint32_t k);
 
-  /// Sample from the prior with some parameters a, b, m
-  vMF<T> sample(T aN, T bN, const Eigen::Matrix<T,Eigen::Dynamic,1>& mN) {
+  /// Sample from prior
+  vMF<T> sample() {
 //    std::cout << "sample from vMF prior " << a_ << " " << b_ 
 //      << " " << m0_.transpose() << std::endl;
     Eigen::Matrix<T,Eigen::Dynamic,1> mu;
     T tau = 1.;
-    vMF<T> vmf(mN, tau*b_, pRndGen_);
+    vMF<T> vmf(m0_, tau*b_, pRndGen_);
 //    std::cout << "sampling from base" << std::endl;
     for (size_t it=0; it<10; ++it) {
       vmf.tau_ = tau*b_;
@@ -42,28 +42,26 @@ class vMFprior : public Distribution<T>
 //      std::cout << "mu " << mu.transpose() << std::endl;
       const T dot = mu.dot(m0_); 
       tau = sampleConcentration(dot, 3, tau);
-//      std::cout <<"@" << it << "tau " << tau << " mu " << mu.transpose() << std::endl;
+      std::cout <<"@" << it << "tau " << tau << " mu " << mu.transpose() << std::endl;
     }
     return vMF<T>(mu, tau, pRndGen_);
   }
 
-  /// Sample from the prior
-  vMF<T> sample() {
-    return sample(a_, b_, m0_);
-  }
-
   /// Sample from the posterior
   vMF<T> sampleFromPosterior() {
-    Eigen::Matrix<T, Eigen::Dynamic, 1> vartheta = b_*m0_ + xSum_;
-    return sample(a_+count_, vartheta.norm() , vartheta.normalized());
+    return posterior().sample();
+//    Eigen::Matrix<T, Eigen::Dynamic, 1> vartheta = b_*m0_ + xSum_;
+//    T bN = vartheta.norm() ;
+//    Eigen::Matrix<T, Eigen::Dynamic, 1> mN = vartheta.normalized();
+//    return sample(a_+count_, bN , mN);
   }
 
   vMFprior<T> posterior(const Eigen::Matrix<T,3,1>& xSum, const T count) const {
     T aN = a_+count;
-    Eigen::Matrix<T,3,1> muN = xSum + b_*m0_;
+    Eigen::Matrix<T,Eigen::Dynamic,1> muN = xSum + b_*m0_;
     T bN = muN.norm();
     muN /= bN;
-    return vMFprior<T>(muN, aN, bN);
+    return vMFprior<T>(muN, aN, bN, pRndGen_);
   }
   vMFprior<T> posterior() const {
     return posterior(xSum_, count_);

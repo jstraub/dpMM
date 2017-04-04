@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(dirMM_vMF_test)
   cout<<"------ sampling -- Dir-vMF (new, analytic marginalization for 3D)"<<endl;
 
   double a0 = 1.0;
-  double b0 = 0.7;
+  double b0 = 0.99;
   VectorXd m0(3);
   m0 << 1.0,0.0,0.0;
 
@@ -289,12 +289,17 @@ BOOST_AUTO_TEST_CASE(dirMM_vMF_test)
   vMFprior<double> vMFprior(m0,a0,b0,&rndGen);
   shared_ptr<vMFbase3D<double> > vMFbase( new vMFbase3D<double>(vMFprior));
 
+//  VectorXd alpha(1);
+//  alpha << 10.;
+//  Dir<Cat<double>, double> dir(alpha,&rndGen); 
+//  DirMM<double> dirvMF_sp(dir,vMFbase,1);
+
   VectorXd alpha(2);
   alpha << 10.,10.;
   Dir<Cat<double>, double> dir(alpha,&rndGen); 
   DirMM<double> dirvMF_sp(dir,vMFbase,2);
   
-  uint32_t N=20;
+  uint32_t N=200;
   uint32_t K=2;
   MatrixXd x(3,N);
   MatrixXd mus = sampleClustersOnSphere<double>(x, K);
@@ -326,4 +331,19 @@ BOOST_AUTO_TEST_CASE(dirMM_vMF_test)
       dirvMF_sp.getTheta(k)->print(); 
     }
   cout<<"----------------------------------------"<<endl;
+
+//  vMF<double> vmf(m0, 100, &rndGen);
+//  std::cout << m0.transpose() << std::endl << " -- " << std::endl;
+//  for (size_t i=0; i<100; ++i) {
+//    Eigen::VectorXd x = vmf.sample();
+//    std::cout << x.transpose()  << " || " << x.norm() << std::endl;
+//  }
+//
+//  std::cout << " -- " << std::endl;
+//  for (size_t i=0; i<100; ++i) {
+//    vmf = vMFprior.sample();
+//    vmf.print();
+////    std::cout << vmf.mu_.transpose()  << " tau " << vmf.tau_ << std::endl;
+//  }
+
 };

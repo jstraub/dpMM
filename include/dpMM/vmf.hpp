@@ -107,7 +107,7 @@ private:
 // Gaussian as a proposal distribution
   boost::mt19937 *pRndGen_;
   boost::uniform_01<> unif_;
-  normal_distribution<> gauss_;
+  boost::normal_distribution<> gauss_;
 };
 
 typedef vMF<double> vMFd;
@@ -116,13 +116,13 @@ typedef vMF<float> vMFf;
 template<typename T>
 vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
   : Distribution<T>(pRndGen), D_(mu.rows()), mu_(mu), tau_(tau),
-  pRndGen_(pRndGen)
+  pRndGen_(pRndGen), gauss_(0,1)
 {};
 
 template<typename T>
 vMF<T>::vMF(const vMF<T>& vmf)
   : Distribution<T>(vmf.pRndGen_), D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()),
-    pRndGen_(vmf.pRndGen_)
+    pRndGen_(vmf.pRndGen_), gauss_(0,1)
 {};
 
 template<typename T>
