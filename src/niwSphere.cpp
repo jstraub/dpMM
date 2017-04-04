@@ -232,10 +232,13 @@ template<typename T>
 T NiwSphere<T>::logPdfUnderPriorMarginalizedMerged(
     const shared_ptr<NiwSphere<T> >& other) const
 {
-  Matrix<T,Dynamic,Dynamic> scatterMerged(iw0_.D_,iw0_.D_);
-  Matrix<T,Dynamic,1> muMerged(iw0_.D_);
-  T countMerged=0;
-  return iw0_.logLikelihoodMarginalized(scatterMerged, countMerged) 
+  Matrix<T,Dynamic,Dynamic> scatterM(iw0_.D_,iw0_.D_);
+  Matrix<T,Dynamic,1> muM(iw0_.D_);
+  T countM=0;
+
+  computeMergedSS(*this, other, scatterM, muM, countM);
+
+  return iw0_.logLikelihoodMarginalized(scatterM, countM) 
     - S_.logSurfaceArea();
 };
 
