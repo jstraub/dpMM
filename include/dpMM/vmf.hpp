@@ -15,6 +15,11 @@
 #include <dpMM/distribution.hpp>
 #include <dpMM/sphere.hpp>
 
+#define LOG_2 0.69314718055994529
+#define LOG_PI 1.1447298858494002
+#define LOG_2PI 1.8378770664093453
+#define LOG_4PI 2.5310242469692907
+
 using namespace Eigen;
 using std::cout;
 using std::endl;
@@ -24,11 +29,54 @@ template<typename T>
 inline T logBesselI(T nu, T x)
 {
   // for large values of x besselI \approx exp(x)/sqrt(2 PI x)
-  if(x>100.)  return x - 0.5*log(2.*M_PI*x);
+  if(x>100.)  return x - 0.5*LOG_2PI -0.5*log(x);
   return log(boost::math::cyl_bessel_i(nu,x));
+
 };
 
-/* von-Mises-Fisher distribution
+template<typename T> 
+inline T logxOverSinhX(T x) {
+  if (fabs(x) < 1e-9) 
+    return 0.;
+  else
+    return log(x)-log(sinh(x));
+}
+template<typename T> 
+inline T xOverSinhX(T x) {
+  if (fabs(x) < 1e-9) 
+    return 1.;
+  else
+    return x/sinh(x);
+}
+template<typename T> 
+inline T xOverTanPiHalfX(T x) {
+  if (fabs(x) < 1e-9) 
+    return 2./M_PI;
+  else
+    return x/tan(x*M_PI*0.5);
+}
+
+template <typename T>
+inline T MLEstimateTau(const Eigen::Matrix<T,3,1>& xSum, const
+    Eigen::Matrix<T,3,1>& mu, T count) {
+  // Need double precision to achive convergence; single is not enough.
+  double tau = 1.0;
+  double prevTau = 0.;
+  double eps = 1e-8;
+  double R = xSum.norm()/count;
+  while (fabs(tau - prevTau) > eps) {
+//    std::cout << "tau " << tau << " R " << R << std::endl;
+    double inv_tanh_tau = 1./tanh(tau);
+    double inv_tau = 1./tau;
+    double f = -inv_tau + inv_tanh_tau - R;
+    double df = inv_tau*inv_tau - inv_tanh_tau*inv_tanh_tau + 1.;
+    prevTau = tau;
+    tau -= f/df;
+  }
+  return tau;
+};
+
+/* von-Mises-Fisher distribution in D=3 dimensions
  */
 template<typename T>
 class vMF : public Distribution<T>
@@ -60,8 +108,6 @@ private:
   boost::mt19937 *pRndGen_;
   boost::uniform_01<> unif_;
   normal_distribution<> gauss_;
-
-  Sphere<T> S_;
 };
 
 typedef vMF<double> vMFd;
@@ -89,47 +135,54 @@ T vMF<T>::logPdf(const Matrix<T,Dynamic,1>& x) const
   // modified bessel function of the first kind
   // http://www.boost.org/doc/libs/1_35_0/libs/math/doc/sf_and_dist/html/math_toolkit/special/bessel/mbessel.html
   // 
-  const T D = static_cast<T>(D_);
-//  cout<<"vMF: bessel: D="<<D<<" "<<(D/2.-1.)<<" tau="<<tau_<<endl;
-  return (D/2. -1.)*log(tau_) 
-    - (D/2.)*log(2.*M_PI) 
-    - logBesselI<T>(D_/2. -1.,tau_) 
-    + tau_*(mu_.transpose()*x)(0);
+  const T d = static_cast<T>(D_);
+  if (tau_ < 1e-9) {
+    // TODO insert general formula here (this currently works only
+    // for D=3
+    assert(D_==3);
+    return -LOG_4PI;
+  } else {
+    if (D_ == 3) {
+      return -LOG_2PI + log(tau_) + tau_*(mu_.dot(x)-1.) -
+        log(1.-exp(-2.*tau_));
+    }else {
+      return (d/2. -1.)*log(tau_) - (d/2.)*LOG_2PI 
+        - logBesselI<T>(d/2. -1.,tau_) + tau_*mu_.dot(x);
+    }
+  }
 };
 
 template<typename T>
 Matrix<T,Dynamic,1> vMF<T>::sample()
 {
-  // implemented using rejection sampling and proposals from a gaussian
-  Matrix<T,Dynamic,1> x(D_);
-  Matrix<T,Dynamic,1> xtNorth(D_-1);
+  assert(D_==3);
+  if (tau_ < 1e-10) {
+//    Eigen::VectorXf x;
+//    x << gauss_(*pRndGen_), gauss_(*pRndGen_), gauss_(*pRndGen_);
+//    return x.normalized();
+    return Eigen::Vector3f(gauss_(rnd), gauss_(rnd), gauss_(rnd)).normalized();
+  }
+  // https://www.mitsuba-renderer.org/~wenzel/files/vmf.pdf
+  // sample around (0,0,1)
+  Eigen::Vector2f v(gauss_(*pRndGen_), gauss_(*pRndGen_));
+  v.normalize();
+  const float u = unif_(rnd);
+  const float w = 1. + log(u+(1.-u)*exp(-2.*tau_))/tau_;
+  const float a = sqrtf(1.-w*w);
+  Eigen::Vector3f x(a*v(0), a*v(1), w);
 
-  uint32_t t=0;
-  while(42)
-  {
-    // sample from zero mean Gaussian in tangent space at north pole
-    for (uint32_t d=0; d<D_-1; d++)
-      xtNorth[d] = gauss_(*this->pRndGen_)*sqrt(1./tau_); //gsl_ran_gaussian(r,1);
-    // rotate sample to mu and map it down to sphere
-    x = S_.Exp_p_single(mu_,S_.rotate_north2p(mu_,xtNorth));
-    // rejection sampling (in log domain)
-    T u = log(unif_(*pRndGen_));
-    T pdf_f = this->logPdf(x);
-//    cout<<endl<<"xtNorth "<<xtNorth.transpose()<<" tau="<<tau_<<endl;
-    T pdf_g = -0.5*(log(2.*M_PI)*D_ -log(tau_)+tau_*(xtNorth.transpose()*xtNorth)(0) );
-//    cout<<endl<<"xtNorth "<<xtNorth.transpose()<<" tau="<<tau_<<" pdf_g="<<pdf_g<<" "<<tau_*(xtNorth.transpose()*xtNorth)(0)<<endl;
+  // rotate to mu
+  Eigen::Vector3f axis = Eigen::Vector3f(0,0,1).cross(mu_);
+  float angle = acos(mu_[2]);
 
-    // bound via maximum over vMF at mu
-//    T M = this->logPdf(mu_) + 0.5*(log(2.*M_PI)*D_ - log(tau_));
-//  conservative bound
-    T M = this->logPdf(mu_) + log(10) + 0.5*(log(2.*M_PI)*D_ - log(tau_));
-//    cout<< u<<" "<< (pdf_f-(M+pdf_g))<< " "<<pdf_f<<" "<<M<<" "<<pdf_g<<endl;
-    if(u < pdf_f-(M+pdf_g)) break;
+  if (fabs(angle) <1e-9) 
+    return x;
 
-    ++t;
-  };
-//  cout<<"vMF<T>::sample: T="<<t<<endl;
-  return x;
+  Eigen::Quaternion<float> q(cos(angle*0.5), 
+      sin(angle*0.5)*axis(0)/axis.norm(),
+      sin(angle*0.5)*axis(1)/axis.norm(),
+      sin(angle*0.5)*axis(2)/axis.norm());
+  return q._transformVector(x);
 };
 
 template<typename T>
