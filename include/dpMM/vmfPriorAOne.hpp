@@ -2,7 +2,6 @@
  * Licensed under the MIT license. See the license file LICENSE.
  */
 #pragma once
-#include <random>
 #include <cmath>
 #include <iostream>
 #include <Eigen/Dense>
@@ -39,13 +38,13 @@ class vMFprior : public Distribution<T>
 //    std::cout << "sampling from base" << std::endl;
     for (size_t it=0; it<10; ++it) {
       vmf.tau_ = tau*b_;
-      mu = vmf.sample(rnd);
+      mu = vmf.sample();
 //      std::cout << "mu " << mu.transpose() << std::endl;
       const T dot = mu.dot(m0_); 
       tau = sampleConcentration(dot, 3, tau);
 //      std::cout <<"@" << it << "tau " << tau << " mu " << mu.transpose() << std::endl;
     }
-    return vMF<T>(mu, tau);
+    return vMF<T>(mu, tau, pRndGen_);
   }
 
   /// Sample from the prior
@@ -153,7 +152,7 @@ private:
     for (size_t it=0; it<100; ++it) {
       T f = propToConcentrationLogPdf(tau, dot) - c;
       T df = propToConcentrationLogPdfDeriv(tau, dot);
-      tau = std::max(0.f, tau-f/df);
+      tau = std::max((T)0., tau-f/df);
 //      std::cout << "   __ " <<it << ": " << f << " " << df 
 //        << "\t f/df " << fabs(f/df) 
 //        << "\t step to " << tau-f/df << ": "<< tau << std::endl;

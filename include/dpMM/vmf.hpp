@@ -100,9 +100,9 @@ public:
   T tau() const {return tau_;};
   void tau(const T tau) {tau_ = tau;};
 
-private:
   Matrix<T,Dynamic,1> mu_;
   T tau_;
+private:
   
 // Gaussian as a proposal distribution
   boost::mt19937 *pRndGen_;
