@@ -116,13 +116,13 @@ typedef vMF<float> vMFf;
 template<typename T>
 vMF<T>::vMF(const Matrix<T,Dynamic,1>& mu, T tau, boost::mt19937 *pRndGen)
   : Distribution<T>(pRndGen), D_(mu.rows()), mu_(mu), tau_(tau),
-  pRndGen_(pRndGen), S_(D_)
+  pRndGen_(pRndGen)
 {};
 
 template<typename T>
 vMF<T>::vMF(const vMF<T>& vmf)
   : Distribution<T>(vmf.pRndGen_), D_(vmf.D_), mu_(vmf.mu()), tau_(vmf.tau()),
-    pRndGen_(vmf.pRndGen_), S_(D_)
+    pRndGen_(vmf.pRndGen_)
 {};
 
 template<typename T>
@@ -160,29 +160,30 @@ Matrix<T,Dynamic,1> vMF<T>::sample()
 //    Eigen::VectorXf x;
 //    x << gauss_(*pRndGen_), gauss_(*pRndGen_), gauss_(*pRndGen_);
 //    return x.normalized();
-    return Eigen::Vector3f(gauss_(rnd), gauss_(rnd), gauss_(rnd)).normalized();
+    return Eigen::Matrix<T,3,1>(gauss_(*pRndGen_), gauss_(*pRndGen_), gauss_(*pRndGen_)).normalized();
   }
   // https://www.mitsuba-renderer.org/~wenzel/files/vmf.pdf
   // sample around (0,0,1)
-  Eigen::Vector2f v(gauss_(*pRndGen_), gauss_(*pRndGen_));
+  Eigen::Matrix<T,2,1> v(gauss_(*pRndGen_), gauss_(*pRndGen_));
   v.normalize();
-  const float u = unif_(rnd);
-  const float w = 1. + log(u+(1.-u)*exp(-2.*tau_))/tau_;
-  const float a = sqrtf(1.-w*w);
-  Eigen::Vector3f x(a*v(0), a*v(1), w);
+  const T u = unif_(*pRndGen_);
+  const T w = 1. + log(u+(1.-u)*exp(-2.*tau_))/tau_;
+  const T a = sqrtf(1.-w*w);
+  Eigen::Matrix<T,3,1> x(a*v(0), a*v(1), w);
 
   // rotate to mu
-  Eigen::Vector3f axis = Eigen::Vector3f(0,0,1).cross(mu_);
-  float angle = acos(mu_[2]);
+  Eigen::Matrix<T,3,1> axis = Eigen::Matrix<T,3,1>(0,0,1).cross(Eigen::Matrix<T,3,1>(mu_(0),mu_(1),mu_(2)));
+  T angle = acos(mu_[2]);
 
   if (fabs(angle) <1e-9) 
     return x;
 
-  Eigen::Quaternion<float> q(cos(angle*0.5), 
+  Eigen::Quaternion<T> q(cos(angle*0.5), 
       sin(angle*0.5)*axis(0)/axis.norm(),
       sin(angle*0.5)*axis(1)/axis.norm(),
       sin(angle*0.5)*axis(2)/axis.norm());
-  return q._transformVector(x);
+  Eigen::Matrix<T,Eigen::Dynamic,1> xx = q._transformVector(x);
+  return xx;
 };
 
 template<typename T>

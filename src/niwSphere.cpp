@@ -236,7 +236,7 @@ T NiwSphere<T>::logPdfUnderPriorMarginalizedMerged(
   Matrix<T,Dynamic,1> muM(iw0_.D_);
   T countM=0;
 
-  computeMergedSS(*this, other, scatterM, muM, countM);
+  computeMergedSS(*this, *other, scatterM, muM, countM);
 
   return iw0_.logLikelihoodMarginalized(scatterM, countM) 
     - S_.logSurfaceArea();
