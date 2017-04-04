@@ -12,6 +12,8 @@
 /// vMF prior for 3D where a=1 and 0<b<1 for the hyperparameters
 /// This allows the marginal data distribution under the prior to be
 /// computed in closed form.
+///
+/// See J Straub, "Nonparametric Driectional Perception", 2017
 /// 
 /// Note that the posterior can have a != 0.
 ///
